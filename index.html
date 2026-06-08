@@ -252,7 +252,7 @@
         <div id="settings-panel" class="hidden absolute right-32 top-20 card-bg-theme border border-theme p-5 rounded-2xl w-72 shadow-2xl z-50 space-y-4 text-primary-theme">
             <div class="flex justify-between items-center border-b border-theme pb-2">
                 <h4 class="font-bold text-sm" data-i18n="settingsTitle">Preferences</h4>
-                <button onclick="toggleSettingsMenu()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="toggleSettingsMenu()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
             </div>
             <div class="space-y-3 text-xs">
                 <div class="flex justify-between items-center">
@@ -302,7 +302,7 @@
         
         <!-- MODAL: GORGEOUS PREMIUM LOGIN OVERLAY -->
         <div id="login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
-            <div class="card-bg-theme border border-theme rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6 relative overflow-hidden text-primary-theme">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-5 relative overflow-hidden text-primary-theme">
                 <div class="absolute -right-16 -top-16 w-36 h-36 bg-violet-600/10 rounded-full blur-2xl"></div>
                 
                 <div class="flex justify-between items-start z-10 relative">
@@ -315,14 +315,32 @@
                     </button>
                 </div>
 
+                <!-- NEW: Dynamic Social Logins (Google & Facebook Simulation) -->
+                <div class="space-y-2.5 z-10 relative">
+                    <button onclick="handleSocialLogin('Google')" class="w-full bg-[var(--bg-viewport)] border border-theme hover:bg-slate-800/10 text-primary-theme font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2.5 text-xs shadow-sm">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/></svg>
+                        <span>Continue with Google</span>
+                    </button>
+                    <button onclick="handleSocialLogin('Facebook')" class="w-full bg-[var(--bg-viewport)] border border-theme hover:bg-slate-800/10 text-primary-theme font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2.5 text-xs shadow-sm">
+                        <svg class="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.373-4.669 1.235 0 2.528.22 2.528.22v2.78h-1.425c-1.49 0-1.955.925-1.955 1.874v2.25h3.128l-.5 3.47h-2.628v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <span>Continue with Facebook</span>
+                    </button>
+                </div>
+
+                <!-- Separator -->
+                <div class="relative py-1">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-theme"></div></div>
+                    <div class="relative flex justify-center text-[9px] uppercase font-bold"><span class="card-bg-theme px-3 text-slate-500">or use traditional</span></div>
+                </div>
+
                 <!-- MOCK ADMIN CREDENTIALS HINT CARD -->
-                <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2 relative">
-                    <div class="flex items-center space-x-2 text-amber-400 font-bold text-xs">
+                <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2 relative">
+                    <div class="flex items-center space-x-2 text-amber-500 font-bold text-xs">
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
                         <span>Developer / Admin Mock Account</span>
                     </div>
                     <div class="text-[11px] text-secondary-theme space-y-1 font-mono">
-                        <div>Email: <span class="text-amber-500 font-bold">admin@auratalent.com</span></div>
+                        <div>Email: <span class="text-amber-300 font-bold">admin@auratalent.com</span></div>
                         <div>Pass: <span class="text-amber-300 font-bold">admin1234</span></div>
                     </div>
                     <button onclick="autoFillAdmin()" class="absolute right-3 bottom-3 bg-amber-400 hover:bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-lg transition">
@@ -415,7 +433,7 @@
                             </button>
                         </div>
                         <input id="post-title-input" type="text" required placeholder="e.g. Logo Design" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
-                        <!-- Preview of Translation -->
+                        <!-- Preview of Translation (Contrast protected) -->
                         <div id="preview-title-box" class="hidden mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-emerald-400">
                             <span id="preview-title-text" class="italic">Translated title...</span>
                             <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold uppercase" id="badge-title-engine">DeepL Verified</span>
@@ -538,7 +556,7 @@
                     Connect with verified local helpers, students, and freelancers near you. Simple, safe, and designed for everyone.
                 </p>
 
-                <!-- Real-time Active Search Bar Component -->
+                <!-- Real-time Active Search Bar Component (Now styled with card-bg-theme for safe automatic theme colors!) -->
                 <div class="pt-4 max-w-2xl mx-auto">
                     <div class="card-bg-theme border border-theme p-2 rounded-2xl shadow-xl flex flex-col md:flex-row gap-2 transition-all">
                         <div class="flex-1 flex items-center px-3 space-x-2 border-b md:border-b-0 md:border-r border-theme py-2">
@@ -735,7 +753,7 @@
                 chatSupport: "ฝ่ายบริการและดูแลความปลอดภัย",
                 badgeText: "ยืนยันตัวตนจริง และปลอดภัยด้วยระบบมัดจำเงิน Escrow",
                 heroTitleStatic: "ค้นหาผู้ช่วยที่ไว้ใจได้และ",
-                heroSubtitle: "เชื่อมต่อกับผู้ช่วยในพื้นที่ นักศึกษา และฟรีแลนซ์ที่ผ่านการยืนยันตัวตน ง่าย ปลอดภัย และออกแบบมาเพื่อทุกคน",
+                heroSubtitle: "เชื่อมต่อกับผู้ช่วยในพื้นที่ นักศึกษา และฟรีแลนซ์ที่ผ่านการยืนยันตัวตน ง่าย ปยศ ปลอดภัย และออกแบบมาเพื่อทุกคน",
                 recentRequests: "งานอัปเดตล่าสุด",
                 applyBtn: "สมัครด่วน",
                 inquireBtn: "ติดต่อสอบถาม",
@@ -825,7 +843,7 @@
             loc: { en: "", th: "" }
         };
 
-        // Initialize Icons & Renders (Wrapped in safe Try-Catch to prevent offline script crashes)
+        // Initialize Icons & Renders
         try {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
@@ -907,7 +925,7 @@
             }, 5000); // SET TO EXACTLY 5 SECONDS!
         }
 
-        // Render Gigs function (Generates unified card designs with zero style mismatches)
+        // Render Gigs function (Generates unified card designs with enhanced Hover Physics & cursor pointer)
         function renderGigs(data) {
             const grid = document.getElementById('gigs-grid');
             if (!grid) return;
@@ -929,7 +947,7 @@
                 const loc = gig.location[currentLang] || gig.location['en'];
                 const applyBtnText = gig.category === 'writing' ? translations[currentLang].applyBtn : gig.category === 'physical' || gig.category === 'education' ? translations[currentLang].inquireBtn : translations[currentLang].applyBtn;
 
-                // Restored Hover Physics - Lifts up noticeable 2px + deep 2xl shadows! (0 visual regressions)
+                // Enhanced Hover Physics - Lifts up 8px + 2xl shadow + pointer-cursor (Clickable full card)
                 const cardHtml = `
                     <div class="card-bg-theme border border-theme hover:border-[var(--accent-color)] hover:-translate-y-2 hover:shadow-2xl rounded-3xl p-6 transition-all duration-500 flex flex-col justify-between h-[260px] shadow-lg group cursor-pointer" onclick="openApplyModal('${gig.id}')">
                         <div>
@@ -992,7 +1010,7 @@
                 }
             });
 
-            // Update Headline
+            // Update Headline safely
             document.getElementById('hero-title-static').innerText = data.heroTitleStatic;
             
             // SAFELY RESET TYPEWRITER EFFECT TO PREVENT BUGS
@@ -1190,6 +1208,39 @@
             updateNotificationsUI();
         }
 
+        // Simulated Social Login Engine
+        function handleSocialLogin(platform) {
+            let mockUser = {};
+            if (platform === 'Google') {
+                mockUser = {
+                    name: "Alex Google",
+                    role: "Verified Google Partner",
+                    avatar: "AG",
+                    balance: "$1,200.00"
+                };
+            } else if (platform === 'Facebook') {
+                mockUser = {
+                    name: "Sam Facebook",
+                    role: "Verified FB Creator",
+                    avatar: "SF",
+                    balance: "$850.00"
+                };
+            }
+
+            isLoggedIn = true;
+            currentUser = mockUser;
+            updateUserInterface(true);
+            closeLoginModal();
+            
+            // Push Notification
+            pushNotification(
+                `Logged in securely via ${platform} Integration.`,
+                `เข้าสู่ระบบอย่างปลอดภัยผ่านบัญชี ${platform} แล้ว`
+            );
+            
+            alert(`Welcome, ${mockUser.name}! Logged in via ${platform}.`);
+        }
+
         function handleLoginSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -1230,6 +1281,7 @@
             alert("Logged out successfully.");
         }
 
+        // Toggle 2FA switch setting dynamically
         function toggle2FASettings(checked) {
             const badge = document.getElementById('settings-2fa-badge');
             if (checked) {
@@ -1247,6 +1299,7 @@
             }
         }
 
+        // Update preferred translation API setting (Simulated DeepL vs Google vs GPT selection)
         function changeTranslationEngine(engine) {
             activeTranslationEngine = engine;
             updateEngineLabels();
@@ -1266,6 +1319,7 @@
             return "Aura GPT-4o AI";
         }
 
+        // Updates all dynamic "Translate with..." labels in real-time
         function updateEngineLabels() {
             const engineName = getActiveEngineName();
             
@@ -1283,6 +1337,8 @@
             if (badgeDesc) badgeDesc.innerText = `${engineName} Verified`;
             if (badgeLoc) badgeLoc.innerText = `${engineName} Verified`;
         }
+
+        // --- NEW COMPLETED DYNAMIC MOCK TRANSLATOR SYSTEM (0 Double Inputs!) ---
 
         function triggerAutoTranslate(field) {
             let val = "";
@@ -1336,6 +1392,7 @@
             if (previewBox) previewBox.classList.remove('hidden'); 
         }
 
+        // GIGS APPLY ENGINE
         function openApplyModal(gigId) {
             if (!isLoggedIn) {
                 alert("Trust Policy: To protect our freelancers and clients, please log in first.");
@@ -1360,6 +1417,7 @@
             document.getElementById('apply-modal').classList.add('hidden');
         }
 
+        // Handle Apply submit
         function handleApplySubmit(event) {
             event.preventDefault();
             const gig = gigsData.find(g => g.id === selectedGigId);
@@ -1378,6 +1436,7 @@
             alert("Proposal submitted successfully! Check your notification bell.");
         }
 
+        // NEW POST GIG FUNCTIONS (Dynamic Card Generation & Live Translation check)
         function openPostGigModal() {
             if (!isLoggedIn) {
                 alert("Authentication Required: Please login as Admin Aura to post a new validated gig.");
@@ -1480,6 +1539,7 @@
             alert("New Gig Request Published Successfully! Check your dashboard/feed.");
         }
 
+        // Toggle Info Modals
         function openSafetyModal() { document.getElementById('safety-modal').classList.remove('hidden'); }
         function closeSafetyModal() { document.getElementById('safety-modal').classList.add('hidden'); }
         function openStylesModal() { document.getElementById('styles-modal').classList.remove('hidden'); }
