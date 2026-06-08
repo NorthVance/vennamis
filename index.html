@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vennamis - Trusted Peer-to-Peer Workspace</title>
+    <!-- Tailwind CSS (Direct CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Premium Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Cormorant Garamond', 'serif']
+                    },
+                    animation: {
+                        'scanline': 'scanline 8s linear infinite',
+                        'hue-shift': 'hueshift 30s linear infinite'
+                    },
+                    keyframes: {
+                        hueshift: {
+                            '0%': { filter: 'hue-rotate(0deg)' },
+                            '50%': { filter: 'hue-rotate(180deg)' },
+                            '100%': { filter: 'hue-rotate(360deg)' }
+                        },
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS Variables mapping directly to the body for a unified responsive experience */
+        body {
+            /* Default Cyber Dark Theme variables */
+            --bg-viewport: #090B11;
+            --bg-card: #111422;
+            --bg-header: rgba(13, 15, 23, 0.5); /* Dynamic translucent dark background */
+            --bg-mask-color: rgba(9, 11, 17, 0.82); /* Dark theme translucent overlay mask */
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border-color: #1E293B;
+            --accent-color: #10B981;
+            --accent-hover: #059669;
+            
+            background-color: var(--bg-viewport);
+            color: var(--text-primary);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            
+            /* 100% Lock Font Family across all elements to prevent browser fallbacks */
+            font-family: 'Plus Jakarta Sans', 'sans-serif' !important;
+        }
+        
+        body.theme-light {
+            /* Clean Minimal Light Theme variables */
+            --bg-viewport: #FAF9F6;
+            --bg-card: #FFFFFF;
+            --bg-header: rgba(250, 249, 246, 0.65); /* Dynamic translucent white/cream background for safe readability */
+            --bg-mask-color: rgba(250, 249, 246, 0.88); /* Light theme translucent overlay mask */
+            --text-primary: #12141C;
+            --text-secondary: #5C6470;
+            --border-color: #E2E8F0;
+            --accent-color: #059669;
+            --accent-hover: #047857;
+        }
+
+        body.theme-luxury {
+            /* Champagne Gold Theme variables */
+            --bg-viewport: #0E0C0A;
+            --bg-card: #1A1512;
+            --bg-header: rgba(14, 12, 10, 0.6); /* Dynamic translucent truffle black background */
+            --bg-mask-color: rgba(14, 12, 10, 0.88); /* Luxury theme translucent overlay mask */
+            --text-primary: #F7EFE5;
+            --text-secondary: #C8B9A6;
+            --border-color: #3A2E24;
+            --accent-color: #D4AF37;
+            --accent-hover: #AA8B2C;
+        }
+
+        /* Semantic styles mapping */
+        .text-primary-theme { color: var(--text-primary) !important; }
+        .text-secondary-theme { color: var(--text-secondary) !important; }
+        .card-bg-theme { background-color: var(--bg-card) !important; }
+        .border-theme { border-color: var(--border-color) !important; }
+        .accent-text-theme { color: var(--accent-color) !important; }
+        .accent-bg-theme { background-color: var(--accent-color) !important; }
+
+        .dot-grid {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .dot-grid-light {
+            background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* 1.8s Pure CSS Transition for the background slideshow */
+        .slide-image {
+            transition: opacity 1.8s ease-in-out !important;
+        }
+
+        /* 100% Guaranteed GPU-Accelerated Text Slide Transitions */
+        #rotate-word {
+            display: inline-block;
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* Explicitly force high-contrast color on main titles */
+        #hero-title-static {
+            color: var(--text-primary) !important;
+            transition: color 0.4s ease-in-out;
+        }
+
+        /* --- Typewriter Cursor Animation --- */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+            color: var(--accent-color);
+            margin-left: 2px;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased dot-grid relative font-sans">
+
+    <!-- GORGEOUS DYNAMIC BACKGROUND SLIDESHOW CAROUSEL -->
+    <div id="bg-slideshow" class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div id="bg-mask" class="absolute inset-0 z-10 transition-all duration-1000" style="background-color: var(--bg-mask-color);"></div>
+        <div id="slide-1" class="slide-image absolute inset-0 bg-slate-900 bg-cover bg-center scale-105" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80'); opacity: 1;"></div>
+        <div id="slide-2" class="slide-image absolute inset-0 bg-slate-900 bg-cover bg-center scale-105" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80'); opacity: 0;"></div>
+        <div id="slide-3" class="slide-image absolute inset-0 bg-slate-900 bg-cover bg-center scale-105" style="background-image: url('https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&w=1920&q=80'); opacity: 0;"></div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-root" class="relative flex flex-col min-h-screen z-10">
+        
+        <!-- HEADER BLOCK (Optimized for Mobile - Zero Overflow!) -->
+        <header class="border-b border-theme bg-[var(--bg-header)] backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 py-4 flex justify-between items-center transition-all duration-300">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-tr from-violet-600 to-rose-500 rounded-lg flex items-center justify-center text-white font-bold text-base shadow-md">V</div>
+                <span class="font-bold text-lg tracking-tight text-primary-theme">Vennamis</span>
+            </div>
+            
+            <nav class="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wider uppercase text-secondary-theme">
+                <a href="#" class="hover:text-primary-theme transition accent-text-theme" data-i18n="navExplore">Explore Gigs</a>
+                <a href="#" onclick="openStylesModal()" class="hover:text-primary-theme transition" data-i18n="navStyles">How it Works</a>
+                <a href="#" onclick="openSafetyModal()" class="hover:text-primary-theme transition" data-i18n="navSafety">Safety & Trust</a>
+            </nav>
+
+            <div class="flex items-center space-x-1.5 sm:space-x-3">
+                <!-- Integrated Language Selector -->
+                <select onchange="changeLanguage(this.value)" class="bg-slate-800/10 border border-theme text-secondary-theme text-[10px] sm:text-xs rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer">
+                    <option value="en">EN</option>
+                    <option value="th">TH</option>
+                </select>
+
+                <!-- Integrated Theme Toggler -->
+                <div class="bg-slate-800/10 p-1 rounded-xl flex border border-theme text-[10px] sm:text-xs">
+                    <button onclick="changeTheme('light')" id="theme-light" class="p-1 rounded-lg text-slate-400 hover:text-primary-theme transition" title="Warm Light">
+                        <i data-lucide="sun" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="changeTheme('dark')" id="theme-dark" class="p-1 rounded-lg text-violet-400 bg-slate-800/40 transition" title="Cyber Dark">
+                        <i data-lucide="moon" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="changeTheme('luxury')" id="theme-luxury" class="p-1 rounded-lg text-slate-400 hover:text-primary-theme transition" title="Champagne Gold">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- Post a Gig Launcher Button (Collapses to elegant icon on Mobile) -->
+                <button onclick="openPostGigModal()" class="bg-gradient-to-r from-violet-600 to-rose-500 hover:from-violet-700 hover:to-rose-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-md flex items-center space-x-1">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline" data-i18n="postBtn">Post a Gig</span>
+                </button>
+
+                <!-- Notification Bell -->
+                <button onclick="toggleNotificationsMenu()" class="p-2 rounded-xl border border-theme text-secondary-theme hover:text-primary-theme transition hover:bg-slate-800/20 relative" title="Notifications">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span id="bell-dot" class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+                </button>
+                <!-- Chat Launcher -->
+                <button onclick="toggleChatWindow()" class="p-2 rounded-xl border border-theme text-secondary-theme hover:text-primary-theme transition hover:bg-slate-800/20">
+                    <i data-lucide="message-square" class="w-4.5 h-4.5"></i>
+                </button>
+                <!-- Settings -->
+                <button onclick="toggleSettingsMenu()" class="p-2 rounded-xl border border-theme text-secondary-theme hover:text-primary-theme transition hover:bg-slate-800/20">
+                    <i data-lucide="settings" class="w-4.5 h-4.5"></i>
+                </button>
+                
+                <!-- Dynamic Login/Profile Button -->
+                <div id="user-auth-zone" class="flex items-center">
+                    <button onclick="openLoginModal()" id="nav-login-btn" class="bg-transparent border border-theme text-secondary-theme hover:text-primary-theme text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-md">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- FLOATING WIDGETS -->
+        
+        <!-- NOTIFICATIONS PANEL -->
+        <div id="notifications-panel" class="hidden absolute right-40 top-20 card-bg-theme border border-theme p-5 rounded-2xl w-80 shadow-2xl z-50 space-y-3 text-primary-theme transition-all">
+            <div class="flex justify-between items-center border-b border-theme pb-2">
+                <h4 class="font-bold text-sm" data-i18n="notifHeader">Notifications</h4>
+                <button onclick="clearNotifications()" class="text-[10px] text-red-400 hover:underline" data-i18n="notifClear">Clear All</button>
+            </div>
+            <div class="space-y-2.5 max-h-60 overflow-y-auto" id="notifications-list"></div>
+        </div>
+
+        <!-- PROFILE MENU -->
+        <div id="profile-panel" class="hidden absolute right-6 top-20 card-bg-theme border border-theme p-5 rounded-2xl w-80 shadow-2xl z-50 space-y-4 text-primary-theme transition-all">
+            <div class="flex justify-between items-start border-b border-theme pb-3">
+                <div class="flex items-center space-x-3">
+                    <div id="prof-avatar" class="w-10 h-10 bg-gradient-to-tr from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">JD</div>
+                    <div>
+                        <h4 id="prof-username" class="font-bold text-sm">Jane Doe</h4>
+                        <div class="flex items-center text-[10px] accent-text-theme font-semibold">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1"></i>
+                            <span id="prof-role-text" data-i18n="profVerified">ID Verified Partner</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleProfileMenu()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-secondary-theme" data-i18n="profLevel">Community Standing</span>
+                    <span class="font-bold">Excellent (4.9/5)</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-secondary-theme" data-i18n="profBalance">Secure Hold Balance</span>
+                    <span id="prof-balance" class="font-bold text-emerald-500">$350.00</span>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2 rounded-xl transition text-center text-red-400">
+                Log Out
+            </button>
+        </div>
+
+        <!-- SETTINGS DROP WINDOW -->
+        <div id="settings-panel" class="hidden absolute right-32 top-20 card-bg-theme border border-theme p-5 rounded-2xl w-72 shadow-2xl z-50 space-y-4 text-primary-theme">
+            <div class="flex justify-between items-center border-b border-theme pb-2">
+                <h4 class="font-bold text-sm" data-i18n="settingsTitle">Preferences</h4>
+                <button onclick="toggleSettingsMenu()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-secondary-theme" data-i18n="settingEscrow">Auto Escrow Hold</span>
+                    <input id="setting-escrow-checkbox" type="checkbox" checked class="accent-bg-theme w-4 h-4 cursor-pointer">
+                </div>
+                <div class="flex justify-between items-center flex-wrap gap-2 border-b border-theme pb-3">
+                    <span class="text-secondary-theme" data-i18n="settingSafety">2-Factor Security</span>
+                    <div class="flex items-center space-x-2">
+                        <span id="settings-2fa-badge" class="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded font-bold">ACTIVE</span>
+                        <input id="setting-2fa-checkbox" onchange="toggle2FASettings(this.checked)" type="checkbox" checked class="accent-bg-theme w-4 h-4 cursor-pointer">
+                    </div>
+                </div>
+                <!-- Mock Translation Engine Selector -->
+                <div class="space-y-1.5 pt-1">
+                    <span class="text-secondary-theme font-bold block" data-i18n="transEngineLabel">Preferred Translation API</span>
+                    <select id="engine-selector" onchange="changeTranslationEngine(this.value)" class="w-full bg-slate-800/10 border border-theme rounded-xl px-2.5 py-1.5 text-[11px] text-primary-theme focus:outline-none cursor-pointer">
+                        <option value="deepl">DeepL Pro API (Recommended)</option>
+                        <option value="google">Google Cloud Translation</option>
+                        <option value="gpt">GPT AI Translator (NMT)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLOATING SECURE CHAT -->
+        <div id="chat-window" class="hidden fixed bottom-6 right-6 card-bg-theme border border-theme rounded-2xl w-80 h-[380px] shadow-2xl z-50 flex flex-col overflow-hidden text-primary-theme">
+            <div class="p-4 border-b border-theme flex justify-between items-center bg-opacity-25 bg-slate-900">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h4 class="font-bold text-xs" data-i18n="chatSupport">Verified Secure Chat</h4>
+                </div>
+                <button onclick="toggleChatWindow()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
+            </div>
+            <div class="flex-1 p-4 overflow-y-auto space-y-3 text-xs" id="chat-messages">
+                <div class="bg-slate-800/40 border border-theme p-2.5 rounded-xl text-secondary-theme">
+                    Hello! All communication is monitored for security against scams. How can we assist you?
+                </div>
+            </div>
+            <div class="p-3 border-t border-theme flex gap-2">
+                <input type="text" id="chat-input" placeholder="Type a message safely..." class="flex-1 bg-transparent border border-theme rounded-xl px-3 py-1.5 text-xs text-primary-theme focus:outline-none">
+                <button onclick="sendChatMessage()" class="accent-bg-theme text-white text-xs font-bold px-3 py-1.5 rounded-xl"><i data-lucide="send" class="w-4 h-4"></i></button>
+            </div>
+        </div>
+
+        <!-- MODAL OVERLAYS -->
+        
+        <!-- MODAL: GORGEOUS PREMIUM LOGIN OVERLAY -->
+        <div id="login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6 relative overflow-hidden text-primary-theme">
+                <div class="absolute -right-16 -top-16 w-36 h-36 bg-violet-600/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-start z-10 relative">
+                    <div>
+                        <h3 class="font-extrabold text-2xl text-primary-theme font-sans tracking-tight">Access Vennamis</h3>
+                        <p class="text-xs text-slate-400 mt-1">Connect with verified peer-to-peer workspace.</p>
+                    </div>
+                    <button onclick="closeLoginModal()" class="text-secondary-theme hover:text-primary-theme">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- MOCK ADMIN CREDENTIALS HINT CARD -->
+                <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2 relative">
+                    <div class="flex items-center space-x-2 text-amber-400 font-bold text-xs">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span>Developer / Admin Mock Account</span>
+                    </div>
+                    <div class="text-[11px] text-secondary-theme space-y-1 font-mono">
+                        <div>Email: <span class="text-amber-500 font-bold">admin@auratalent.com</span></div>
+                        <div>Pass: <span class="text-amber-300 font-bold">admin1234</span></div>
+                    </div>
+                    <button onclick="autoFillAdmin()" class="absolute right-3 bottom-3 bg-amber-400 hover:bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-lg transition">
+                        Auto-Fill
+                    </button>
+                </div>
+
+                <!-- Traditional Fields -->
+                <form onsubmit="handleLoginSubmit(event)" class="space-y-4 text-xs z-10 relative">
+                    <div>
+                        <label class="font-bold text-slate-400 block mb-1.5">Email Address</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="w-4.5 h-4.5 text-slate-500 absolute left-3.5 top-3"></i>
+                            <input id="login-email" type="email" required placeholder="name@company.com" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl pl-10 pr-4 py-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-400 block mb-1.5">Security Password</label>
+                        <div class="relative">
+                            <i data-lucide="lock" class="w-4.5 h-4.5 text-slate-500 absolute left-3.5 top-3"></i>
+                            <input id="login-pass" type="password" required placeholder="••••••••" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl pl-10 pr-4 py-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-violet-600 to-rose-500 hover:from-violet-700 hover:to-rose-600 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: GIG APPLY FORM MODAL -->
+        <div id="apply-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-lg w-full p-7 shadow-2xl space-y-6 relative overflow-hidden text-primary-theme">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-extrabold text-xl font-sans tracking-tight" data-i18n="applyModalHeader">Submit Your Proposal</h3>
+                        <p class="text-xs text-slate-400 mt-1" id="apply-job-title">Job Title Here</p>
+                    </div>
+                    <button onclick="closeApplyModal()" class="text-slate-400 hover:text-slate-200">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <form onsubmit="handleApplySubmit(event)" class="space-y-4 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-400 block mb-1.5">Introduce Yourself & Your Pitch</label>
+                        <textarea id="apply-pitch" required rows="4" placeholder="Explain why you are the best fit for this task. Please do NOT include links or external contact handles to prevent safety flags." class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)] leading-relaxed"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-bold text-slate-400 block mb-1.5">Your Proposal Bid (USD)</label>
+                            <input id="apply-bid" type="number" required placeholder="100" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-400 block mb-1.5">Estimated Delivery (Days)</label>
+                            <input id="apply-days" type="number" required placeholder="3" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-violet-600 to-rose-500 hover:from-violet-700 hover:to-rose-600 text-white font-bold py-3 rounded-xl transition text-sm shadow-md">
+                        Submit Proposal
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: POST GIG FORM MODAL -->
+        <div id="post-gig-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-lg w-full p-8 shadow-2xl space-y-6 relative overflow-hidden text-primary-theme">
+                <div class="absolute -right-16 -top-16 w-36 h-36 bg-violet-600/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-start z-10 relative">
+                    <div>
+                        <h3 class="font-extrabold text-xl font-sans tracking-tight" data-i18n="postModalHeader">Post a New Gig Request</h3>
+                        <p class="text-xs text-slate-400 mt-1" data-i18n="postModalDesc">Submit a validated workspace task for independent talent.</p>
+                    </div>
+                    <button onclick="closePostGigModal()" class="text-secondary-theme hover:text-primary-theme">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- True Translation Form -->
+                <form onsubmit="handlePostGigSubmit(event)" class="space-y-4 text-xs z-10 relative">
+                    <!-- Title Input + Auto Translate -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="font-bold text-slate-400">Job Title</label>
+                            <button type="button" onclick="triggerAutoTranslate('title')" class="text-[10px] font-bold accent-text-theme hover:underline flex items-center space-x-1">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                <span id="btn-trans-title">Translate with DeepL</span>
+                            </button>
+                        </div>
+                        <input id="post-title-input" type="text" required placeholder="e.g. Logo Design" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        <!-- Preview of Translation -->
+                        <div id="preview-title-box" class="hidden mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-emerald-400">
+                            <span id="preview-title-text" class="italic">Translated title...</span>
+                            <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold uppercase" id="badge-title-engine">DeepL Verified</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-bold text-slate-400 block mb-1.5">Category</label>
+                            <select id="post-category" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none">
+                                <option value="tech">Tech & VPN</option>
+                                <option value="design">Art & Design</option>
+                                <option value="writing">Translation</option>
+                                <option value="physical">Gardening</option>
+                                <option value="education">Tutoring</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-400 block mb-1.5">Budget (USD)</label>
+                            <input id="post-price" type="number" required placeholder="150" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)]">
+                        </div>
+                    </div>
+
+                    <!-- Description Input + Auto Translate -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="font-bold text-slate-400">Description</label>
+                            <button type="button" onclick="triggerAutoTranslate('desc')" class="text-[10px] font-bold accent-text-theme hover:underline flex items-center space-x-1">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                <span id="btn-trans-desc">Translate with DeepL</span>
+                            </button>
+                        </div>
+                        <textarea id="post-desc-input" required rows="3" placeholder="Explain the job description..." class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none focus:border-[var(--accent-color)] leading-relaxed"></textarea>
+                        <!-- Preview of Translation -->
+                        <div id="preview-desc-box" class="hidden mt-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-1 text-emerald-400">
+                            <span id="preview-desc-text" class="italic">Translated description...</span>
+                            <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold uppercase self-end" id="badge-desc-engine">DeepL Verified</span>
+                        </div>
+                    </div>
+
+                    <!-- Location Input + Auto Translate -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="font-bold text-slate-400">Location</label>
+                            <button type="button" onclick="triggerAutoTranslate('loc')" class="text-[10px] font-bold accent-text-theme hover:underline flex items-center space-x-1">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                <span id="btn-trans-loc">Translate with DeepL</span>
+                            </button>
+                        </div>
+                        <input id="post-loc-input" type="text" required placeholder="e.g. Remote, US" class="w-full bg-[var(--bg-viewport)] border border-theme rounded-xl p-3 text-primary-theme focus:outline-none">
+                        <!-- Preview of Translation -->
+                        <div id="preview-loc-box" class="hidden mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-emerald-400">
+                            <span id="preview-loc-text" class="italic">Translated location...</span>
+                            <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold uppercase" id="badge-loc-engine">DeepL Verified</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-violet-600 to-rose-500 hover:from-violet-700 hover:to-rose-600 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md">
+                        Publish Gig
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: GLOBAL SAFETY INFORMATION MODAL -->
+        <div id="safety-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 text-primary-theme">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-md w-full p-7 shadow-2xl space-y-4 relative">
+                <div class="flex justify-between items-center border-b border-theme pb-3">
+                    <h3 class="font-bold text-lg flex items-center space-x-2">
+                        <i data-lucide="shield-check" class="text-emerald-500 w-5 h-5"></i>
+                        <span>Vennamis Escrow Protection</span>
+                    </h3>
+                    <button onclick="closeSafetyModal()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div class="text-xs space-y-3 leading-relaxed text-secondary-theme">
+                    <p><strong>1. Anti-Scam Policy:</strong> All clients must lock funds into Escrow before contractors begin working. This guarantees you get paid 100% of the agreed amount.</p>
+                    <p><strong>2. ID Verification:</strong> No anonymous postings are allowed. Every user is verified via national credentials (KYC) or student credentials to prevent spam or phantom listings.</p>
+                    <p><strong>3. Private Communication:</strong> Avoid sharing Line, Telegram, or WhatsApp handles. External communication voids payment protection guarantees.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: HOW IT WORKS DOCUMENTATION (Locked on semantic contrast variables - Fixes light-theme unreadability!) -->
+        <div id="styles-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 text-primary-theme">
+            <div class="card-bg-theme border border-theme rounded-3xl max-w-lg w-full p-7 shadow-2xl space-y-4 relative transition-colors duration-300">
+                <div class="flex justify-between items-center border-b border-theme pb-3">
+                    <h3 class="font-bold text-lg flex items-center space-x-2">
+                        <i data-lucide="sparkles" class="text-violet-500 w-5 h-5"></i>
+                        <span data-i18n="stylesModalHeader" class="text-primary-theme">How Vennamis Works</span>
+                    </h3>
+                    <button onclick="closeStylesModal()" class="text-secondary-theme hover:text-primary-theme"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div class="text-xs space-y-4 leading-relaxed text-secondary-theme" id="styles-modal-body">
+                    <!-- Dynamic user manual texts injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- REAL RESPONSIVE BODY CONTAINER -->
+        <main class="flex-1 p-6 md:p-12 space-y-12">
+            <!-- HERO & LIVE SEARCH SECTION -->
+            <section class="py-12 max-w-5xl mx-auto text-center space-y-6">
+                <span class="inline-flex items-center space-x-1.5 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full text-xs font-semibold accent-text-theme">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    <span id="badge-text" data-i18n="badgeText">Verified Identity & Secured Escrow Payments</span>
+                </span>
+                
+                <!-- Headline Header utilizing TYPEWRITER animation (Fixed Layout Shift) -->
+                <h1 id="hero-title" class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight text-center">
+                    <!-- Static text on its own line to prevent horizontal shifting -->
+                    <span id="hero-title-static" class="block mb-2 sm:mb-4">Find trusted assistants and</span>
+                    
+                    <!-- Typewriter text wrapped in a fixed-height block to prevent vertical jumping -->
+                    <span class="block min-h-[1.2em]">
+                        <span id="rotate-word" class="accent-text-theme italic font-sans typing-cursor cursor-pointer" onclick="forceNextWord()"></span>
+                    </span>
+                </h1>
+                
+                <p id="hero-subtitle" class="text-sm sm:text-base text-secondary-theme max-w-xl mx-auto leading-relaxed" data-i18n="heroSubtitle">
+                    Connect with verified local helpers, students, and freelancers near you. Simple, safe, and designed for everyone.
+                </p>
+
+                <!-- Real-time Active Search Bar Component -->
+                <div class="pt-4 max-w-2xl mx-auto">
+                    <div class="card-bg-theme border border-theme p-2 rounded-2xl shadow-xl flex flex-col md:flex-row gap-2 transition-all">
+                        <div class="flex-1 flex items-center px-3 space-x-2 border-b md:border-b-0 md:border-r border-theme py-2">
+                            <i data-lucide="search" class="text-secondary-theme"></i>
+                            <input 
+                                id="search-input"
+                                oninput="filterGigs()"
+                                type="text" 
+                                placeholder="Search for services (e.g. Python, translation)..." 
+                                class="w-full text-sm text-primary-theme placeholder-slate-500 focus:outline-none bg-transparent"
+                            />
+                        </div>
+                        <div class="w-full md:w-48 flex items-center px-3 space-x-2 py-2">
+                            <i data-lucide="map-pin" class="text-secondary-theme w-5 h-5"></i>
+                            <select 
+                                id="category-filter"
+                                onchange="filterGigs()"
+                                class="w-full text-sm text-secondary-theme focus:outline-none bg-transparent appearance-none cursor-pointer"
+                            >
+                                <option value="all">All Categories</option>
+                                <option value="tech">Tech & VPN</option>
+                                <option value="design">Art & Design</option>
+                                <option value="writing">Translation</option>
+                                <option value="physical">Gardening</option>
+                                <option value="education">Tutoring</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACTIVE LIVE CARDS GRID -->
+            <section class="max-w-6xl mx-auto space-y-12">
+                <div class="space-y-6">
+                    <h2 class="text-lg font-bold text-primary-theme flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span data-i18n="recentRequests">Recent Active Requests</span>
+                    </h2>
+                    
+                    <!-- Cards Container -->
+                    <div id="gigs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Dynamic Content Injected Here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- DATA & INTERACTIVE LOGIC -->
+    <script>
+        // Local Simulated Database
+        const gigsData = [
+            {
+                id: "gig-1",
+                category: "tech",
+                price: 180.00,
+                tags: { en: "Remote Task", th: "งานระยะไกล" },
+                location: { en: "London, UK", th: "ลอนดอน, อังกฤษ" },
+                title: {
+                    en: "Lead UI/UX Architect for European FinTech",
+                    th: "ผู้นำสถาปัตยกรรม UI/UX สำหรับบริษัท FinTech ยุโรป"
+                },
+                desc: {
+                    en: "Establish design systems and aesthetic direction for our core desktop and mobile banking platform. Fully remote.",
+                    th: "จัดทำระบบดีไซน์ระบบและดูแลทิศทางความงามของแพลตฟอร์มการเงินทั้งบน PC และ Mobile ทำงานจากที่บ้านได้เลย"
+                },
+                badge: { en: "Spotlight Gig", th: "งานเด่นแนะนำ" }
+            },
+            {
+                id: "gig-2",
+                category: "design",
+                price: 350.00,
+                tags: { en: "Art & Design", th: "งานศิลปะและออกแบบ" },
+                location: { en: "Tokyo, Japan", th: "โตเกียว, ญี่ปุ่น" },
+                title: {
+                    en: "Design vintage coffee shop menu",
+                    th: "ออกแบบเมนูกาแฟสไตล์วินเทจ"
+                },
+                desc: {
+                    en: "Require a retro/hand-drawn look. Please attach your digital sketchbook link on submission.",
+                    th: "ต้องการงานสไตล์ย้อนยุค/วาดด้วยมือ กรุณาแนบลิงก์ผลงานของคุณตอนกดส่งใบสมัคร"
+                },
+                badge: { en: "Sub-Task", th: "งานย่อย" }
+            },
+            {
+                id: "gig-3",
+                category: "tech",
+                price: 450.00,
+                tags: { en: "System Setup", th: "ตั้งค่าระบบ" },
+                location: { en: "US West", th: "อเมริกาฝั่งตะวันตก" },
+                title: {
+                    en: "Deploy secure wireguard VPN system",
+                    th: "ติดตั้งระบบ VPN ความปลอดภัยสูง"
+                },
+                desc: {
+                    en: "Establish a secure WireGuard server on Debian 12. Must include config files for 10 users.",
+                    th: "สร้างระบบเซิร์ฟเวอร์ WireGuard ที่มีความปลอดภัยสูงบน Debian 12 พร้อมจัดทำไฟล์สำหรับการใช้งาน 10 สิทธิ์"
+                }
+            },
+            {
+                id: "gig-4",
+                category: "writing",
+                price: 80.00,
+                tags: { en: "Translation", th: "งานแปลภาษา" },
+                location: { en: "Singapore", th: "สิงคโปร์" },
+                title: {
+                    en: "Subtitles translation to Thai",
+                    th: "แปลซับไตเติลภาษาอังกฤษเป็นไทย"
+                },
+                desc: {
+                    en: "15-minute documentary about climate solutions. Simple vocabulary and natural phrasing.",
+                    th: "สารคดีเกี่ยวกับสิ่งแวดล้อมความยาว 15 นาที ใช้ภาษาที่เข้าใจง่ายและเป็นธรรมชาติ"
+                }
+            },
+            {
+                id: "gig-5",
+                category: "physical",
+                price: 120.00,
+                tags: { en: "Gardening", th: "ดูแลสวน" },
+                location: { en: "Berlin, Germany", th: "เบอร์ลิน, เยอรมนี" },
+                title: {
+                    en: "Help pruning backyard apple trees",
+                    th: "ช่วยตัดแต่งกิ่งต้นแอปเปิ้ลหลังบ้าน"
+                },
+                desc: {
+                    en: "Need help on a Saturday afternoon for light garden maintenance. Tools provided.",
+                    th: "ต้องการผู้ช่วยช่วงบ่ายวันเสาร์เพื่อดูแลสวนเบื้องต้น มีบันไดและกรรไกรตัดแต่งกิ่งให้พร้อม"
+                }
+            },
+            {
+                id: "gig-6",
+                category: "education",
+                price: 50.00,
+                tags: { en: "Companion", th: "ผู้ช่วยและเพื่อนคุย" },
+                location: { en: "Seattle, USA", th: "ซีแอตเทิล, สหรัฐฯ" },
+                title: {
+                    en: "Teach iPad functions to a granddad",
+                    th: "สอนคุณปู่ใช้งานแท็บเล็ต iPad"
+                },
+                desc: {
+                    en: "Patient local student wanted to teach my grandfather how to use FaceTime.",
+                    th: "ต้องการนักเรียนที่มีความอดทนมาช่วยสอนวิธีวิดีโอคอล FaceTime และส่งรูปภาพให้คุณปู่"
+                }
+            }
+        ];
+
+        // Dictionary Mapping for Localization
+        const translations = {
+            en: {
+                navExplore: "Explore Gigs",
+                navStyles: "How it Works",
+                navSafety: "Safety & Trust",
+                profVerified: "ID Verified Partner",
+                profLevel: "Community Standing",
+                profBalance: "Secure Hold Balance",
+                settingsTitle: "Preferences",
+                settingEscrow: "Auto Escrow Hold",
+                settingSafety: "2-Factor Security",
+                chatSupport: "Verified Secure Chat",
+                badgeText: "Verified Identity & Secured Escrow Payments",
+                heroTitleStatic: "Find trusted assistants and",
+                heroSubtitle: "Connect with verified local helpers, students, and freelancers near you. Simple, safe, and designed for everyone.",
+                recentRequests: "Recent Active Requests",
+                applyBtn: "Quick Apply",
+                inquireBtn: "Inquire",
+                noMatch: "No matches found. Try searching another keyword!",
+                notifHeader: "Notifications",
+                notifClear: "Clear All",
+                applyModalHeader: "Submit Your Proposal",
+                stylesModalHeader: "How Vennamis Works",
+                postBtn: "Post a Gig",
+                postModalHeader: "Post a New Gig Request",
+                postModalDesc: "Submit a validated workspace task for independent talent.",
+                transEngineLabel: "Preferred Translation API",
+                postTitlePlaceholder: "e.g. Logo Design",
+                postDescPlaceholder: "Explain the job description...",
+                postLocPlaceholder: "e.g. Remote, US",
+                stylesModalBody: `
+                    <p><strong>1. Search or Post:</strong> Browse hundreds of active jobs near you or post a request with what you need help with. Simple, clean, and zero spam.</p>
+                    <p><strong>2. Safe Escrow Deposit:</strong> Funds are safely deposited and held in escrow before any work begins. This protects both the helper and the client.</p>
+                    <p><strong>3. Verify & Release:</strong> Once the job is completed successfully and you are satisfied, click release to complete the secure payout.</p>
+                `
+            },
+            th: {
+                navExplore: "สำรวจงานใกล้ตัว",
+                navStyles: "ขั้นตอนการทำงาน",
+                navSafety: "ความปลอดภัยสากล",
+                profVerified: "ยืนยันตัวตนระดับ Partner",
+                profLevel: "คะแนนในระบบ",
+                profBalance: "ยอดเงินมัดจำความปลอดภัย",
+                settingsTitle: "การตั้งค่าผู้ใช้",
+                settingEscrow: "ระบบฝากมัดจำอัตโนมัติ",
+                settingSafety: "ความปลอดภัย 2 ชั้น",
+                chatSupport: "ฝ่ายบริการและดูแลความปลอดภัย",
+                badgeText: "ยืนยันตัวตนจริง และปลอดภัยด้วยระบบมัดจำเงิน Escrow",
+                heroTitleStatic: "ค้นหาผู้ช่วยที่ไว้ใจได้และ",
+                heroSubtitle: "เชื่อมต่อกับผู้ช่วยในพื้นที่ นักศึกษา และฟรีแลนซ์ที่ผ่านการยืนยันตัวตน ง่าย ปลอดภัย และออกแบบมาเพื่อทุกคน",
+                recentRequests: "งานอัปเดตล่าสุด",
+                applyBtn: "สมัครด่วน",
+                inquireBtn: "ติดต่อสอบถาม",
+                noMatch: "ไม่พบงานที่คุณค้นหา ลองเปลี่ยนคำค้นหาดูอีกครั้งนะครับ",
+                notifHeader: "แจ้งเตือนระบบ",
+                notifClear: "ล้างทั้งหมด",
+                applyModalHeader: "ส่งข้อเสนอราคาและรายละเอียดงาน",
+                stylesModalHeader: "ขั้นตอนการทำงานของ Vennamis",
+                postBtn: "ลงประกาศงาน",
+                postModalHeader: "ลงประกาศงานชิ้นใหม่",
+                postModalDesc: "ส่งคำขอประกาศจ้างงานที่ผ่านการตรวจสอบระบบมัดจำเงิน",
+                transEngineLabel: "เครื่องมือแปลภาษาที่เลือกใช้",
+                postTitlePlaceholder: "เช่น ออกแบบโลโก้สไตล์วินเทจ",
+                postDescPlaceholder: "อธิบายรายละเอียดงานที่ต้องการจ้าง...",
+                postLocPlaceholder: "เช่น ระยะไกล, กรุงเทพฯ",
+                stylesModalBody: `
+                    <p><strong>1. ค้นหาหรือลงประกาศ:</strong> เลือกดูงานนับร้อยรายการใกล้ตัวคุณ หรือลงประกาศเรื่องที่ต้องการความช่วยเหลือได้ทันที สะอาด ปลอดภัย และไร้สแปม</p>
+                    <p><strong>2. ฝากเงินมัดจำ Escrow:</strong> เงินค่าจ้างจะถูกเก็บรักษาอย่างปลอดภัยในระบบคนกลางก่อนเริ่มงานเสมอ เพื่อคุ้มครองทั้งผู้จ้างและผู้รับจ้าง</p>
+                    <p><strong>3. ตรวจรับงานและรับเงิน:</strong> เมื่องานเสร็จสิ้นเป็นที่เรียบร้อยและคุณพึงพอใจแล้ว กดยืนยันเพื่อโอนเงินค่าจ้างผ่านระบบที่ปลอดภัยได้ทันที</p>
+                `
+            }
+        };
+
+        // Words to rotate dynamically (Divergent 9 high-contrast keywords!)
+        const rotatingWords = {
+            en: [
+                "global work.", 
+                "independent talent.", 
+                "local helpers.", 
+                "student tutors.", 
+                "creative designers.", 
+                "trusted assistants.", 
+                "flexible gigs.", 
+                "secured escrow.",
+                "verified experts."
+            ],
+            th: [
+                "งานสากลทั่วโลก", 
+                "ฟรีแลนซ์ฝีมือดี", 
+                "ผู้ช่วยที่ไว้ใจได้ใกล้บ้าน", 
+                "นักศึกษาติวเตอร์", 
+                "นักออกแบบสร้างสรรค์", 
+                "ผู้ช่วยส่วนตัวที่ไว้ใจได้", 
+                "งานอิสระที่ยืดหยุ่น", 
+                "ระบบมัดจำเงินที่ปลอดภัย",
+                "ผู้เชี่ยวชาญที่ผ่านการยืนยัน"
+            ]
+        };
+
+        // Translation Simulation Database
+        const translationDictionary = {
+            "ออกแบบโลโก้": { en: "Premium Vintage Logo Design", th: "ออกแบบโลโก้สไตล์วินเทจ" },
+            "ติดตั้ง vpn": { en: "Deploy secure wireguard VPN system", th: "ติดตั้งระบบ VPN ความปลอดภัยสูง" },
+            "สอนพิเศษ": { en: "Academic Tutoring for Students", th: "สอนพิเศษเพิ่มเกรดวิชาการ" },
+            "ดูแลสวน": { en: "Help pruning backyard apple trees", th: "ช่วยตัดแต่งกิ่งต้นไม้และดูแลสวนหลังบ้าน" },
+            "แปลภาษา": { en: "Professional English to Thai Translation", th: "งานแปลภาษาอังกฤษเป็นไทยแบบมืออาชีพ" },
+            "ลอนดอน": { en: "London, UK", th: "ลอนดอน, อังกฤษ" },
+            "กรุงเทพ": { en: "Bangkok, Thailand", th: "กรุงเทพฯ, ประเทศไทย" },
+            "ระยะไกล": { en: "Remote (Work from Home)", th: "ทำงานระยะไกล (WFH)" },
+            "logo design": { en: "Premium Vintage Logo Design", th: "ออกแบบโลโก้สไตล์วินเทจ" },
+            "vpn setup": { en: "Deploy secure wireguard VPN system", th: "ติดตั้งระบบ VPN ความปลอดภัยสูง" },
+            "tutoring": { en: "Academic Tutoring for Students", th: "สอนพิเศษเพิ่มเกรดวิชาการ" },
+            "gardening": { en: "Help pruning backyard apple trees", th: "ช่วยตัดแต่งกิ่งต้นไม้และดูแลสวนหลังบ้าน" },
+            "translation": { en: "Professional English to Thai Translation", th: "งานแปลภาษาอังกฤษเป็นไทยแบบมืออาชีพ" }
+        };
+
+        let currentLang = 'en';
+        let isLoggedIn = false;
+        let currentUser = null;
+        let selectedGigId = null;
+        let activeTranslationEngine = 'deepl'; 
+        let bgSlideshowInterval = null; 
+
+        // Typewriter State Variables
+        let wordIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeTimeout = null;
+
+        let notifications = [
+            { id: 1, text: { en: "Welcome to Vennamis! Verify your account in profile.", th: "ยินดีต้อนรับสู่ Vennamis! กรุณาตรวจสอบข้อมูลบัญชีในแถบโปรไฟล์" }, time: { en: "1h ago", th: "1 ชม. ที่แล้ว" }, read: false }
+        ];
+
+        let activeTranslations = {
+            title: { en: "", th: "" },
+            desc: { en: "", th: "" },
+            loc: { en: "", th: "" }
+        };
+
+        // Initialize Icons & Renders (Wrapped in safe Try-Catch to prevent offline script crashes)
+        try {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        } catch (e) {
+            console.warn("Lucide icons load blocked:", e);
+        }
+
+        try {
+            renderGigs(gigsData);
+            updateNotificationsUI();
+            typeWriterEffect(); // Fire Typewriter animation loop
+            runBackgroundSlideshow(); // Fire Background slideshow image loop
+            updateEngineLabels();
+            
+            const manualBody = document.getElementById('styles-modal-body');
+            if (manualBody) {
+                manualBody.innerHTML = translations['en'].stylesModalBody;
+            }
+        } catch (e) {
+            console.error("Bootstrapping execution error caught:", e);
+        }
+
+        // 100% BULLETPROOF TYPEWRITER ENGINE (Pure JS)
+        function typeWriterEffect() {
+            const rotateSpan = document.getElementById('rotate-word');
+            if (!rotateSpan) return;
+
+            const currentList = rotatingWords[currentLang] || rotatingWords['en'];
+            const currentWord = currentList[wordIndex];
+
+            if (isDeleting) {
+                // Remove a character
+                rotateSpan.innerText = currentWord.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                // Add a character
+                rotateSpan.innerText = currentWord.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            // Determine typing speed
+            let typeSpeed = isDeleting ? 40 : 100; // Delete faster than typing
+
+            // If word is complete
+            if (!isDeleting && charIndex === currentWord.length) {
+                typeSpeed = 2500; // Pause at the end of the word for 2.5s
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % currentList.length;
+                typeSpeed = 500; // Pause before typing next word
+            }
+
+            typeTimeout = setTimeout(typeWriterEffect, typeSpeed);
+        }
+
+        // Force skip to next word when user clicks the typing text
+        function forceNextWord() {
+            if (typeTimeout) clearTimeout(typeTimeout);
+            isDeleting = true;
+            typeWriterEffect();
+        }
+
+        // Live Background Slideshow Engine (Auto transition images every 5s)
+        function runBackgroundSlideshow() {
+            if (bgSlideshowInterval) clearInterval(bgSlideshowInterval);
+            let activeSlide = 1;
+            const totalSlides = 3;
+
+            bgSlideshowInterval = setInterval(() => {
+                const currentSlideEl = document.getElementById(`slide-${activeSlide}`);
+                if (currentSlideEl) currentSlideEl.style.opacity = "0";
+                
+                activeSlide = (activeSlide % totalSlides) + 1;
+                
+                const nextSlideEl = document.getElementById(`slide-${activeSlide}`);
+                if (nextSlideEl) nextSlideEl.style.opacity = "1";
+            }, 5000); // SET TO EXACTLY 5 SECONDS!
+        }
+
+        // Render Gigs function (Generates unified card designs with zero style mismatches)
+        function renderGigs(data) {
+            const grid = document.getElementById('gigs-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 border border-dashed border-theme rounded-2xl">
+                        <p class="text-sm text-secondary-theme">${translations[currentLang].noMatch}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(gig => {
+                const title = gig.title[currentLang] || gig.title['en'];
+                const desc = gig.desc[currentLang] || gig.desc['en'];
+                const tag = gig.tags[currentLang] || gig.tags['en'];
+                const loc = gig.location[currentLang] || gig.location['en'];
+                const applyBtnText = gig.category === 'writing' ? translations[currentLang].applyBtn : gig.category === 'physical' || gig.category === 'education' ? translations[currentLang].inquireBtn : translations[currentLang].applyBtn;
+
+                // Restored Hover Physics - Lifts up noticeable 2px + deep 2xl shadows! (0 visual regressions)
+                const cardHtml = `
+                    <div class="card-bg-theme border border-theme hover:border-[var(--accent-color)] hover:-translate-y-2 hover:shadow-2xl rounded-3xl p-6 transition-all duration-500 flex flex-col justify-between h-[260px] shadow-lg group cursor-pointer" onclick="openApplyModal('${gig.id}')">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-[10px] font-bold text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-full uppercase">${gig.badge ? gig.badge[currentLang] : tag}</span>
+                                <span class="text-primary-theme font-bold text-sm">$${gig.price.toFixed(2)}</span>
+                            </div>
+                            <h4 class="text-base font-bold text-primary-theme group-hover:accent-text-theme transition leading-snug">${title}</h4>
+                            <p class="text-xs text-secondary-theme mt-2 line-clamp-2 leading-relaxed">${desc}</p>
+                        </div>
+                        <div class="pt-4 border-t border-theme flex justify-between items-center">
+                            <span class="text-[10px] text-secondary-theme">${loc}</span>
+                            <button class="text-xs font-bold text-secondary-theme group-hover:accent-text-theme flex items-center transition">
+                                <span>${applyBtnText}</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 ml-1 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            try {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (e) {}
+        }
+
+        // Search & Category Filter Action logic
+        function filterGigs() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+
+            const filtered = gigsData.filter(gig => {
+                const titleText = (gig.title[currentLang] || gig.title['en']).toLowerCase();
+                const descText = (gig.desc[currentLang] || gig.desc['en']).toLowerCase();
+                
+                const matchesSearch = titleText.includes(query) || descText.includes(query);
+                const matchesCategory = category === 'all' || gig.category === category;
+
+                return matchesSearch && matchesCategory;
+            });
+
+            renderGigs(filtered);
+        }
+
+        // Language Translation logic (Safe Reset for Typewriter)
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const data = translations[lang];
+            if (!data) return;
+
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (data[key]) {
+                    element.innerHTML = data[key];
+                }
+            });
+
+            // Update Headline
+            document.getElementById('hero-title-static').innerText = data.heroTitleStatic;
+            
+            // SAFELY RESET TYPEWRITER EFFECT TO PREVENT BUGS
+            if (typeTimeout) clearTimeout(typeTimeout);
+            wordIndex = 0;
+            charIndex = 0;
+            isDeleting = false;
+            const rotateSpan = document.getElementById('rotate-word');
+            if (rotateSpan) {
+                rotateSpan.innerText = ''; // Clear current text
+                typeWriterEffect(); // Restart typing in new language
+            }
+            
+            document.getElementById('search-input').placeholder = lang === 'en' ? "Search for services (e.g. Python, translation)..." : "พิมพ์ค้นหาบริการที่คุณต้องการ... (เช่น สอนพิเศษ, ดูแลสวน)";
+            
+            const manualBody = document.getElementById('styles-modal-body');
+            if (manualBody) manualBody.innerHTML = data.stylesModalBody;
+
+            const titleInput = document.getElementById('post-title-input');
+            const descInput = document.getElementById('post-desc-input');
+            const locInput = document.getElementById('post-loc-input');
+            if (titleInput) titleInput.placeholder = data.postTitlePlaceholder;
+            if (descInput) descInput.placeholder = data.postDescPlaceholder;
+            if (locInput) locInput.placeholder = data.postLocPlaceholder;
+
+            filterGigs();
+            updateNotificationsUI();
+            updateEngineLabels();
+        }
+
+        // Theme Switcher Logic
+        function changeTheme(theme) {
+            const body = document.body;
+            const btnLight = document.getElementById('theme-light');
+            const btnDark = document.getElementById('theme-dark');
+            const btnLuxury = document.getElementById('theme-luxury');
+            
+            const orb1 = document.getElementById('ambient-orb-1');
+            const orb2 = document.getElementById('ambient-orb-2');
+            const orb3 = document.getElementById('ambient-orb-3');
+            const orb4 = document.getElementById('ambient-orb-4');
+
+            btnLight.classList.remove('bg-slate-800/40', 'text-amber-500');
+            btnDark.classList.remove('bg-slate-800/40', 'text-violet-400');
+            btnLuxury.classList.remove('bg-slate-800/40', 'text-yellow-500');
+
+            body.classList.remove('theme-light', 'theme-luxury');
+
+            if (theme === 'light') {
+                btnLight.classList.add('bg-slate-800/40', 'text-amber-500');
+                body.classList.add('theme-light');
+                
+                body.classList.remove('dot-grid');
+                body.classList.add('dot-grid-light');
+                
+                if(orb1) orb1.style.backgroundColor = 'rgba(245, 158, 11, 0.06)';
+                if(orb2) orb2.style.backgroundColor = 'rgba(251, 113, 133, 0.04)';
+                if(orb3) orb3.style.backgroundColor = 'rgba(16, 185, 129, 0.03)';
+                if(orb4) orb4.style.backgroundColor = 'rgba(168, 85, 247, 0.02)';
+                
+                document.getElementById('bg-mask').style.backgroundColor = "rgba(250, 249, 246, 0.88)";
+            } else if (theme === 'dark') {
+                btnDark.classList.add('bg-slate-800/40', 'text-violet-400');
+                
+                body.classList.remove('dot-grid-light');
+                body.classList.add('dot-grid');
+                
+                if(orb1) orb1.style.backgroundColor = 'rgba(79, 70, 229, 0.15)';
+                if(orb2) orb2.style.backgroundColor = 'rgba(244, 63, 94, 0.1)';
+                if(orb3) orb3.style.backgroundColor = 'rgba(20, 184, 166, 0.08)';
+                if(orb4) orb4.style.backgroundColor = 'rgba(124, 58, 237, 0.05)';
+                
+                document.getElementById('bg-mask').style.backgroundColor = "rgba(9, 11, 17, 0.82)";
+            } else if (theme === 'luxury') {
+                btnLuxury.classList.add('bg-slate-800/40', 'text-yellow-500');
+                body.classList.add('theme-luxury');
+                
+                body.classList.remove('dot-grid-light');
+                body.classList.add('dot-grid');
+                
+                if(orb1) orb1.style.backgroundColor = 'rgba(234, 179, 8, 0.08)';
+                if(orb2) orb2.style.backgroundColor = 'rgba(249, 115, 22, 0.05)';
+                if(orb3) orb3.style.backgroundColor = 'rgba(180, 83, 9, 0.06)';
+                if(orb4) orb4.style.backgroundColor = 'rgba(251, 113, 133, 0.03)';
+                
+                document.getElementById('bg-mask').style.backgroundColor = "rgba(14, 12, 10, 0.88)";
+            }
+            
+            filterGigs();
+        }
+
+        // Toggle dropdown panels
+        function toggleSettingsMenu() {
+            document.getElementById('settings-panel').classList.toggle('hidden');
+            document.getElementById('profile-panel').classList.add('hidden');
+            document.getElementById('notifications-panel').classList.add('hidden');
+        }
+
+        function toggleProfileMenu() {
+            document.getElementById('profile-panel').classList.toggle('hidden');
+            document.getElementById('settings-panel').classList.add('hidden');
+            document.getElementById('notifications-panel').classList.add('hidden');
+        }
+
+        function toggleNotificationsMenu() {
+            document.getElementById('notifications-panel').classList.toggle('hidden');
+            document.getElementById('settings-panel').classList.add('hidden');
+            document.getElementById('profile-panel').classList.add('hidden');
+            
+            notifications.forEach(n => n.read = true);
+            updateNotificationsUI();
+        }
+
+        function toggleChatWindow() {
+            document.getElementById('chat-window').classList.toggle('hidden');
+        }
+
+        // Mock chat reply engine
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const container = document.getElementById('chat-messages');
+            if (input.value.trim() === '') return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'bg-violet-600 text-white p-2.5 rounded-xl ml-8 self-end text-right';
+            userMsg.innerText = input.value;
+            container.appendChild(userMsg);
+
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            setTimeout(() => {
+                const replyMsg = document.createElement('div');
+                replyMsg.className = 'bg-slate-800/40 border border-theme p-2.5 rounded-xl text-secondary-theme';
+                replyMsg.innerText = "Message transmitted safely via secure protocol.";
+                container.appendChild(replyMsg);
+                container.scrollTop = container.scrollHeight;
+                try {
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                } catch (e) {}
+            }, 1200);
+        }
+
+        // --- DYNAMIC INTERACTIVE FUNCTIONS ---
+
+        function updateNotificationsUI() {
+            const list = document.getElementById('notifications-list');
+            const dot = document.getElementById('bell-dot');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const unreadCount = notifications.filter(n => !n.read).length;
+            if (unreadCount > 0) {
+                if (dot) dot.classList.remove('hidden');
+            } else {
+                if (dot) dot.classList.add('hidden');
+            }
+
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <p class="text-xs text-secondary-theme text-center py-4">No new notifications</p>
+                `;
+                return;
+            }
+
+            [...notifications].reverse().forEach(n => {
+                const text = n.text[currentLang] || n.text['en'];
+                const time = n.time[currentLang] || n.time['en'];
+                
+                const notifHtml = `
+                    <div class="p-2.5 rounded-xl border border-theme bg-slate-800/20 text-xs flex flex-col gap-1 ${!n.read ? 'border-[var(--accent-color)]/30' : ''}">
+                        <p class="font-medium text-primary-theme leading-relaxed">${text}</p>
+                        <span class="text-[10px] text-secondary-theme self-end">${time}</span>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', notifHtml);
+            });
+        }
+
+        function clearNotifications() {
+            notifications = [];
+            updateNotificationsUI();
+        }
+
+        function pushNotification(enText, thText) {
+            const newNotif = {
+                id: Date.now(),
+                text: { en: enText, th: thText },
+                time: { en: "Just now", th: "เมื่อสักครู่" },
+                read: false
+            };
+            notifications.push(newNotif);
+            updateNotificationsUI();
+        }
+
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+
+            if (email === "admin@auratalent.com" && pass === "admin1234") {
+                isLoggedIn = true;
+                currentUser = {
+                    name: "Admin Aura",
+                    role: "Platform Administrator",
+                    avatar: "AA",
+                    balance: "$9,999.00"
+                };
+
+                updateUserInterface(true);
+                closeLoginModal();
+                
+                pushNotification(
+                    "Admin Access activated. Escrow configurations unlocked.",
+                    "สิทธิ์แอดมินเปิดใช้งานแล้ว ปลดล็อกระบบการตั้งค่า Escrow"
+                );
+                
+                alert("Login successful! Welcome, Admin Aura.");
+            } else {
+                alert("Error: Unauthorized credentials. For testing, please click 'Auto-Fill' to use the Admin account.");
+            }
+        }
+
+        function handleLogout() {
+            isLoggedIn = false;
+            currentUser = null;
+            updateUserInterface(false);
+            
+            pushNotification(
+                "Logged out. Returned to Guest secure browsing.",
+                "ออกจากระบบแล้ว ระบบเปลี่ยนกลับมาเป็นบัญชีผู้เยี่ยมชมแบบปลอดภัย"
+            );
+            alert("Logged out successfully.");
+        }
+
+        function toggle2FASettings(checked) {
+            const badge = document.getElementById('settings-2fa-badge');
+            if (checked) {
+                if (badge) {
+                    badge.innerText = "ACTIVE";
+                    badge.className = "text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded font-bold";
+                }
+                pushNotification("2-Factor Security enabled.", "ระบบยืนยันตัวตน 2 ชั้นเปิดใช้งานแล้ว");
+            } else {
+                if (badge) {
+                    badge.innerText = "INACTIVE";
+                    badge.className = "text-[10px] bg-slate-500/10 text-slate-500 px-2 py-0.5 rounded font-bold";
+                }
+                pushNotification("Warning: 2-Factor Security disabled.", "แจ้งเตือน: ระบบยืนยันตัวตน 2 ชั้นถูกปิดการใช้งาน");
+            }
+        }
+
+        function changeTranslationEngine(engine) {
+            activeTranslationEngine = engine;
+            updateEngineLabels();
+            
+            let engineName = getActiveEngineName();
+            
+            pushNotification(
+                `System: Translation engine switched to ${engineName}.`,
+                `ระบบ: เปลี่ยนแปลงเครื่องมือแปลภาษาเป็น ${engineName} แล้ว`
+            );
+            alert(`Translation Engine switched to: ${engineName}`);
+        }
+
+        function getActiveEngineName() {
+            if (activeTranslationEngine === 'deepl') return "DeepL Pro API";
+            if (activeTranslationEngine === 'google') return "Google Translate";
+            return "Aura GPT-4o AI";
+        }
+
+        function updateEngineLabels() {
+            const engineName = getActiveEngineName();
+            
+            const btnTitle = document.getElementById('btn-trans-title');
+            const btnDesc = document.getElementById('btn-trans-desc');
+            const btnLoc = document.getElementById('btn-trans-loc');
+            if (btnTitle) btnTitle.innerText = currentLang === 'en' ? `Translate with ${engineName}` : `แปลด้วย ${engineName}`;
+            if (btnDesc) btnDesc.innerText = currentLang === 'en' ? `Translate with ${engineName}` : `แปลด้วย ${engineName}`;
+            if (btnLoc) btnLoc.innerText = currentLang === 'en' ? `Translate with ${engineName}` : `แปลด้วย ${engineName}`;
+            
+            const badgeTitle = document.getElementById('badge-title-engine');
+            const badgeDesc = document.getElementById('badge-desc-engine');
+            const badgeLoc = document.getElementById('badge-loc-engine');
+            if (badgeTitle) badgeTitle.innerText = `${engineName} Verified`;
+            if (badgeDesc) badgeDesc.innerText = `${engineName} Verified`;
+            if (badgeLoc) badgeLoc.innerText = `${engineName} Verified`;
+        }
+
+        function triggerAutoTranslate(field) {
+            let val = "";
+            let targetLang = "";
+            let sourceLang = "";
+
+            if (field === 'title') {
+                val = document.getElementById('post-title-input').value.trim();
+            } else if (field === 'desc') {
+                val = document.getElementById('post-desc-input').value.trim();
+            } else {
+                val = document.getElementById('post-loc-input').value.trim();
+            }
+
+            if (!val) {
+                alert(currentLang === 'en' ? "Please type something first before translating!" : "กรุณากรอกข้อความก่อนคลิกแปลภาษาครับ!");
+                return;
+            }
+
+            const isEnglish = /^[A-Za-z0-9\s,.\-*+()'"?;&]+$/.test(val);
+            sourceLang = isEnglish ? 'en' : 'th';
+            targetLang = isEnglish ? 'th' : 'en';
+
+            let translatedValue = "";
+            let found = false;
+            const normalizedVal = val.toLowerCase();
+            for (let key in translationDictionary) {
+                if (normalizedVal.includes(key)) {
+                    translatedValue = translationDictionary[key][targetLang];
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                const engineName = getActiveEngineName();
+                if (targetLang === 'en') {
+                    translatedValue = `[Auto-Translated via ${engineName}] ` + val;
+                } else {
+                    translatedValue = `[แปลอัตโนมัติด้วย ${engineName}] ` + val;
+                }
+            }
+
+            activeTranslations[field][sourceLang] = val;
+            activeTranslations[field][targetLang] = translatedValue;
+
+            const previewBox = document.getElementById(`preview-${field}-box`);
+            const previewText = document.getElementById(`preview-${field}-text`);
+            
+            if (previewText) previewText.innerText = translatedValue;
+            if (previewBox) previewBox.classList.remove('hidden'); 
+        }
+
+        function openApplyModal(gigId) {
+            if (!isLoggedIn) {
+                alert("Trust Policy: To protect our freelancers and clients, please log in first.");
+                openLoginModal();
+                return;
+            }
+
+            selectedGigId = gigId;
+            const gig = gigsData.find(g => g.id === gigId);
+            if (!gig) return;
+
+            const title = gig.title[currentLang] || gig.title['en'];
+            document.getElementById('apply-job-title').innerText = title;
+            document.getElementById('apply-pitch').value = '';
+            document.getElementById('apply-bid').value = gig.price;
+            document.getElementById('apply-days').value = 3;
+
+            document.getElementById('apply-modal').classList.remove('hidden');
+        }
+
+        function closeApplyModal() {
+            document.getElementById('apply-modal').classList.add('hidden');
+        }
+
+        function handleApplySubmit(event) {
+            event.preventDefault();
+            const gig = gigsData.find(g => g.id === selectedGigId);
+            if (!gig) return;
+
+            const title = gig.title[currentLang] || gig.title['en'];
+            const bid = document.getElementById('apply-bid').value;
+
+            closeApplyModal();
+
+            pushNotification(
+                `Proposal submitted for: "${title}" at bid of $${bid}. Escrow verifying.`,
+                `ส่งข้อเสนอสำหรับงาน: "${title}" ที่ราคา $${bid} สำเร็จแล้ว ระบบ Escrow กำลังตรวจสอบ`
+            );
+
+            alert("Proposal submitted successfully! Check your notification bell.");
+        }
+
+        function openPostGigModal() {
+            if (!isLoggedIn) {
+                alert("Authentication Required: Please login as Admin Aura to post a new validated gig.");
+                openLoginModal();
+                return;
+            }
+            
+            document.getElementById('post-title-input').value = '';
+            document.getElementById('post-desc-input').value = '';
+            document.getElementById('post-loc-input').value = '';
+            
+            document.getElementById('preview-title-box').classList.add('hidden');
+            document.getElementById('preview-desc-box').classList.add('hidden');
+            document.getElementById('preview-loc-box').classList.add('hidden');
+
+            activeTranslations = {
+                title: { en: "", th: "" },
+                desc: { en: "", th: "" },
+                loc: { en: "", th: "" }
+            };
+
+            document.getElementById('post-gig-modal').classList.remove('hidden');
+        }
+
+        function closePostGigModal() {
+            document.getElementById('post-gig-modal').classList.add('hidden');
+        }
+
+        function handlePostGigSubmit(event) {
+            event.preventDefault();
+            
+            const category = document.getElementById('post-category').value;
+            const price = parseFloat(document.getElementById('post-price').value);
+
+            let titleEn = activeTranslations.title.en;
+            let titleTh = activeTranslations.title.th;
+            let descEn = activeTranslations.desc.en;
+            let descTh = activeTranslations.desc.th;
+            let locEn = activeTranslations.loc.en;
+            let locTh = activeTranslations.loc.th;
+
+            if (!titleEn || !titleTh) {
+                const typed = document.getElementById('post-title-input').value.trim();
+                const isEnglish = /^[A-Za-z0-9\s,.\-*+()'"?;&]+$/.test(typed);
+                if (isEnglish) {
+                    titleEn = typed;
+                    titleTh = `[แปลออโต้] ` + typed;
+                } else {
+                    titleTh = typed;
+                    descEn = `[Auto-Translated] ` + typed;
+                }
+            }
+
+            if (!descEn || !descTh) {
+                const typed = document.getElementById('post-desc-input').value.trim();
+                const isEnglish = /^[A-Za-z0-9\s,.\-*+()'"?;&]+$/.test(typed);
+                if (isEnglish) {
+                    descEn = typed;
+                    descTh = `[แปลออโต้] ` + typed;
+                } else {
+                    descTh = typed;
+                    descEn = `[Auto-Translated] ` + typed;
+                }
+            }
+
+            if (!locEn || !locTh) {
+                const typed = document.getElementById('post-loc-input').value.trim();
+                const isEnglish = /^[A-Za-z0-9\s,.\-*+()'"?;&]+$/.test(typed);
+                if (isEnglish) {
+                    locEn = typed;
+                    locTh = `[แปลออโต้] ` + typed;
+                } else {
+                    locTh = typed;
+                    locEn = `[Auto-Translated] ` + typed;
+                }
+            }
+
+            const newGigId = "gig-" + (gigsData.length + 1);
+
+            const newGig = {
+                id: newGigId,
+                category: category,
+                price: price,
+                tags: { en: category.charAt(0).toUpperCase() + category.slice(1), th: category === 'tech' ? 'เทคโนโลยี' : category === 'design' ? 'การออกแบบ' : category === 'writing' ? 'งานแปลภาษา' : category === 'physical' ? 'งานแรงงาน' : 'การเรียนการสอน' },
+                location: { en: locEn, th: locTh },
+                title: { en: titleEn, th: titleTh },
+                desc: { en: descEn, th: descTh }
+            };
+
+            gigsData.push(newGig);
+            
+            closePostGigModal();
+            filterGigs(); 
+
+            pushNotification(
+                `New gig published: "${titleEn}" with budget $${price}. Secure Escrow activated.`,
+                `ลงประกาศงานชิ้นใหม่สำเร็จ: "${titleTh}" ที่งบประมาณ $${price} เปิดระบบ Escrow แล้ว`
+            );
+
+            alert("New Gig Request Published Successfully! Check your dashboard/feed.");
+        }
+
+        function openSafetyModal() { document.getElementById('safety-modal').classList.remove('hidden'); }
+        function closeSafetyModal() { document.getElementById('safety-modal').classList.add('hidden'); }
+        function openStylesModal() { document.getElementById('styles-modal').classList.remove('hidden'); }
+        function closeStylesModal() { document.getElementById('styles-modal').classList.add('hidden'); }
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('settings-panel').classList.add('hidden');
+            document.getElementById('profile-panel').classList.add('hidden');
+            document.getElementById('notifications-panel').classList.add('hidden');
+        }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        function autoFillAdmin() {
+            document.getElementById('login-email').value = "admin@auratalent.com";
+            document.getElementById('login-pass').value = "admin1234";
+        }
+
+        function updateUserInterface(loggedIn) {
+            const authZone = document.getElementById('user-auth-zone');
+            
+            if (loggedIn) {
+                authZone.innerHTML = `
+                    <button onclick="toggleProfileMenu()" class="flex items-center space-x-2 p-1.5 rounded-xl border border-theme text-secondary-theme hover:text-primary-theme transition hover:bg-slate-800/20">
+                        <div id="nav-avatar" class="w-7 h-7 bg-gradient-to-tr from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">AA</div>
+                        <span id="nav-username" class="text-xs font-bold hidden sm:inline text-primary-theme">Admin Aura</span>
+                    </button>
+                `;
+
+                document.getElementById('prof-avatar').innerText = currentUser.avatar;
+                document.getElementById('prof-username').innerText = currentUser.name;
+                document.getElementById('prof-role-text').innerText = currentUser.role;
+                document.getElementById('prof-balance').innerText = currentUser.balance;
+                document.getElementById('prof-balance').className = "font-bold text-yellow-500"; 
+            } else {
+                authZone.innerHTML = `
+                    <button onclick="openLoginModal()" id="nav-login-btn" class="bg-gradient-to-r from-violet-600 to-rose-500 hover:from-violet-700 hover:to-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-md">
+                        Login
+                    </button>
+                `;
+                document.getElementById('profile-panel').classList.add('hidden');
+            }
+            try {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>

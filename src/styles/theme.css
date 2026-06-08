@@ -1,0 +1,66 @@
+/* CSS Variables mapping to the simulated viewport container */
+#device-viewport {
+    /* Default Cyber Dark Theme variables */
+    --bg-viewport: #090B11;
+    --bg-card: #111422;
+    --bg-header: rgba(13, 15, 23, 0.5);
+    --bg-mask-color: rgba(9, 11, 17, 0.82);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-color: #1E293B;
+    --accent-color: #10B981;
+    --accent-hover: #059669;
+    
+    background-color: var(--bg-viewport);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#device-viewport.theme-light {
+    /* Clean Minimal Light Theme variables */
+    --bg-viewport: #FAF9F6;
+    --bg-card: #FFFFFF;
+    --bg-header: rgba(250, 249, 246, 0.65);
+    --bg-mask-color: rgba(250, 249, 246, 0.88);
+    --text-primary: #12141C;
+    --text-secondary: #5C6470;
+    --border-color: #E2E8F0;
+    --accent-color: #059669;
+    --accent-hover: #047857;
+}
+
+#device-viewport.theme-luxury {
+    /* Champagne Gold Theme variables */
+    --bg-viewport: #0E0C0A;
+    --bg-card: #1A1512;
+    --bg-header: rgba(14, 12, 10, 0.6);
+    --bg-mask-color: rgba(14, 12, 10, 0.88);
+    --text-primary: #F7EFE5;
+    --text-secondary: #C8B9A6;
+    --border-color: #3A2E24;
+    --accent-color: #D4AF37;
+    --accent-hover: #AA8B2C;
+}
+
+/* Custom pure CSS transitions for React slideshow and text rotator */
+.slide-image {
+    transition: opacity 1.8s ease-in-out !important;
+}
+
+.word-fade {
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dot-grid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+.dot-grid-light {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
