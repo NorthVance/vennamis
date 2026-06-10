@@ -11,7 +11,6 @@ export default function Modals() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        // จำลองการล็อกอินสำเร็จ
         setState({ ...state, user: { name: "Admin Vennamis", avatar: "AV" }, activeModal: null });
     };
 
@@ -19,7 +18,6 @@ export default function Modals() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal}></div>
             
-            {/* LOGIN MODAL */}
             {state.activeModal === 'login' && (
                 <div className="glass-panel border border-[var(--border-line)] rounded-[2rem] w-full max-w-md p-8 relative shadow-2xl z-10 animate-[pulseGlow_0.3s_ease-out]">
                     <button onClick={closeModal} className="absolute top-6 right-6 text-sub hover:text-prime"><X size={20} /></button>
@@ -40,7 +38,6 @@ export default function Modals() {
                 </div>
             )}
 
-            {/* POST GIG MODAL */}
             {state.activeModal === 'post' && (
                 <div className="glass-panel border border-[var(--border-line)] rounded-[2rem] w-full max-w-2xl p-8 relative shadow-2xl z-10">
                     <button onClick={closeModal} className="absolute top-6 right-6 text-sub hover:text-prime"><X size={20} /></button>

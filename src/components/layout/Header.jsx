@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-// แก้ไข Path ถอยหลังแค่ 2 ชั้น (จาก components/layout ไป src)
 import { AppContext } from '../../App';
 import { Bell, MessageSquare, Settings, PlusCircle, Sun, Moon, Sparkles } from 'lucide-react';
 
