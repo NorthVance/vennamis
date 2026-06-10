@@ -11,10 +11,10 @@ export const AppContext = createContext();
 export default function App() {
     const [state, setState] = useState({
         lang: 'en',
-        theme: 'light', 
+        theme: 'light',
         view: 'gigs',
         user: null,
-        activeModal: null, 
+        activeModal: null,
         isChatOpen: false,
         chatHost: null,
         gigsData: initialGigsData
@@ -30,8 +30,8 @@ export default function App() {
         <AppContext.Provider value={{ state, setState, t }}>
             <div className="cyber-grid-container"></div>
             <div className="cyber-vignette"></div>
-            <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1]"></div>
-            <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1]" style={{animationDelay: '1.5s'}}></div>
+            <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-pulse-glow z-[-1]"></div>
+            <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-pulse-glow z-[-1]" style={{animationDelay: '1.5s'}}></div>
 
             <div className="relative flex flex-col min-h-screen z-10">
                 <Header />
