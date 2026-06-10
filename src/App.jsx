@@ -1,44 +1,50 @@
-import React, { useState, useEffect, createContext } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
 import './styles/theme.css';
-import { initialGigsData, sysTranslations } from './assets/glows/store';
 
 export const AppContext = createContext();
 
 export default function App() {
-    const [state, setState] = useState({
-        lang: 'en',
-        theme: 'light',
-        view: 'gigs',
-        user: null,
-        activeModal: null,
-        isChatOpen: false,
-        chatHost: null,
-        gigsData: initialGigsData
-    });
+  const [state, setState] = useState({
+    lang: 'en',
+    theme: 'light',
+    view: 'gigs',
+    user: null,
+    activeModal: null,
+    isChatOpen: false,
+    chatHost: null
+  });
 
-    useEffect(() => {
-        document.body.className = `theme-${state.theme} antialiased overflow-x-hidden`;
-    }, [state.theme]);
+  // Effect สำหรับสลับธีมที่ body class
+  useEffect(() => {
+    document.body.className = `theme-${state.theme} antialiased`;
+  }, [state.theme]);
 
-    const t = sysTranslations[state.lang];
+  // Translate Helper (จำลอง API)
+  const t = (key) => {
+    const dict = require('./assets/glows/store').sysTranslations;
+    return dict[state.lang]?.[key] || dict['en'][key] || key;
+  };
 
-    return (
-        <AppContext.Provider value={{ state, setState, t }}>
-            <div className="cyber-grid-container"></div>
-            <div className="cyber-vignette"></div>
-            <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-pulse-glow z-[-1]"></div>
-            <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-pulse-glow z-[-1]" style={{animationDelay: '1.5s'}}></div>
+  return (
+    <AppContext.Provider value={{ state, setState, t }}>
+      {/* Background System */}
+      <div className="fixed inset-0 z-[-2] opacity-60 bg-[linear-gradient(var(--grid-color)_1px,transparent_1px),linear-gradient(90deg,var(--grid-color)_1px,transparent_1px)] bg-[size:50px_50px] animate-cyber-pan" style={{ transform: 'perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px)' }}></div>
+      <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,transparent_0%,var(--bg-base)_80%)]"></div>
+      <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-pulse-glow z-[-1]"></div>
 
-            <div className="relative flex flex-col min-h-screen z-10">
-                <Header />
-                <Home />
-                <Modals />
-                <ChatWidget />
-            </div>
-        </AppContext.Provider>
-    );
+      {/* Main Layout */}
+      <div className="relative flex flex-col min-h-screen z-10">
+        <Header />
+        <Home />
+      </div>
+
+      {/* Overlays */}
+      <ChatWidget />
+      <Modals />
+    </AppContext.Provider>
+  );
 }
