@@ -1,66 +1,63 @@
-/* CSS Variables mapping to the simulated viewport container */
-#device-viewport {
-    /* Default Cyber Dark Theme variables */
-    --bg-viewport: #090B11;
-    --bg-card: #111422;
-    --bg-header: rgba(13, 15, 23, 0.5);
-    --bg-mask-color: rgba(9, 11, 17, 0.82);
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --border-color: #1E293B;
-    --accent-color: #10B981;
-    --accent-hover: #059669;
-    
-    background-color: var(--bg-viewport);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+/* CORE ARCHITECTURE: Dynamic Theming & Contrast Lock */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --bg-base: #05070A; --bg-surface: #0B0F19; --bg-glass: rgba(11, 15, 25, 0.85);
+    --text-main: #FFFFFF; --text-muted: #8B949E; --border-line: #1F2937;
+    --primary-glow: #10B981; --grid-color: rgba(16, 185, 129, 0.1);
+}
+body.theme-light {
+    --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.95);
+    --text-main: #0F172A; --text-muted: #64748B; --border-line: #E2E8F0;
+    --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.08);
+}
+body.theme-luxury {
+    --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.9);
+    --text-main: #FDF8F5; --text-muted: #B4A596; --border-line: #3A2E24;
+    --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.08);
 }
 
-#device-viewport.theme-light {
-    /* Clean Minimal Light Theme variables */
-    --bg-viewport: #FAF9F6;
-    --bg-card: #FFFFFF;
-    --bg-header: rgba(250, 249, 246, 0.65);
-    --bg-mask-color: rgba(250, 249, 246, 0.88);
-    --text-primary: #12141C;
-    --text-secondary: #5C6470;
-    --border-color: #E2E8F0;
-    --accent-color: #059669;
-    --accent-hover: #047857;
+body { 
+    background-color: var(--bg-base); 
+    color: var(--text-main); 
+    font-family: 'Plus Jakarta Sans', sans-serif !important; 
+    overflow-x: hidden; 
+    transition: background-color 0.5s, color 0.5s; 
 }
 
-#device-viewport.theme-luxury {
-    /* Champagne Gold Theme variables */
-    --bg-viewport: #0E0C0A;
-    --bg-card: #1A1512;
-    --bg-header: rgba(14, 12, 10, 0.6);
-    --bg-mask-color: rgba(14, 12, 10, 0.88);
-    --text-primary: #F7EFE5;
-    --text-secondary: #C8B9A6;
-    --border-color: #3A2E24;
-    --accent-color: #D4AF37;
-    --accent-hover: #AA8B2C;
-}
+/* SEMANTIC UTILITIES */
+.surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
+.glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-color: var(--border-line); }
+.text-prime { color: var(--text-main) !important; }
+.text-sub { color: var(--text-muted) !important; }
+.glow-text { color: var(--primary-glow); text-shadow: 0 0 10px var(--grid-color); }
+.glow-border { border-color: var(--border-line); transition: all 0.3s ease; }
+.glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 15px var(--grid-color); }
 
-/* Custom pure CSS transitions for React slideshow and text rotator */
-.slide-image {
-    transition: opacity 1.8s ease-in-out !important;
+/* CYBER BACKGROUND */
+.cyber-grid-container {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
+    background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 50px 50px; 
+    transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+    animation: cyberPan 30s linear infinite; opacity: 0.6;
 }
+.cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); }
 
-.word-fade {
-    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* MICRO-INTERACTIONS */
+.hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px var(--grid-color); }
+.nav-link { position: relative; transition: color 0.3s; }
+.nav-link::after { content: ''; position: absolute; bottom: -4px; left: 50%; width: 0; height: 2px; background: var(--primary-glow); transition: all 0.3s ease; transform: translateX(-50%); }
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+.nav-link.active { color: var(--primary-glow) !important; }
 
-.dot-grid {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-    background-size: 24px 24px;
-}
-.dot-grid-light {
-    background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 24px 24px;
-}
+/* TYPEWRITER CURSOR */
+.type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); margin-left: 4px; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
