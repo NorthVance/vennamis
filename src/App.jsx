@@ -4,7 +4,8 @@ import Home from './pages/Home';
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
 import './styles/theme.css';
-import { initialGigsData, sysTranslations } from './assets/store';
+// แก้ไข Path ให้ตรงกับโฟลเดอร์ glows ของพี่
+import { initialGigsData, sysTranslations } from './assets/glows/store';
 
 export const AppContext = createContext();
 

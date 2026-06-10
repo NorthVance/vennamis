@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { AppContext } from '../../../App';
+// แก้ไข Path ถอยหลังแค่ 2 ชั้น (จาก components/layout ไป src)
+import { AppContext } from '../../App';
 import { Bell, MessageSquare, Settings, PlusCircle, Sun, Moon, Sparkles } from 'lucide-react';
 
 export default function Header() {
@@ -55,7 +56,6 @@ export default function Header() {
                         <button onClick={() => openModal('login')} className="surface-bg border border-[var(--border-line)] text-prime text-xs font-bold px-5 py-2.5 rounded-2xl hover:border-[var(--primary-glow)] transition-all shadow-sm">Login</button>
                     )}
 
-                    {/* Profile Dropdown */}
                     {showProfile && state.user && (
                         <div className="absolute top-[110%] right-0 w-64 glass-panel border border-[var(--border-line)] rounded-2xl shadow-2xl p-5 z-50">
                             <div className="text-center mb-4">
