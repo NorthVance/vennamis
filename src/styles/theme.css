@@ -23,22 +23,18 @@
 
 @layer utilities {
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
-  /* เพิ่ม Blur และเงาให้ข้อความอ่านง่ายขึ้นเวลาเจอภาพพื้นหลังสว่าง */
   .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
   .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.5); }
   .text-sub { color: var(--text-muted) !important; }
   .glow-text { color: var(--primary-glow); text-shadow: 0 0 15px var(--grid-color); }
   
-  /* อัปเกรด Hover ให้มันสว่างและเด้งขึ้นชัดเจน */
   .glow-border { transition: all 0.3s ease; }
   .glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--grid-color); transform: translateY(-4px) scale(1.01); }
-  
   .hover-lift { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
   .hover-lift:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px var(--grid-color); }
 
   .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
   
-  /* แก้ Dropdown มือถือให้แสดงตรงกลางจอถ้าจอเล็ก */
   .smart-dropdown { opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
   
@@ -51,6 +47,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
+  /* Background Extensions */
   .cyber-grid-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -58,10 +55,21 @@
     transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
     animation: cyberPan 30s linear infinite; opacity: 0.6; transition: opacity 0.5s;
   }
-  .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); }
+  .bg-abstract {
+    background: linear-gradient(-45deg, var(--bg-surface), var(--primary-glow), var(--bg-base), #1e1b4b);
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+    opacity: 0.15;
+  }
+  .bg-deep-space {
+    background-image: radial-gradient(circle at center, var(--border-line) 0%, var(--bg-base) 100%);
+    opacity: 0.8;
+  }
+  .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); pointer-events: none; }
 }
 
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 @keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
 @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+@keyframes gradientFlow { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
