@@ -4,11 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Vennamis - Global P2P Ecosystem</title>
-    <!-- Google Fonts -->
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons CDN (Fallback if not using lucide-react) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
-  <body class="theme-light antialiased overflow-x-hidden">
-    <!-- React จะเอาโค้ดทั้งหมดมาฉีดใส่ใน div นี้ -->
+  <!-- Initial theme set to light to prevent flash -->
+  <body class="theme-light antialiased overflow-x-hidden transition-colors duration-500">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
