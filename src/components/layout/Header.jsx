@@ -23,6 +23,8 @@ export default function Header() {
 
   const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
   const changeBg = (newBg) => setState(prev => ({ ...prev, bg: newBg }));
+  const changeApi = (api) => setState(prev => ({ ...prev, transApi: api }));
+  
   const logout = () => { setState(prev => ({ ...prev, user: null })); setOpenDrop(null); };
 
   const editBio = () => {
@@ -77,8 +79,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* ================= DROPDOWNS ================= */}
-        
+        {/* Dropdowns */}
         <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
@@ -100,7 +101,7 @@ export default function Header() {
             <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
             <h3 className="text-base font-bold text-prime">System Config</h3>
           </div>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="space-y-4">
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
               <div className="grid grid-cols-3 gap-2">
@@ -114,22 +115,19 @@ export default function Header() {
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
               <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
                 <option value="cyber" className="bg-[var(--bg-surface)] text-prime">Cyber Matrix</option>
-                <option value="aurora" className="bg-[var(--bg-surface)] text-prime">Aurora Flow</option>
-                <option value="neon-city" className="bg-[var(--bg-surface)] text-prime">Neon City</option>
-                <option value="cosmic-void" className="bg-[var(--bg-surface)] text-prime">Cosmic Void</option>
-                <option value="liquid-gold" className="bg-[var(--bg-surface)] text-prime">Liquid Gold</option>
-                <option value="abstract" className="bg-[var(--bg-surface)] text-prime">Abstract Fluid</option>
+                <option value="galaxy" className="bg-[var(--bg-surface)] text-prime">Galaxy Flow</option>
+                <option value="3d-matrix" className="bg-[var(--bg-surface)] text-prime">3D Neon Grid</option>
                 <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
               </select>
             </div>
 
-            {/* 🔥 ดึง Translation API กลับมาแล้วครับ! */}
+            {/* ลูกพี่ครับ เมนู Translation กลับมาแล้วครับ! */}
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Translation API</label>
-              <select className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL Pro API</option>
-                <option value="gpt" className="bg-[var(--bg-surface)] text-prime">OpenAI GPT-4o</option>
-                <option value="mymemory" className="bg-[var(--bg-surface)] text-prime">MyMemory (Free)</option>
+              <select value={state.transApi} onChange={(e) => changeApi(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
+                <option value="google" className="bg-[var(--bg-surface)] text-prime">Google Translate</option>
+                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL Pro (Premium)</option>
+                <option value="deepseek" className="bg-[var(--bg-surface)] text-prime">DeepSeek AI (Free)</option>
               </select>
             </div>
 
