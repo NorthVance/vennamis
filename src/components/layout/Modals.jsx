@@ -19,6 +19,7 @@ export default function Modals() {
     if (activeModal && window.lucide) window.lucide.createIcons();
   }, [activeModal, selectedItem, newsPreview]);
 
+  // Handle Authentication Logic
   const mockLogin = (name) => {
     setState(prev => ({...prev, user: { name: name, avatar: name.substring(0,2).toUpperCase(), balance: '$1,500.00', bio: 'Global Worker ready for action.' }, activeModal: null }));
   };
@@ -52,17 +53,17 @@ export default function Modals() {
     <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay ${activeModal ? 'active' : ''}`}>
       <div className="absolute inset-0 bg-black/60" onClick={closeModal}></div>
       
-      <div className={`relative glass-panel border rounded-[2rem] w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto modal-box ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
-        <button onClick={closeModal} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime transition hover:scale-110"><i data-lucide="x"></i></button>
+      <div className={`relative glass-panel border rounded-3xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto modal-box ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
+        <button onClick={closeModal} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime transition hover:scale-110"><i data-lucide="x" className="w-5 h-5"></i></button>
         
-        {/* ================= MODAL LOGIN (V.13 ORIGINAL) ================= */}
+        {/* ================= MODAL LOGIN ================= */}
         {activeModal === 'modal-login' && (
           <>
-            <h3 className="text-3xl font-black text-prime mb-2">Vennamis</h3>
-            <p className="text-xs text-sub mb-8 uppercase tracking-widest">Secure Authentication</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-prime mb-2">Vennamis</h3>
+            <p className="text-[10px] sm:text-xs text-sub mb-6 sm:mb-8 uppercase tracking-widest">Secure Authentication</p>
             
             <div className="space-y-3 mb-6">
-                <button onClick={() => mockLogin('Alex Google')} className="w-full surface-bg border border-[var(--border-line)] hover:border-[var(--primary-glow)] rounded-xl py-3 flex justify-center items-center space-x-3 hover-lift text-prime text-sm font-bold transition">
+                <button onClick={() => setState(prev => ({...prev, activeModal: 'modal-google-consent'}))} className="w-full surface-bg border border-[var(--border-line)] hover:border-[var(--primary-glow)] rounded-xl py-3 flex justify-center items-center space-x-3 hover-lift text-prime text-sm font-bold transition">
                     <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/></svg>
                     <span>Continue with Google</span>
                 </button>
@@ -79,15 +80,35 @@ export default function Modals() {
           </>
         )}
 
+        {/* ================= GOOGLE CONSENT SIMULATION ================= */}
+        {activeModal === 'modal-google-consent' && (
+          <div className="flex flex-col items-center text-center pt-2">
+             <svg className="w-10 h-10 mb-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/></svg>
+             <h3 className="text-xl sm:text-2xl font-bold text-prime mb-2">Sign in with Google</h3>
+             <p className="text-[10px] sm:text-xs text-sub mb-6">Choose an account to continue to <span className="font-bold text-prime">Vennamis</span></p>
+             <div className="w-full surface-bg border border-[var(--border-line)] rounded-xl p-4 mb-6 text-left">
+               <p className="text-xs text-prime font-bold mb-3">Vennamis wants to access your Google Account:</p>
+               <ul className="text-xs text-sub space-y-2 list-disc pl-5">
+                 <li>View your email address and profile picture</li>
+                 <li>Associate your personal info with Vennamis Escrow</li>
+               </ul>
+             </div>
+             <div className="flex space-x-3 w-full">
+               <button onClick={() => setState(prev => ({...prev, activeModal: 'modal-login'}))} className="flex-1 py-3 rounded-xl border border-[var(--border-line)] text-prime text-sm hover:bg-white/5 transition">Cancel</button>
+               <button onClick={() => mockLogin('Alex Google')} className="flex-1 py-3 rounded-xl text-white text-sm font-bold shadow-md hover-lift" style={{ background: '#4285F4' }}>Allow & Share</button>
+             </div>
+          </div>
+        )}
+
         {/* ================= MODAL POST GIG ================= */}
         {activeModal === 'modal-post' && (
           <>
-            <h3 className="text-2xl font-black text-prime mb-2">Post a New Gig</h3>
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6 flex items-start space-x-3">
-              <i data-lucide="shield-alert" className="text-amber-500 w-5 h-5 flex-shrink-0 mt-0.5"></i>
+            <h3 className="text-xl sm:text-2xl font-black text-prime mb-2">Post a New Gig</h3>
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 sm:p-4 mb-6 flex items-start space-x-3">
+              <i data-lucide="shield-alert" className="text-amber-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></i>
               <div>
-                <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest">Secure Workspace Policy</h4>
-                <p className="text-[10px] text-sub mt-1">To protect our community, please avoid sharing external links. Payments secured via Escrow.</p>
+                <h4 className="text-[10px] sm:text-xs font-bold text-amber-500 uppercase tracking-widest">Secure Workspace Policy</h4>
+                <p className="text-[9px] sm:text-[10px] text-sub mt-1">To protect our community, please avoid sharing external links. Payments secured via Escrow.</p>
               </div>
             </div>
             <form onSubmit={submitGig} className="space-y-4">
@@ -104,19 +125,19 @@ export default function Modals() {
 
         {/* ================= MODAL GIG DETAIL ================= */}
         {activeModal === 'modal-gig-detail' && selectedItem && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-6 gap-2 sm:gap-4">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-prime mb-2">{selectedItem.title}</h2>
-                <span className="text-[10px] sm:text-xs text-sub uppercase tracking-widest border border-[var(--border-line)] px-2 py-1 rounded-lg">{selectedItem.tag || selectedItem.loc || 'Post'}</span>
+                <h2 className="text-xl sm:text-3xl font-black text-prime mb-2">{selectedItem.title}</h2>
+                <span className="text-[9px] sm:text-xs text-sub uppercase tracking-widest border border-[var(--border-line)] px-2 py-1 rounded-lg">{selectedItem.tag || selectedItem.loc || 'Post'}</span>
               </div>
-              {selectedItem.price > 0 && <span className="text-2xl font-black glow-text">${selectedItem.price}</span>}
+              {selectedItem.price > 0 && <span className="text-xl sm:text-2xl font-black glow-text">${selectedItem.price}</span>}
             </div>
-            <div className="p-4 surface-bg border rounded-xl mb-6 text-sm text-prime leading-relaxed">{selectedItem.desc}</div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-[var(--border-line)] gap-4">
+            <div className="p-3 sm:p-4 surface-bg border rounded-xl mb-4 sm:mb-6 text-xs sm:text-sm text-prime leading-relaxed">{selectedItem.desc}</div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-white/5 rounded-xl border border-[var(--border-line)] gap-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white">{selectedItem.host[0]}</div>
-                <div><p className="text-sm font-bold text-prime">{selectedItem.host}</p><p className="text-[10px] text-[var(--primary-glow)]">Verified User</p></div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white text-xs sm:text-base">{selectedItem.host[0]}</div>
+                <div><p className="text-xs sm:text-sm font-bold text-prime">{selectedItem.host}</p><p className="text-[9px] sm:text-[10px] text-[var(--primary-glow)]">Verified User</p></div>
               </div>
               <button onClick={() => { closeModal(); setState(prev => ({...prev, isChatOpen: true, chatHost: selectedItem.host})) }} className="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold text-white hover-lift" style={{ background: 'var(--primary-glow)' }}>Message Host</button>
             </div>
@@ -126,19 +147,19 @@ export default function Modals() {
         {/* ================= MODAL ADD NEWS ================= */}
         {activeModal === 'modal-add-news' && (
           <>
-            <h3 className="text-xl font-black mb-3">Add News Source</h3>
-            <input type="url" value={newsUrl} onChange={e => setNewsUrl(e.target.value)} placeholder="https://example.com/article" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-2 mb-3 text-sm outline-none focus:border-[var(--primary-glow)] transition" />
-            <button onClick={fetchNewsMetadata} disabled={isFetchingNews} className="w-full py-2 rounded-xl text-white text-sm mb-3 disabled:opacity-50 hover-lift" style={{ background: 'var(--primary-glow)' }}>
+            <h3 className="text-lg sm:text-xl font-black mb-3">Add News Source</h3>
+            <input type="url" value={newsUrl} onChange={e => setNewsUrl(e.target.value)} placeholder="https://example.com/article" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-2 mb-3 text-xs sm:text-sm outline-none focus:border-[var(--primary-glow)] transition" />
+            <button onClick={fetchNewsMetadata} disabled={isFetchingNews} className="w-full py-2 rounded-xl text-white text-xs sm:text-sm mb-3 disabled:opacity-50 hover-lift" style={{ background: 'var(--primary-glow)' }}>
               {isFetchingNews ? 'Fetching...' : 'Fetch & Preview'}
             </button>
             
             {newsPreview && (
               <>
                 <div className="p-3 border rounded-xl mb-3 surface-bg">
-                  <div className="font-bold text-sm">{newsPreview.title}</div>
-                  <div className="text-xs text-sub mt-1">{newsPreview.desc}</div>
+                  <div className="font-bold text-xs sm:text-sm">{newsPreview.title}</div>
+                  <div className="text-[10px] sm:text-xs text-sub mt-1">{newsPreview.desc}</div>
                 </div>
-                <button onClick={confirmAddNews} className="w-full py-2 rounded-xl text-white text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>Add to News Feed</button>
+                <button onClick={confirmAddNews} className="w-full py-2 rounded-xl text-white text-xs sm:text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>Add to News Feed</button>
               </>
             )}
           </>
