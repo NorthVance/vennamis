@@ -23,10 +23,8 @@ export default function Header() {
 
   const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
   const changeBg = (newBg) => setState(prev => ({ ...prev, bg: newBg }));
-  
   const logout = () => { setState(prev => ({ ...prev, user: null })); setOpenDrop(null); };
 
-  // ฟังก์ชันแก้โปรไฟล์
   const editBio = () => {
     const newBio = prompt("Enter your new bio:", state.user.bio);
     if (newBio) setState(prev => ({ ...prev, user: { ...prev.user, bio: newBio } }));
@@ -35,6 +33,9 @@ export default function Header() {
     const newAv = prompt("Enter 1-2 letters for Avatar:", state.user.avatar);
     if (newAv) setState(prev => ({ ...prev, user: { ...prev.user, avatar: newAv.substring(0,2).toUpperCase() } }));
   };
+
+  // เช็คว่ามีแจ้งเตือนไหม (ถ้าไม่มี ซ่อนจุดแดง)
+  const hasNotif = state.notifications && state.notifications.length > 0;
 
   return (
     <header className="glass-panel border-b sticky top-0 z-40 px-4 sm:px-8 py-4 flex justify-between items-center shadow-sm">
@@ -54,10 +55,13 @@ export default function Header() {
           </button>
         )}
 
-        <div className="flex space-x-2 border-l border-[var(--border-line)] pl-4 ml-2">
+        <div className="flex space-x-2 border-l border-[var(--border-line)] pl-4 ml-2 relative">
           <button onClick={(e) => toggleDrop('notif', e)} className="drop-trigger p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition relative hover-lift">
             <i data-lucide="bell" className="w-4.5 h-4.5"></i>
+            {/* จุดแดงจะโชว์ก็ต่อเมื่อมีแจ้งเตือนเท่านั้น */}
+            <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[var(--bg-surface)] ${hasNotif ? '' : 'hidden'}`}></span>
           </button>
+          
           <button onClick={(e) => toggleDrop('settings', e)} className="drop-trigger p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition hover-lift">
             <i data-lucide="settings" className="w-4.5 h-4.5"></i>
           </button>
@@ -74,45 +78,50 @@ export default function Header() {
           )}
         </div>
 
-        {/* Dropdowns */}
-        {openDrop === 'notif' && (
-          <div className="smart-dropdown absolute top-[110%] right-16 w-80 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50">
-            <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
-              <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
+        {/* ================= DROPDOWNS (แก้ Layout ให้พอดีกับ Mobile) ================= */}
+        
+        <div className={`smart-dropdown absolute top-[110%] right-4 sm:right-24 w-[calc(100vw-2rem)] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
+          <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
+            <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
+          </div>
+          {hasNotif ? (
+            <div className="space-y-3">
+              {state.notifications.map((n, i) => (
+                <div key={i} className="p-3 surface-bg border rounded-xl"><p className="text-xs font-bold text-prime">{n.title}</p><p className="text-[10px] text-sub mt-1">{n.desc}</p></div>
+              ))}
             </div>
+          ) : (
             <p className="text-xs text-sub text-center py-4">No new notifications</p>
-          </div>
-        )}
+          )}
+        </div>
 
-        {openDrop === 'settings' && (
-          <div className="smart-dropdown absolute top-[110%] right-16 w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50">
-            <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
-              <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
-              <h3 className="text-base font-bold text-prime">System Config</h3>
-            </div>
-            <div className="space-y-4">
-              <div className="p-3 surface-bg border rounded-xl space-y-3">
-                <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Clean</button>
-                  <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Cyber</button>
-                  <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Gold</button>
-                </div>
-              </div>
-              <div className="p-3 surface-bg border rounded-xl space-y-3">
-                <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
-                <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)]">
-                  <option value="cyber" className="bg-[var(--bg-surface)] text-prime">Cyber Matrix</option>
-                  <option value="aurora" className="bg-[var(--bg-surface)] text-prime">Aurora Flow</option>
-                  <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
-                </select>
+        <div className={`smart-dropdown absolute top-[110%] right-4 sm:right-16 w-[calc(100vw-2rem)] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
+          <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
+            <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
+            <h3 className="text-base font-bold text-prime">System Config</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-3 surface-bg border rounded-xl space-y-3">
+              <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Clean</button>
+                <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Cyber</button>
+                <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Gold</button>
               </div>
             </div>
+            <div className="p-3 surface-bg border rounded-xl space-y-3">
+              <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
+              <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)]">
+                <option value="cyber" className="bg-[var(--bg-surface)] text-prime">Cyber Matrix</option>
+                <option value="aurora" className="bg-[var(--bg-surface)] text-prime">Aurora Flow</option>
+                <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
+              </select>
+            </div>
           </div>
-        )}
+        </div>
 
-        {openDrop === 'profile' && state.user && (
-          <div className="smart-dropdown absolute top-[110%] right-4 w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50">
+        {state.user && (
+          <div className={`smart-dropdown absolute top-[110%] right-4 w-[calc(100vw-2rem)] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
             <div className="flex items-center space-x-4 mb-5 pb-5 border-b border-[var(--border-line)] group">
               <div onClick={editAvatar} className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg cursor-pointer hover:opacity-80 transition" style={{ background: 'var(--primary-glow)' }} title="Change Avatar">{state.user.avatar}</div>
               <div className="flex-1">
