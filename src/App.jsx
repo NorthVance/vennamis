@@ -3,7 +3,7 @@ import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
-import { initialGigsData, initialCommunityData, initialTradersData, initialNewsData } from './store';
+import { initialData } from './store';
 
 export const AppContext = createContext();
 
@@ -18,20 +18,16 @@ export default function App() {
     isChatOpen: false,
     chatHost: null,
     selectedItem: null,
-    data: {
-      gigs: initialGigsData || [],
-      community: initialCommunityData || [],
-      traders: initialTradersData || [],
-      news: initialNewsData || [],
-    }
+    data: initialData,
+    notifications: []
   });
 
-  // Theme Sync
+  // Handle Theme Switching
   useEffect(() => {
     document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`;
   }, [state.theme]);
 
-  // Slideshow Logic สำหรับ bg-landscape
+  // Handle Landscape Slideshow Logic
   const [slideId, setSlideId] = useState(1);
   useEffect(() => {
     if (state.bg !== 'landscape') return;
@@ -41,14 +37,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  // Lucide Icons Sync
+  // Initialize Lucide Icons
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
   }, [state.view, state.data, state.bg]);
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      {/* Background System */}
+      {/* Background Layer */}
       {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
       
       {state.bg === 'landscape' && (
@@ -61,7 +57,7 @@ export default function App() {
 
       <div className="cyber-vignette"></div>
       
-      {/* Aurora Effects */}
+      {/* Aurora Layer */}
       {(state.bg === 'cyber' || state.bg === 'aurora') && (
         <>
           <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1]"></div>
@@ -69,7 +65,7 @@ export default function App() {
         </>
       )}
 
-      {/* Main Layout */}
+      {/* Main Core Layout */}
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -77,6 +73,7 @@ export default function App() {
         </main>
       </div>
 
+      {/* Floating System layer */}
       <ChatWidget />
       <Modals />
     </AppContext.Provider>
