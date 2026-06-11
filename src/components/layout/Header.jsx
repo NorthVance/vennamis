@@ -38,19 +38,16 @@ export default function Header() {
 
   return (
     <header className="glass-panel border-b sticky top-0 z-40 px-3 sm:px-8 py-3 sm:py-4 flex justify-between items-center shadow-sm">
-      {/* ฝั่งซ้าย: โลโก้ (ย่อขนาดบนมือถือ) */}
       <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => setState(prev => ({ ...prev, view: 'gigs' }))}>
         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-md" style={{ background: 'var(--primary-glow)' }}>V</div>
         <span className="font-bold text-xl sm:text-2xl tracking-tighter text-prime hidden sm:block">Vennamis</span>
       </div>
 
-      {/* ฝั่งขวา: เครื่องมือต่างๆ */}
       <div className="flex items-center space-x-2 sm:space-x-4 relative">
         <select value={state.lang} onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))} className="surface-bg border rounded-lg px-2 py-1.5 text-xs text-sub focus:outline-none cursor-pointer hidden md:block hover-lift">
           <option value="en">EN</option><option value="th">TH</option>
         </select>
 
-        {/* ปุ่ม Post Gig (มือถือโชว์แค่ไอคอน / Desktop โชว์เต็ม) */}
         {state.view === 'gigs' && (
           <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-post' }))} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-white font-bold text-xs hover-lift shadow-md" style={{ background: 'var(--primary-glow)' }}>
             <i data-lucide="plus" className="w-4 h-4 sm:mr-2"></i>
@@ -80,9 +77,8 @@ export default function Header() {
           )}
         </div>
 
-        {/* ================= DROPDOWNS ================= */}
-        {/* ให้ Dropdown ยึดตามขอบจอขวาเต็มที่บนมือถือ */}
-        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
+        {/* Dropdowns */}
+        <div className={`smart-dropdown absolute top-[120%] right-0 w-[calc(100vw-2rem)] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
             <span className="text-[10px] text-[var(--primary-glow)] cursor-pointer hover:underline" onClick={() => setState(prev => ({...prev, notifications: []}))}>Mark all read</span>
@@ -98,8 +94,8 @@ export default function Header() {
           )}
         </div>
 
-        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
-          <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
+        <div className={`smart-dropdown absolute top-[120%] right-0 w-[calc(100vw-2rem)] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
+          <div className="flex items-center space-x-2 mb-4 sm:mb-5 pb-3 border-b border-[var(--border-line)]">
             <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
             <h3 className="text-base font-bold text-prime">System Config</h3>
           </div>
@@ -117,22 +113,17 @@ export default function Header() {
               <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
                 <option value="cyber" className="bg-[var(--bg-surface)] text-prime">Cyber Matrix</option>
                 <option value="aurora" className="bg-[var(--bg-surface)] text-prime">Aurora Flow</option>
+                <option value="abstract" className="bg-[var(--bg-surface)] text-prime">Abstract Fluid</option>
+                <option value="deep-space" className="bg-[var(--bg-surface)] text-prime">Deep Space</option>
                 <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
-              </select>
-            </div>
-            <div className="p-3 surface-bg border rounded-xl space-y-3 md:hidden">
-              <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Language</label>
-              <select value={state.lang} onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                <option value="en" className="bg-[var(--bg-surface)] text-prime">English (EN)</option>
-                <option value="th" className="bg-[var(--bg-surface)] text-prime">Thai (TH)</option>
               </select>
             </div>
           </div>
         </div>
 
         {state.user && (
-          <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
-            <div className="flex items-center space-x-4 mb-5 pb-5 border-b border-[var(--border-line)] group">
+          <div className={`smart-dropdown absolute top-[120%] right-0 w-[calc(100vw-2rem)] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
+            <div className="flex items-center space-x-4 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-[var(--border-line)] group">
               <div onClick={editAvatar} className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg cursor-pointer hover:opacity-80 transition hover-lift" style={{ background: 'var(--primary-glow)' }} title="Change Avatar">{state.user.avatar}</div>
               <div className="flex-1">
                 <h2 className="text-base font-bold text-prime">{state.user.name}</h2>
