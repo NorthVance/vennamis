@@ -11,7 +11,7 @@ export default function App() {
   const [state, setState] = useState({
     lang: 'en',
     theme: 'light',
-    bg: 'cyber', // cyber, aurora, landscape, abstract, deep-space
+    bg: 'cyber', // cyber, aurora, abstract, deep-space, neon-city, liquid-gold, landscape
     view: 'gigs',
     user: null,
     activeModal: null,
@@ -43,6 +43,8 @@ export default function App() {
       {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
       {state.bg === 'abstract' && <div className="fixed inset-0 z-[-2] bg-abstract transition-opacity duration-1000"></div>}
       {state.bg === 'deep-space' && <div className="fixed inset-0 z-[-2] bg-deep-space transition-opacity duration-1000"></div>}
+      {state.bg === 'neon-city' && <div className="fixed inset-0 z-[-2] bg-neon-city transition-opacity duration-1000"></div>}
+      {state.bg === 'liquid-gold' && <div className="fixed inset-0 z-[-2] bg-liquid-gold transition-opacity duration-1000"></div>}
       
       {state.bg === 'landscape' && (
         <div className="fixed inset-0 z-[-2]">
@@ -54,10 +56,10 @@ export default function App() {
 
       <div className="cyber-vignette"></div>
       
-      {(state.bg === 'cyber' || state.bg === 'aurora' || state.bg === 'deep-space') && (
+      {(state.bg === 'cyber' || state.bg === 'aurora' || state.bg === 'deep-space' || state.bg === 'neon-city' || state.bg === 'liquid-gold') && (
         <>
           <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div>
-          <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
+          <div className={`fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full ${state.bg === 'liquid-gold' ? 'bg-yellow-500' : 'bg-violet-600'} opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none`} style={{ animationDelay: '1.5s' }}></div>
         </>
       )}
 
