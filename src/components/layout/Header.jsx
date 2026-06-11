@@ -1,58 +1,129 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../App';
+import { staticDict } from '../../store';
 
 export default function Header() {
-  const { state, setState, t } = useContext(AppContext);
-  const [dropdown, setDropdown] = useState(null); // 'notif' | 'settings' | 'profile' | null
+  const { state, setState } = useContext(AppContext);
+  const [openDrop, setOpenDrop] = useState(null); // เก็บ state ว่า dropdown ไหนเปิดอยู่
 
-  const toggleDrop = (menu) => setDropdown(dropdown === menu ? null : menu);
+  const t = staticDict[state.lang] || staticDict['en'];
+
+  // คลิกข้างนอก dropdown ให้ปิด
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.smart-dropdown') && !e.target.closest('.drop-trigger')) setOpenDrop(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const toggleDrop = (menu, e) => {
+    e.stopPropagation();
+    setOpenDrop(openDrop === menu ? null : menu);
+  };
+
+  const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
+  const logout = () => {
+    setState(prev => ({ ...prev, user: null }));
+    setOpenDrop(null);
+  };
 
   return (
     <header className="glass-panel border-b sticky top-0 z-40 px-4 sm:px-8 py-4 flex justify-between items-center shadow-sm">
-      <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setState({...state, view: 'gigs'})}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-[0_0_15px_var(--grid-color)]" style={{ background: 'var(--primary-glow)' }}>V</div>
+      {/* โลโก้ */}
+      <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => setState(prev => ({ ...prev, view: 'gigs' }))}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md" style={{ background: 'var(--primary-glow)' }}>V</div>
         <span className="font-bold text-2xl tracking-tighter text-prime hidden sm:block">Vennamis</span>
       </div>
-      
+
+      {/* เมนูฝั่งขวา */}
       <div className="flex items-center space-x-2 sm:space-x-4 relative">
-        <select value={state.lang} onChange={(e) => setState({...state, lang: e.target.value})} className="surface-bg border rounded-lg px-2 py-1.5 text-xs text-sub focus:outline-none cursor-pointer hidden sm:block hover-lift">
+        <select 
+          value={state.lang} 
+          onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))}
+          className="surface-bg border rounded-lg px-2 py-1.5 text-xs text-sub focus:outline-none cursor-pointer hidden sm:block hover-lift"
+        >
           <option value="en">EN</option><option value="th">TH</option>
         </select>
-        
+
+        {/* ปุ่มโพสต์งาน โชว์แค่หน้า gigs */}
         {state.view === 'gigs' && (
-          <button onClick={() => setState({...state, activeModal: 'post'})} className="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl text-white font-bold text-xs hover-lift shadow-md" style={{ background: 'var(--primary-glow)' }}>
-            <span>{t('btn_post')}</span>
+          <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-post' }))} className="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl text-white font-bold text-xs hover-lift shadow-md" style={{ background: 'var(--primary-glow)' }}>
+            <i data-lucide="plus" className="w-4 h-4"></i><span>{t.btn_post}</span>
           </button>
         )}
 
         <div className="flex space-x-2 border-l border-[var(--border-line)] pl-4 ml-2">
-          <button onClick={() => toggleDrop('settings')} className="p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition hover-lift">
-            ⚙️
+          {/* ปุ่มแจ้งเตือน */}
+          <button onClick={(e) => toggleDrop('notif', e)} className="drop-trigger p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition relative hover-lift">
+            <i data-lucide="bell" className="w-4.5 h-4.5"></i>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[var(--bg-surface)]"></span>
+          </button>
+          {/* ปุ่มตั้งค่าระบบ */}
+          <button onClick={(e) => toggleDrop('settings', e)} className="drop-trigger p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition hover-lift">
+            <i data-lucide="settings" className="w-4.5 h-4.5"></i>
           </button>
         </div>
 
-        {/* User Auth Section */}
+        {/* ระบบล็อกอิน & โปรไฟล์ */}
         <div className="ml-2">
           {state.user ? (
-            <button onClick={() => toggleDrop('profile')} className="flex items-center space-x-2 p-1 border border-[var(--border-line)] rounded-xl bg-white/5 hover:border-[var(--primary-glow)] transition">
+            <button onClick={(e) => toggleDrop('profile', e)} className="drop-trigger flex items-center space-x-2 p-1 border border-[var(--border-line)] rounded-xl bg-white/5 hover:border-[var(--primary-glow)] transition">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: 'var(--primary-glow)' }}>{state.user.avatar}</div>
+              <span className="text-xs font-bold pr-2 text-prime hidden sm:inline">{state.user.name}</span>
             </button>
           ) : (
-            <button onClick={() => setState({...state, activeModal: 'login'})} className="surface-bg border border-[var(--border-line)] text-prime text-xs font-bold px-5 py-2.5 rounded-2xl hover:border-[var(--primary-glow)] transition-all shadow-sm">Login</button>
+            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="surface-bg border border-[var(--border-line)] text-prime text-xs font-bold px-5 py-2.5 rounded-2xl hover:border-[var(--primary-glow)] transition-all shadow-sm">Login</button>
           )}
         </div>
 
-        {/* Settings Dropdown */}
-        {dropdown === 'settings' && (
-          <div className="absolute top-[110%] right-16 w-80 glass-panel border rounded-2xl shadow-2xl p-6 z-50">
-            <h3 className="text-base font-bold text-prime mb-4">System Config</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {['light', 'dark', 'luxury'].map(theme => (
-                <button key={theme} onClick={() => setState({...state, theme})} className={`border p-2 rounded-lg text-xs capitalize ${state.theme === theme ? 'border-[var(--primary-glow)] text-[var(--primary-glow)]' : 'border-[var(--border-line)] text-prime'} hover:border-[var(--primary-glow)] transition`}>
-                  {theme}
-                </button>
-              ))}
+        {/* ================= DROPDOWNS ================= */}
+        
+        {/* Dropdown: แจ้งเตือน */}
+        {openDrop === 'notif' && (
+          <div className="smart-dropdown absolute top-[110%] right-16 w-80 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50">
+            <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
+              <h3 className="text-sm font-bold text-prime flex items-center"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span> Notifications</h3>
             </div>
+            <p className="text-xs text-sub text-center py-4">No new notifications</p>
+          </div>
+        )}
+
+        {/* Dropdown: ตั้งค่า */}
+        {openDrop === 'settings' && (
+          <div className="smart-dropdown absolute top-[110%] right-16 w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
+              <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
+              <h3 className="text-base font-bold text-prime">System Config</h3>
+            </div>
+            <div className="p-3 surface-bg border rounded-xl space-y-3">
+              <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Clean</button>
+                <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Cyber</button>
+                <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime bg-[var(--bg-base)]'}`}>Gold</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dropdown: โปรไฟล์ผู้ใช้ */}
+        {openDrop === 'profile' && state.user && (
+          <div className="smart-dropdown absolute top-[110%] right-4 w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex items-center space-x-4 mb-5 pb-5 border-b border-[var(--border-line)]">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg" style={{ background: 'var(--primary-glow)' }}>{state.user.avatar}</div>
+              <div className="flex-1">
+                <h2 className="text-base font-bold text-prime">{state.user.name}</h2>
+                <span className="text-[10px] text-[var(--primary-glow)] flex items-center mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Verified</span>
+              </div>
+            </div>
+            <div className="surface-bg border rounded-xl p-4 mb-5 text-center">
+              <p className="text-[10px] text-sub uppercase tracking-widest mb-1">Escrow Vault</p>
+              <p className="text-2xl font-black glow-text">{state.user.balance}</p>
+            </div>
+            <button onClick={logout} className="w-full border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-xl py-2.5 font-bold text-xs transition flex justify-center items-center">
+              <i data-lucide="log-out" className="w-4 h-4 mr-2"></i>Sign Out
+            </button>
           </div>
         )}
       </div>
