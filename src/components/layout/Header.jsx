@@ -34,7 +34,6 @@ export default function Header() {
     if (newAv) setState(prev => ({ ...prev, user: { ...prev.user, avatar: newAv.substring(0,2).toUpperCase() } }));
   };
 
-  // เช็คว่ามีแจ้งเตือนไหม (ถ้าไม่มี ซ่อนจุดแดง)
   const hasNotif = state.notifications && state.notifications.length > 0;
 
   return (
@@ -58,7 +57,6 @@ export default function Header() {
         <div className="flex space-x-2 border-l border-[var(--border-line)] pl-4 ml-2 relative">
           <button onClick={(e) => toggleDrop('notif', e)} className="drop-trigger p-2 rounded-xl surface-bg border shadow-sm text-sub hover:text-prime transition relative hover-lift">
             <i data-lucide="bell" className="w-4.5 h-4.5"></i>
-            {/* จุดแดงจะโชว์ก็ต่อเมื่อมีแจ้งเตือนเท่านั้น */}
             <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[var(--bg-surface)] ${hasNotif ? '' : 'hidden'}`}></span>
           </button>
           
@@ -78,11 +76,12 @@ export default function Header() {
           )}
         </div>
 
-        {/* ================= DROPDOWNS (แก้ Layout ให้พอดีกับ Mobile) ================= */}
-        
+        {/* Notifications Dropdown */}
         <div className={`smart-dropdown absolute top-[110%] right-4 sm:right-24 w-[calc(100vw-2rem)] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
+            {/* V.13 Original: Mark all read */}
+            <span className="text-[10px] text-[var(--primary-glow)] cursor-pointer hover:underline" onClick={() => setState(prev => ({...prev, notifications: []}))}>Mark all read</span>
           </div>
           {hasNotif ? (
             <div className="space-y-3">
@@ -95,6 +94,7 @@ export default function Header() {
           )}
         </div>
 
+        {/* Settings Dropdown */}
         <div className={`smart-dropdown absolute top-[110%] right-4 sm:right-16 w-[calc(100vw-2rem)] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
           <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
             <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
@@ -117,9 +117,18 @@ export default function Header() {
                 <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
               </select>
             </div>
+            {/* V.13 Original: Translation API Dropdown */}
+            <div className="p-3 surface-bg border rounded-xl space-y-3">
+              <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Translation API</label>
+              <select className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)]">
+                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL Pro API</option>
+                <option value="gpt" className="bg-[var(--bg-surface)] text-prime">OpenAI GPT-4o</option>
+              </select>
+            </div>
           </div>
         </div>
 
+        {/* Profile Dropdown */}
         {state.user && (
           <div className={`smart-dropdown absolute top-[110%] right-4 w-[calc(100vw-2rem)] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
             <div className="flex items-center space-x-4 mb-5 pb-5 border-b border-[var(--border-line)] group">
