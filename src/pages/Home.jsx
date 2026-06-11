@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
+import Typewriter from '../components/common/Typewriter';
 
 export default function Home() {
   const { state, setState } = useContext(AppContext);
@@ -19,7 +20,9 @@ export default function Home() {
           </div>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
             <span>{t.hero_static}</span><br/>
-            <span className="glow-text italic">Global Work</span>
+            <div className="h-[1.2em] mt-2 flex justify-center items-center">
+              <Typewriter />
+            </div>
           </h1>
           <p className="text-sm sm:text-lg text-sub max-w-2xl mx-auto">{t.hero_sub}</p>
         </div>
@@ -59,7 +62,6 @@ export default function Home() {
             <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
             <h2 className="text-xl font-bold text-prime uppercase tracking-wider">{state.view} Stream</h2>
           </div>
-          {/* ปุ่มเพิ่มข่าว โชว์เฉพาะหน้า News */}
           {state.view === 'news' && (
             <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="px-3 py-1.5 rounded-xl text-white text-xs font-bold hover-lift shadow-md flex items-center gap-1" style={{ background: 'var(--primary-glow)' }}>
               <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News
@@ -102,7 +104,7 @@ export default function Home() {
                   <h3 className="text-lg font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
                   <p className="text-xs text-sub line-clamp-2 md:line-clamp-none mb-4">{item.desc}</p>
                 </div>
-                <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4">
+                <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4 mt-auto">
                   <span className="text-xs text-sub font-mono flex items-center">
                     <div className="w-4 h-4 rounded-full bg-gray-600 mr-2 flex items-center justify-center text-[8px] text-white">{item.host[0]}</div> {item.host}
                   </span>
