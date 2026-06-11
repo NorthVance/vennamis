@@ -1,21 +1,39 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
 import Typewriter from '../components/common/Typewriter';
+import { NetworkTranslator } from '../services/api';
 
 export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
 
-  const viewData = state.data[state.view] || [];
+  const rawData = state.data[state.view] || [];
+  const [viewData, setViewData] = useState([]);
+  const [isTranslating, setIsTranslating] = useState(false);
 
-  // บังคับให้ไอคอนแสดงผลทุกครั้งที่มีการเปลี่ยนแท็บหรือโหลดข้อมูลใหม่
+  // ดึงระบบแปลภาษาของ V.13 กลับมา
   useEffect(() => {
-    if (window.lucide) {
-      // หน่วงเวลาจิ๊ดนึงให้ React วาด DOM เสร็จก่อน ค่อยสั่ง Lucide ทำงาน
-      setTimeout(() => window.lucide.createIcons(), 50); 
-    }
-  }, [state.view, viewData]);
+    let isMounted = true;
+    const loadTranslations = async () => {
+      if (rawData.length === 0) { setViewData([]); return; }
+      if (state.lang === 'en') { setViewData(rawData); return; }
+      
+      setIsTranslating(true);
+      const translated = await Promise.all(rawData.map(async (item) => {
+        const tTitle = await NetworkTranslator.translateText(item.title, state.lang);
+        const tDesc = await NetworkTranslator.translateText(item.desc, state.lang);
+        return { ...item, title: tTitle, desc: tDesc };
+      }));
+      
+      if (isMounted) {
+        setViewData(translated);
+        setIsTranslating(false);
+      }
+    };
+    loadTranslations();
+    return () => { isMounted = false; };
+  }, [rawData, state.lang]);
 
   return (
     <div className="space-y-10">
@@ -45,20 +63,20 @@ export default function Home() {
         </div>
       </div>
 
-      {/* NAVIGATION TABS ดั้งเดิม V.13 (ใช้ class nav-link) */}
-      <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)]">
-        <button onClick={() => setState(prev => ({ ...prev, view: 'gigs' }))} className={`nav-link flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-sub ${state.view === 'gigs' ? 'active' : ''}`}>
-          <i data-lucide="briefcase" className="w-5 h-5"></i> Gigs
-        </button>
-        <button onClick={() => setState(prev => ({ ...prev, view: 'community' }))} className={`nav-link flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-sub ${state.view === 'community' ? 'active' : ''}`}>
-          <i data-lucide="users" className="w-5 h-5"></i> Community
-        </button>
-        <button onClick={() => setState(prev => ({ ...prev, view: 'traders' }))} className={`nav-link flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-sub ${state.view === 'traders' ? 'active' : ''}`}>
-          <i data-lucide="trending-up" className="w-5 h-5"></i> Traders
-        </button>
-        <button onClick={() => setState(prev => ({ ...prev, view: 'news' }))} className={`nav-link flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-sub ${state.view === 'news' ? 'active' : ''}`}>
-          <i data-lucide="newspaper" className="w-5 h-5"></i> News
-        </button>
+      <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
+        {['gigs', 'community', 'traders', 'news'].map((nav) => (
+          <button 
+            key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
+            className={`relative transition-colors duration-300 whitespace-nowrap flex items-center gap-1 text-xs font-bold uppercase tracking-widest pb-1 ${state.view === nav ? 'text-[var(--primary-glow)]' : 'text-sub hover:text-prime'}`}
+          >
+            {nav === 'gigs' && <i data-lucide="briefcase" className="w-5 h-5"></i>}
+            {nav === 'community' && <i data-lucide="users" className="w-5 h-5"></i>}
+            {nav === 'traders' && <i data-lucide="trending-up" className="w-5 h-5"></i>}
+            {nav === 'news' && <i data-lucide="newspaper" className="w-5 h-5"></i>}
+            <span className="ml-1">{nav}</span>
+            {state.view === nav && <span className="absolute bottom-[-4px] left-0 w-full h-[2px] bg-[var(--primary-glow)] rounded-full"></span>}
+          </button>
+        ))}
       </div>
 
       <section>
@@ -69,13 +87,13 @@ export default function Home() {
           </div>
           {state.view === 'news' && (
             <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="px-3 py-1.5 rounded-xl text-white text-xs font-bold hover-lift shadow-md flex items-center gap-1" style={{ background: 'var(--primary-glow)' }}>
-              <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News Source
+              <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News
             </button>
           )}
         </div>
 
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-3xl p-6 mb-8 shadow-sm focus-glow transition-all duration-300">
+          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-3xl p-6 mb-8 shadow-sm transition-all duration-300">
             <div className="flex items-start space-x-4">
               <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>{state.user ? state.user.avatar : 'U'}</div>
               <div className="flex-1 space-y-3">
@@ -93,16 +111,20 @@ export default function Home() {
           </div>
         )}
 
-        {viewData.length === 0 ? (
+        {rawData.length === 0 ? (
           <div className="col-span-full text-center py-16 border border-dashed border-[var(--border-line)] rounded-3xl"><p className="text-sm text-sub">No data found.</p></div>
+        ) : isTranslating ? (
+           // ข้อความ Loading ดั้งเดิมของ V.13
+          <div className="col-span-full text-center py-10"><span className="animate-pulse text-sub">Translating & Loading Data...</span></div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col space-y-6 max-w-3xl mx-auto w-full"}>
             {viewData.map(item => {
-              
               if (state.view === 'gigs') {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border glow-border rounded-3xl p-6 hover-lift cursor-pointer flex flex-col justify-between h-[220px] relative">
-                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1" title="Report Post"><i data-lucide="flag" className="w-3.5 h-3.5"></i></button>
+                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1" title="Report Post">
+                      <i data-lucide="flag" className="w-3.5 h-3.5"></i>
+                    </button>
                     <div>
                       <div className="flex justify-between items-start mb-3 pr-6">
                         <span className="text-[10px] font-bold uppercase text-sub px-2 py-1 rounded bg-white/5 border border-[var(--border-line)]">{item.loc}</span>
@@ -123,7 +145,9 @@ export default function Home() {
 
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border border-[var(--border-line)] rounded-3xl p-6 hover-lift cursor-pointer relative">
-                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 transition p-1" title="Report Post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 transition p-1" title="Report Post">
+                    <i data-lucide="flag" className="w-4 h-4"></i>
+                  </button>
                   <div className="flex items-start space-x-4 mb-4">
                     <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white">{item.host[0]}</div>
                     <div>
@@ -135,7 +159,6 @@ export default function Home() {
                   <p className="text-sm text-sub mb-4">{item.desc}</p>
                   
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4">
-                    
                     {state.view === 'community' && (
                       <div className="flex space-x-4 text-sub text-xs">
                         <span className="flex items-center hover:text-[var(--primary-glow)]"><i data-lucide="heart" className="w-4 h-4 mr-1"></i> {item.likes || 0}</span>
@@ -153,7 +176,6 @@ export default function Home() {
                         <button className="text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
                       </div>
                     )}
-
                     <button onClick={(e) => e.stopPropagation()} className="text-sub hover:text-prime"><i data-lucide="share-2" className="w-4 h-4"></i></button>
                   </div>
                 </div>
