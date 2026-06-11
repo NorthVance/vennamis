@@ -47,7 +47,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* Background Extensions */
+  /* ================= WALLPAPERS ================= */
   .cyber-grid-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -55,28 +55,29 @@
     transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
     animation: cyberPan 30s linear infinite; opacity: 0.6; transition: opacity 0.5s;
   }
-  .bg-abstract {
-    background: linear-gradient(-45deg, var(--bg-surface), var(--primary-glow), var(--bg-base), #1e1b4b);
-    background-size: 400% 400%;
-    animation: gradientFlow 15s ease infinite;
-    opacity: 0.15;
+  
+  /* ใหม่: จักรวาลเคลื่อนไหว */
+  .bg-galaxy {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #05070a 100%);
+    overflow: hidden;
   }
-  .bg-deep-space {
-    background-image: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-    opacity: 0.9;
+  .bg-galaxy::after {
+    content: ""; position: absolute; top: 0; left: 0; width: 200vw; height: 200vh;
+    background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff80, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff40, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 130px 80px, #ffffff60, rgba(0,0,0,0));
+    background-repeat: repeat; background-size: 200px 200px;
+    animation: starsMove 100s linear infinite; opacity: 0.5;
   }
-  .bg-neon-city {
-    background: linear-gradient(45deg, #090979, #c026d3, #db2777, #4c1d95);
-    background-size: 300% 300%;
-    animation: gradientFlow 10s ease infinite;
-    opacity: 0.2;
+
+  /* ใหม่: 3D เนออนพุ่ง */
+  .bg-3d-matrix {
+    position: fixed; inset: 0; z-index: -2; background-color: var(--bg-surface);
+    background-image: linear-gradient(var(--primary-glow) 2px, transparent 2px), linear-gradient(90deg, var(--primary-glow) 2px, transparent 2px);
+    background-size: 100px 100px;
+    transform: perspective(600px) rotateX(75deg) translateY(-100px) translateZ(-300px);
+    animation: gridFlow 10s linear infinite; opacity: 0.2;
   }
-  .bg-liquid-gold {
-    background: linear-gradient(45deg, #855C0B, #F6E27A, #DF9F28, #F6E27A);
-    background-size: 400% 400%;
-    animation: gradientFlow 12s ease-in-out infinite;
-    opacity: 0.15;
-  }
+
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); pointer-events: none; }
 }
 
@@ -84,4 +85,5 @@
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 @keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
 @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-@keyframes gradientFlow { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+@keyframes starsMove { from { transform: translateY(0); } to { transform: translateY(-50vh); } }
+@keyframes gridFlow { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
