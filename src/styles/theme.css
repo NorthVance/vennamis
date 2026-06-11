@@ -32,14 +32,16 @@
   .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px var(--grid-color); }
 
-  /* ================== V.13 FIXES ================== */
-  /* แก้พิมพ์ดีดให้มีแค่เคอร์เซอร์กระพริบ */
+  /* == V.13 ORIGINAL ANIMATIONS == */
   .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
-
-  /* แก้ Dropdown ให้เด้งสมูทและรองรับมือถือ */
   .smart-dropdown { opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-  /* ============================================== */
+  
+  .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-box { transform: scale(0.95) translateY(10px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .modal-overlay.active .modal-box { transform: scale(1) translateY(0); opacity: 1; }
+  /* ============================== */
 
   ::-webkit-scrollbar { width: 6px; height: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
