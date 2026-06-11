@@ -62,8 +62,20 @@
     opacity: 0.15;
   }
   .bg-deep-space {
-    background-image: radial-gradient(circle at center, var(--border-line) 0%, var(--bg-base) 100%);
-    opacity: 0.8;
+    background-image: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    opacity: 0.9;
+  }
+  .bg-neon-city {
+    background: linear-gradient(45deg, #090979, #c026d3, #db2777, #4c1d95);
+    background-size: 300% 300%;
+    animation: gradientFlow 10s ease infinite;
+    opacity: 0.2;
+  }
+  .bg-liquid-gold {
+    background: linear-gradient(45deg, #855C0B, #F6E27A, #DF9F28, #F6E27A);
+    background-size: 400% 400%;
+    animation: gradientFlow 12s ease-in-out infinite;
+    opacity: 0.15;
   }
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); pointer-events: none; }
 }
