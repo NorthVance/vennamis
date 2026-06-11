@@ -5,7 +5,6 @@ export default function Modals() {
   const { state, setState } = useContext(AppContext);
   const { activeModal, selectedItem, user } = state; 
 
-  // State สำหรับฟอร์ม
   const [gigForm, setGigForm] = useState({ title: '', price: '', loc: '', desc: '' });
   const [newsUrl, setNewsUrl] = useState('');
   const [newsPreview, setNewsPreview] = useState(null);
@@ -20,9 +19,6 @@ export default function Modals() {
     if (activeModal && window.lucide) window.lucide.createIcons();
   }, [activeModal, selectedItem, newsPreview]);
 
-  if (!activeModal) return null;
-
-  // ฟังก์ชันลงประกาศงาน (เพิ่มเข้า State)
   const submitGig = (e) => {
     e.preventDefault();
     const newGig = {
@@ -33,13 +29,10 @@ export default function Modals() {
       loc: gigForm.loc || 'Remote', tag: 'New Gig'
     };
     setState(prev => ({ 
-      ...prev, 
-      data: { ...prev.data, gigs: [newGig, ...prev.data.gigs] },
-      view: 'gigs', activeModal: null 
+      ...prev, data: { ...prev.data, gigs: [newGig, ...prev.data.gigs] }, view: 'gigs', activeModal: null 
     }));
   };
 
-  // ฟังก์ชันดึง Metadata ข่าวด้วย Microlink API (เหมือน V.13)
   const fetchNewsMetadata = async () => {
     if (!newsUrl) return alert("Please enter a URL");
     setIsFetchingNews(true);
@@ -55,31 +48,20 @@ export default function Modals() {
     setIsFetchingNews(false);
   };
 
-  // ฟังก์ชันกดเพิ่มข่าวเข้า Feed
   const confirmAddNews = () => {
     if (newsPreview) {
-      const newItem = {
-        id: 'n' + Date.now(), type: 'news',
-        host: user ? user.name : 'Anonymous',
-        title: newsPreview.title, desc: newsPreview.desc,
-        source: 'Custom', tag: 'User Added'
-      };
-      setState(prev => ({
-        ...prev,
-        data: { ...prev.data, news: [newItem, ...prev.data.news] },
-        view: 'news', activeModal: null
-      }));
+      const newItem = { id: 'n' + Date.now(), type: 'news', host: user ? user.name : 'Anonymous', title: newsPreview.title, desc: newsPreview.desc, source: 'Custom', tag: 'User Added' };
+      setState(prev => ({ ...prev, data: { ...prev.data, news: [newItem, ...prev.data.news] }, view: 'news', activeModal: null }));
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay ${activeModal ? 'active' : ''}`}>
       <div className="absolute inset-0 bg-black/60" onClick={closeModal}></div>
       
-      <div className={`relative transform scale-100 opacity-100 transition-all duration-300 glass-panel border rounded-[2rem] w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
+      <div className={`relative glass-panel border rounded-[2rem] w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto modal-box ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
         <button onClick={closeModal} className="absolute top-6 right-6 text-sub hover:text-prime"><i data-lucide="x"></i></button>
         
-        {/* ================= MODAL LOGIN ================= */}
         {activeModal === 'modal-login' && (
           <>
             <h3 className="text-3xl font-black text-prime mb-2">Vennamis</h3>
@@ -92,7 +74,6 @@ export default function Modals() {
           </>
         )}
 
-        {/* ================= MODAL POST GIG ================= */}
         {activeModal === 'modal-post' && (
           <>
             <h3 className="text-2xl font-black text-prime mb-2">Post a New Gig</h3>
@@ -115,7 +96,6 @@ export default function Modals() {
           </>
         )}
 
-        {/* ================= MODAL GIG DETAIL ================= */}
         {activeModal === 'modal-gig-detail' && selectedItem && (
           <div className="space-y-6">
             <div className="flex justify-between items-start mb-6">
@@ -136,7 +116,6 @@ export default function Modals() {
           </div>
         )}
 
-        {/* ================= MODAL ADD NEWS ================= */}
         {activeModal === 'modal-add-news' && (
           <>
             <h3 className="text-xl font-black mb-3">Add News Source</h3>
@@ -156,7 +135,6 @@ export default function Modals() {
             )}
           </>
         )}
-
       </div>
     </div>
   );
