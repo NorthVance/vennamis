@@ -1,24 +1,56 @@
-// TODO: Replace mock endpoints with actual production APIs (REST/GraphQL)
+// TODO: Replace with your actual API Keys before production deploy
+const API_KEYS = {
+    DEEPSEEK: 'YOUR_DEEPSEEK_API_KEY_HERE',
+    DEEPL: 'YOUR_DEEPL_API_KEY_HERE'
+};
 
 export const NetworkTranslator = {
-  async translateText(text, targetLang) {
+  async translateText(text, targetLang, provider = 'google') {
     if (!text) return "";
     
-    // Detect basic Thai characters to set source language
+    // Auto-detect basic Thai source
     const isThai = [...text].some(c => c.charCodeAt(0) >= 3584 && c.charCodeAt(0) <= 3711);
     const src = isThai ? 'th' : 'en';
     
     if (src === targetLang) return text; 
 
     try {
-      // TODO: Swap MyMemory with DeepL Pro or OpenAI API for production
+      // 1. DeepSeek AI (Free/Cheap Developer API)
+      if (provider === 'deepseek') {
+        // TODO: Uncomment and use real fetch when API key is ready
+        /*
+        const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEYS.DEEPSEEK}` },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    {"role": "system", "content": `You are a professional translator. Translate the text to ${targetLang}. Only return the translated text.`},
+                    {"role": "user", "content": text}
+                ]
+            })
+        });
+        const data = await res.json();
+        return data.choices[0].message.content;
+        */
+        return `[DeepSeek AI] ${text} (Mock)`; // Temp mock
+      }
+      
+      // 2. DeepL Pro
+      if (provider === 'deepl') {
+        // TODO: Insert DeepL API logic
+        return `[DeepL Pro] ${text} (Mock)`;
+      }
+
+      // 3. Default: Google Translate Fallback (MyMemory Free API for demo)
       const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${targetLang}`);
       const data = await res.json();
       if (data?.responseData?.translatedText) return data.responseData.translatedText;
-      return `[API Error] ${text}`;
+      return text;
+
     } catch (e) {
       console.error("Translation failed:", e);
-      return text; // Fallback to original text
+      return text;
     }
   }
 };
@@ -26,21 +58,14 @@ export const NetworkTranslator = {
 export const BackendAPI = {
   async fetchMetadata(url) {
     try {
-      // TODO: Replace with internal backend crawler to avoid client-side CORS/Rate limits
       const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       if (data.status === 'success') {
-        return {
-          title: data.data.title || "No title available",
-          desc: data.data.description || "No description available"
-        };
+        return { title: data.data.title || "No title", desc: data.data.description || "No description" };
       }
       throw new Error("Invalid Response");
     } catch (e) {
-      return {
-        title: `News from ${new URL(url).hostname}`,
-        desc: "Auto-fetched content (Preview unavailable)"
-      };
+      return { title: `News from ${new URL(url).hostname}`, desc: "Auto-fetched content (Preview unavailable)" };
     }
   }
 };
