@@ -12,6 +12,7 @@ export default function Home() {
   const [viewData, setViewData] = useState([]);
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // ระบบแปลภาษา (ผูกกับ state.transApi ที่เลือกจากเมนู)
   useEffect(() => {
     let isMounted = true;
     const loadTranslations = async () => {
@@ -20,8 +21,9 @@ export default function Home() {
       
       setIsTranslating(true);
       const translated = await Promise.all(rawData.map(async (item) => {
-        const tTitle = await NetworkTranslator.translateText(item.title, state.lang);
-        const tDesc = await NetworkTranslator.translateText(item.desc, state.lang);
+        // ส่ง API ที่เลือกไปประมวลผล
+        const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
+        const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
         return { ...item, title: tTitle, desc: tDesc };
       }));
       
@@ -29,7 +31,7 @@ export default function Home() {
     };
     loadTranslations();
     return () => { isMounted = false; };
-  }, [rawData, state.lang]);
+  }, [rawData, state.lang, state.transApi]);
 
   return (
     <div className="space-y-10">
@@ -50,7 +52,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* ควบคุมขนาด Search ให้พอดีมือถือ */}
       <div className="max-w-3xl mx-auto">
         <div className="glass-panel border p-2 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
           <div className="flex-1 flex items-center px-4 py-2">
