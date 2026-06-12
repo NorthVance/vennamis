@@ -5,29 +5,63 @@ export default function Modals() {
   const { state, setState } = useContext(AppContext);
   const { activeModal, selectedItem, user } = state; 
 
+  // Form States
   const [gigForm, setGigForm] = useState({ title: '', price: '', loc: '', desc: '' });
   const [newsUrl, setNewsUrl] = useState('');
   const [newsPreview, setNewsPreview] = useState(null);
   const [isFetchingNews, setIsFetchingNews] = useState(false);
+  
+  // Auth State
+  const [isRegister, setIsRegister] = useState(false);
 
+  // Reset states when closing modals to keep it clean
   const closeModal = () => {
     setState(prev => ({ ...prev, activeModal: null, selectedItem: null }));
-    setNewsPreview(null); setNewsUrl(''); setGigForm({ title: '', price: '', loc: '', desc: '' });
+    setNewsPreview(null); 
+    setNewsUrl(''); 
+    setGigForm({ title: '', price: '', loc: '', desc: '' });
+    // setTimeout to prevent UI jump before modal fades out
+    setTimeout(() => setIsRegister(false), 300); 
   };
 
+  // Re-initialize icons when dynamic content changes
   useEffect(() => {
     if (activeModal && window.lucide) window.lucide.createIcons();
-  }, [activeModal, selectedItem, newsPreview]);
+  }, [activeModal, selectedItem, newsPreview, isRegister]);
 
-  // Handle Authentication Logic
+  // --- Core Functions --- //
+
   const mockLogin = (name) => {
-    setState(prev => ({...prev, user: { name: name, avatar: name.substring(0,2).toUpperCase(), balance: '$1,500.00', bio: 'Global Worker ready for action.' }, activeModal: null }));
+    setState(prev => ({
+      ...prev, 
+      user: { 
+        name: name, 
+        avatar: name.substring(0,2).toUpperCase(), 
+        balance: '$1,500.00', 
+        bio: 'Global Worker ready for action.' 
+      }, 
+      activeModal: null 
+    }));
   };
 
   const submitGig = (e) => {
     e.preventDefault();
-    const newGig = { id: 'g' + Date.now(), type: 'gig', host: user ? user.name : 'Anonymous', title: gigForm.title, desc: gigForm.desc, price: parseFloat(gigForm.price) || 0, loc: gigForm.loc || 'Remote', tag: 'New Gig' };
-    setState(prev => ({ ...prev, data: { ...prev.data, gigs: [newGig, ...prev.data.gigs] }, view: 'gigs', activeModal: null }));
+    const newGig = { 
+      id: 'g' + Date.now(), 
+      type: 'gig', 
+      host: user ? user.name : 'Anonymous', 
+      title: gigForm.title, 
+      desc: gigForm.desc, 
+      price: parseFloat(gigForm.price) || 0, 
+      loc: gigForm.loc || 'Remote', 
+      tag: 'New Gig' 
+    };
+    setState(prev => ({ 
+      ...prev, 
+      data: { ...prev.data, gigs: [newGig, ...prev.data.gigs] }, 
+      view: 'gigs', 
+      activeModal: null 
+    }));
   };
 
   const fetchNewsMetadata = async () => {
@@ -36,18 +70,36 @@ export default function Modals() {
     try {
       const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(newsUrl)}`);
       const data = await res.json();
-      if (data.status === 'success') setNewsPreview({ title: data.data.title || "No title", desc: data.data.description || "No description", url: newsUrl });
-      else throw new Error();
-    } catch(e) { setNewsPreview({ title: "News from " + new URL(newsUrl).hostname, desc: "Auto-fetched content (demo mode)", url: newsUrl }); }
+      if (data.status === 'success') {
+        setNewsPreview({ title: data.data.title || "No title", desc: data.data.description || "No description", url: newsUrl });
+      } else throw new Error();
+    } catch(e) { 
+      setNewsPreview({ title: "News from " + new URL(newsUrl).hostname, desc: "Auto-fetched content (demo mode)", url: newsUrl }); 
+    }
     setIsFetchingNews(false);
   };
 
   const confirmAddNews = () => {
     if (newsPreview) {
-      const newItem = { id: 'n' + Date.now(), type: 'news', host: user ? user.name : 'Anonymous', title: newsPreview.title, desc: newsPreview.desc, source: 'Custom', tag: 'User Added' };
-      setState(prev => ({ ...prev, data: { ...prev.data, news: [newItem, ...prev.data.news] }, view: 'news', activeModal: null }));
+      const newItem = { 
+        id: 'n' + Date.now(), 
+        type: 'news', 
+        host: user ? user.name : 'Anonymous', 
+        title: newsPreview.title, 
+        desc: newsPreview.desc, 
+        source: 'Custom', 
+        tag: 'User Added' 
+      };
+      setState(prev => ({ 
+        ...prev, 
+        data: { ...prev.data, news: [newItem, ...prev.data.news] }, 
+        view: 'news', 
+        activeModal: null 
+      }));
     }
   };
+
+  if (!activeModal) return null;
 
   return (
     <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay ${activeModal ? 'active' : ''}`}>
@@ -56,36 +108,61 @@ export default function Modals() {
       <div className={`relative glass-panel border rounded-3xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto modal-box ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
         <button onClick={closeModal} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime transition hover:scale-110"><i data-lucide="x" className="w-5 h-5"></i></button>
         
-        {/* ================= MODAL LOGIN ================= */}
+        {/* ================= MODAL: AUTHENTICATION (LOGIN / REGISTER) ================= */}
         {activeModal === 'modal-login' && (
           <>
             <h3 className="text-2xl sm:text-3xl font-black text-prime mb-2">Vennamis</h3>
-            <p className="text-[10px] sm:text-xs text-sub mb-6 sm:mb-8 uppercase tracking-widest">Secure Authentication</p>
+            <p className="text-[10px] sm:text-xs text-sub mb-6 sm:mb-8 uppercase tracking-widest">
+              {isRegister ? 'Create Escrow Account' : 'Secure Authentication'}
+            </p>
             
             <div className="space-y-3 mb-6">
+                {/* Fixed Google Flow -> Redirects to consent modal */}
                 <button onClick={() => setState(prev => ({...prev, activeModal: 'modal-google-consent'}))} className="w-full surface-bg border border-[var(--border-line)] hover:border-[var(--primary-glow)] rounded-xl py-3 flex justify-center items-center space-x-3 hover-lift text-prime text-sm font-bold transition">
                     <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/></svg>
-                    <span>Continue with Google</span>
+                    <span>{isRegister ? 'Sign up with Google' : 'Continue with Google'}</span>
                 </button>
             </div>
             
             <div className="flex items-center space-x-4 mb-6"><div className="flex-1 border-t border-[var(--border-line)]"></div><span className="text-[10px] text-sub uppercase">or email</span><div className="flex-1 border-t border-[var(--border-line)]"></div></div>
             
-            <form onSubmit={(e) => { e.preventDefault(); mockLogin('Admin User'); }} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); mockLogin(isRegister ? 'New User' : 'Admin User'); }} className="space-y-4">
+              
+              {isRegister && (
+                <input type="text" required placeholder="Full Name" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
+              )}
+              
               <input type="email" required placeholder="Encrypted Email" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
               <input type="password" required placeholder="Password" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
-              <div className="text-right"><a href="#" className="text-[10px] text-[var(--primary-glow)] hover:underline">Forgot Password?</a></div>
-              <button type="submit" className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>Initialize Session</button>
+              
+              {!isRegister && (
+                <div className="text-right"><a href="#" className="text-[10px] text-[var(--primary-glow)] hover:underline">Forgot Password?</a></div>
+              )}
+              
+              <button type="submit" className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>
+                {isRegister ? 'Create Account' : 'Initialize Session'}
+              </button>
             </form>
+
+            {/* Auth Toggle */}
+            <div className="mt-6 text-center">
+              <p className="text-xs text-sub">
+                {isRegister ? "Already have an account? " : "Don't have an account? "}
+                <button onClick={() => setIsRegister(!isRegister)} className="text-[var(--primary-glow)] font-bold hover:underline">
+                  {isRegister ? 'Log in' : 'Sign up'}
+                </button>
+              </p>
+            </div>
           </>
         )}
 
-        {/* ================= GOOGLE CONSENT SIMULATION ================= */}
+        {/* ================= MODAL: GOOGLE CONSENT SIMULATION ================= */}
         {activeModal === 'modal-google-consent' && (
           <div className="flex flex-col items-center text-center pt-2">
              <svg className="w-10 h-10 mb-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/></svg>
              <h3 className="text-xl sm:text-2xl font-bold text-prime mb-2">Sign in with Google</h3>
              <p className="text-[10px] sm:text-xs text-sub mb-6">Choose an account to continue to <span className="font-bold text-prime">Vennamis</span></p>
+             
              <div className="w-full surface-bg border border-[var(--border-line)] rounded-xl p-4 mb-6 text-left">
                <p className="text-xs text-prime font-bold mb-3">Vennamis wants to access your Google Account:</p>
                <ul className="text-xs text-sub space-y-2 list-disc pl-5">
@@ -93,6 +170,7 @@ export default function Modals() {
                  <li>Associate your personal info with Vennamis Escrow</li>
                </ul>
              </div>
+             
              <div className="flex space-x-3 w-full">
                <button onClick={() => setState(prev => ({...prev, activeModal: 'modal-login'}))} className="flex-1 py-3 rounded-xl border border-[var(--border-line)] text-prime text-sm hover:bg-white/5 transition">Cancel</button>
                <button onClick={() => mockLogin('Alex Google')} className="flex-1 py-3 rounded-xl text-white text-sm font-bold shadow-md hover-lift" style={{ background: '#4285F4' }}>Allow & Share</button>
@@ -100,7 +178,7 @@ export default function Modals() {
           </div>
         )}
 
-        {/* ================= MODAL POST GIG ================= */}
+        {/* ================= MODAL: POST GIG ================= */}
         {activeModal === 'modal-post' && (
           <>
             <h3 className="text-xl sm:text-2xl font-black text-prime mb-2">Post a New Gig</h3>
@@ -123,7 +201,7 @@ export default function Modals() {
           </>
         )}
 
-        {/* ================= MODAL GIG DETAIL ================= */}
+        {/* ================= MODAL: GIG DETAIL ================= */}
         {activeModal === 'modal-gig-detail' && selectedItem && (
           <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-6 gap-2 sm:gap-4">
@@ -144,7 +222,7 @@ export default function Modals() {
           </div>
         )}
 
-        {/* ================= MODAL ADD NEWS ================= */}
+        {/* ================= MODAL: ADD NEWS ================= */}
         {activeModal === 'modal-add-news' && (
           <>
             <h3 className="text-lg sm:text-xl font-black mb-3">Add News Source</h3>
