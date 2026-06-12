@@ -4,31 +4,37 @@
 
 @layer base {
   :root {
-    --bg-base: #05070A; --bg-surface: #0B0F19; --bg-glass: rgba(11, 15, 25, 0.90);
+    --bg-base: #05070A; --bg-surface: #0B0F19; --bg-glass: rgba(11, 15, 25, 0.85);
     --text-main: #FFFFFF; --text-muted: #8B949E; --border-line: #1F2937;
     --primary-glow: #10B981; --grid-color: rgba(16, 185, 129, 0.15);
   }
   body.theme-light {
-    --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.95);
+    --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.85);
     --text-main: #0F172A; --text-muted: #64748B; --border-line: #E2E8F0;
     --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.1);
   }
-  /* Fix: ปรับค่าสี Gold ให้ทำงานและดูเป็น Luxury ชัดเจนขึ้น */
   body.theme-luxury {
-    --bg-base: #110E0C; --bg-surface: #1C1714; --bg-glass: rgba(28, 23, 20, 0.85);
-    --text-main: #F4E8D1; --text-muted: #A69076; --border-line: #3D3124;
+    --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.85);
+    --text-main: #FDF8F5; --text-muted: #B4A596; --border-line: #3A2E24;
     --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.15);
   }
   body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
-
-  /* Fix: บังคับให้ Option ใน Select อ่านง่ายในทุกเบราว์เซอร์ ไม่กลืนกับพื้นหลัง */
-  select option { background-color: var(--bg-surface); color: var(--text-main); font-weight: 500; }
 }
 
 @layer utilities {
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
-  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
-  .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.5); }
+  
+  /* เพิ่มระดับ Blur และเงาให้ Dropdown อ่านง่ายขึ้นเวลาซ้อนทับภาพ */
+  .glass-panel { 
+    background-color: var(--bg-glass); 
+    backdrop-filter: blur(32px); 
+    -webkit-backdrop-filter: blur(32px); 
+    border-color: var(--border-line); 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
+  }
+  
+  /* ปรับ Contrast ฟอนต์ */
+  .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 3px rgba(0,0,0,0.1); }
   .text-sub { color: var(--text-muted) !important; }
   .glow-text { color: var(--primary-glow); text-shadow: 0 0 15px var(--grid-color); }
   
@@ -42,7 +48,7 @@
   .smart-dropdown { opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
   
-  .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(8px); }
+  .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(12px); }
   .modal-overlay.active { opacity: 1; pointer-events: auto; }
   .modal-box { transform: scale(0.95) translateY(15px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .modal-overlay.active .modal-box { transform: scale(1) translateY(0); opacity: 1; }
@@ -51,7 +57,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* Wallpapers */
+  /* Background Arrays */
   .cyber-grid-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
