@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
+import Admin from './pages/Admin'; // <-- นำเข้าฟังก์ชัน Admin
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
 import { initialData } from './store';
@@ -10,10 +11,10 @@ export const AppContext = createContext();
 export default function App() {
   const [state, setState] = useState({
     lang: 'en',
-    transApi: 'google', // google, deepl, deepseek
+    transApi: 'google',
     theme: 'light',
-    bg: 'cyber', // cyber, galaxy, 3d-matrix, landscape
-    view: 'gigs',
+    bg: 'cyber', 
+    view: 'gigs', // gigs, community, traders, news, admin <-- เพิ่ม admin route
     user: null,
     activeModal: null,
     isChatOpen: false,
@@ -65,7 +66,8 @@ export default function App() {
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-          <Home />
+          {/* Router จำลอง: สลับหน้า Home กับ Admin */}
+          {state.view === 'admin' ? <Admin /> : <Home />}
         </main>
       </div>
 
