@@ -3,14 +3,14 @@ import { AppContext } from '../../App';
 
 /**
  * @component Modals
- * @description Centralized rendering engine for all application modals (Auth, Forms, Workflows).
- * @version 16.0.0
+ * @description Centralized rendering engine for all application modals.
+ * Updated to support Fiat-based Escrow Flow (Bank/Card integration).
+ * @version 16.1.0
  */
 export default function Modals() {
   const { state, setState } = useContext(AppContext);
   const { activeModal, selectedItem, user } = state; 
 
-  // --- Local States ---
   const [gigForm, setGigForm] = useState({ title: '', price: '', loc: '', desc: '' });
   const [newsUrl, setNewsUrl] = useState('');
   const [newsPreview, setNewsPreview] = useState(null);
@@ -19,13 +19,9 @@ export default function Modals() {
   const [isRegister, setIsRegister] = useState(false);
   const [googleStep, setGoogleStep] = useState(1);
   
-  // Escrow Transaction State
-  const [escrowStep, setEscrowStep] = useState(0); // 0: Confirm, 1: Processing, 2: Success
+  // Fiat Escrow Transaction State
+  const [escrowStep, setEscrowStep] = useState(0); 
 
-  /**
-   * @function closeModal
-   * @description Hard resets all modal-related states to prevent data leakage on reopen.
-   */
   const closeModal = () => {
     setState(prev => ({ ...prev, activeModal: null, selectedItem: null }));
     setNewsPreview(null); 
@@ -41,8 +37,6 @@ export default function Modals() {
   useEffect(() => {
     if (activeModal && window.lucide) window.lucide.createIcons();
   }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep]);
-
-  // --- Core Logistics --- //
 
   const mockLogin = (name) => {
     setState(prev => ({
@@ -79,14 +73,14 @@ export default function Modals() {
 
   /**
    * @function handleEscrowTransaction
-   * @description Simulates the deployment of a smart contract and locking of funds.
+   * @description Simulates banking gateway connection and fiat lock process.
    */
   const handleEscrowTransaction = () => {
     setEscrowStep(1);
-    // Simulate network delay for Web3/Backend processing
+    // Simulate PG (Payment Gateway) delay
     setTimeout(() => {
       setEscrowStep(2);
-    }, 2500);
+    }, 3000);
   };
 
   if (!activeModal) return null;
@@ -95,7 +89,7 @@ export default function Modals() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay">
       <div className="absolute inset-0 bg-black/60" onClick={closeModal}></div>
       
-      {/* ================= GOOGLE OAUTH FLOW (PROFESSIONAL MOCK) ================= */}
+      {/* ================= GOOGLE OAUTH FLOW ================= */}
       {activeModal === 'modal-google-consent' ? (
         <div className="relative bg-white border border-gray-200 rounded-3xl w-full p-6 sm:p-8 shadow-2xl max-w-md animate-modal-pop font-sans text-gray-800">
           <button onClick={closeModal} className="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-800 hover:bg-gray-100 p-2 rounded-full transition"><i data-lucide="x" className="w-5 h-5"></i></button>
@@ -153,7 +147,7 @@ export default function Modals() {
           )}
         </div>
       ) : (
-        /* ================= REGULAR MODALS (GLASSMORPHISM) ================= */
+        /* ================= REGULAR MODALS ================= */
         <div className={`relative glass-panel border rounded-3xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto animate-modal-pop ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' ? 'max-w-2xl' : 'max-w-md'}`}>
           <button onClick={closeModal} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime transition hover:scale-110"><i data-lucide="x" className="w-5 h-5"></i></button>
           
@@ -190,15 +184,17 @@ export default function Modals() {
             </>
           )}
 
-          {/* 📍 [V.16.0] MODAL: ESCROW SMART CONTRACT DEPLOYMENT */}
+          {/* 📍 [V.16.1] MODAL: BANK / FIAT ESCROW SYSTEM */}
           {activeModal === 'modal-escrow' && selectedItem && (
             <div className="flex flex-col h-full">
               <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6">
                 <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--grid-color)] mb-3">
-                  <i data-lucide="shield-check" className="w-6 h-6 text-[var(--primary-glow)]"></i>
+                  <i data-lucide="lock" className="w-5 h-5 text-[var(--primary-glow)]"></i>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-prime">Escrow Contract</h3>
-                <p className="text-[10px] text-sub uppercase tracking-widest mt-1">Vennamis Vault Protocol</p>
+                <h3 className="text-xl sm:text-2xl font-black text-prime">Secure Escrow Payment</h3>
+                <p className="text-[10px] text-[var(--primary-glow)] uppercase tracking-widest mt-1 flex items-center justify-center">
+                  <i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Bank-Grade AES-256 Encryption
+                </p>
               </div>
 
               {escrowStep === 0 && (
@@ -208,15 +204,18 @@ export default function Modals() {
                     <p className="text-sm font-bold text-prime">{selectedItem.title}</p>
                     <p className="text-xs text-sub mt-1">Host: {selectedItem.host}</p>
                   </div>
+                  
                   <div className="flex justify-between items-center surface-bg border border-[var(--border-line)] rounded-xl p-4">
                     <span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span>
                     <span className="text-xl font-black glow-text">${selectedItem.price}</span>
                   </div>
+
                   <div className="text-xs text-sub leading-relaxed bg-white/5 p-3 rounded-lg border border-[var(--border-line)]">
-                    By confirming, funds will be locked securely in the smart contract until both parties approve the deliverables.
+                    By confirming, funds will be securely held in the <strong>Vennamis Escrow Account</strong>. Payment is only released to the host when you approve the delivered work.
                   </div>
-                  <button onClick={handleEscrowTransaction} className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>
-                    Sign & Lock Funds
+                  
+                  <button onClick={handleEscrowTransaction} className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift flex justify-center items-center" style={{ background: 'var(--primary-glow)' }}>
+                    <i data-lucide="credit-card" className="w-4 h-4 mr-2"></i> Proceed to Secure Checkout
                   </button>
                 </div>
               )}
@@ -224,10 +223,10 @@ export default function Modals() {
               {escrowStep === 1 && (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4 animate-[fadeStep_0.3s_ease_forwards]">
                   <i data-lucide="loader-2" className="w-10 h-10 text-[var(--primary-glow)] animate-spin"></i>
-                  <p className="text-sm font-bold text-prime">Deploying Smart Contract...</p>
-                  <p className="text-[10px] text-sub font-mono text-center">
-                    Generating Hash... <br/>
-                    Awaiting Network Consensus
+                  <p className="text-sm font-bold text-prime">Connecting to Payment Gateway...</p>
+                  <p className="text-[10px] text-sub text-center">
+                    Establishing secure connection<br/>
+                    Please do not close this window.
                   </p>
                 </div>
               )}
@@ -237,11 +236,11 @@ export default function Modals() {
                   <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-2">
                     <i data-lucide="check" className="w-8 h-8 text-green-500"></i>
                   </div>
-                  <h3 className="text-xl font-black text-prime">Contract Secured</h3>
-                  <p className="text-xs text-sub">Your application has been sent. Funds are now locked in Escrow Vault.</p>
-                  <div className="w-full bg-white/5 border border-[var(--border-line)] rounded-lg p-3 mt-4">
-                    <p className="text-[10px] text-sub uppercase mb-1">Transaction Hash</p>
-                    <p className="text-[10px] text-prime font-mono truncate">0x{(Math.random() * 1e16).toString(16)}...{(Math.random() * 1e16).toString(16)}</p>
+                  <h3 className="text-xl font-black text-prime">Payment Secured</h3>
+                  <p className="text-xs text-sub">Your application has been sent. Funds are safely held in Escrow.</p>
+                  <div className="w-full bg-white/5 border border-[var(--border-line)] rounded-lg p-3 mt-4 text-left flex justify-between items-center">
+                    <span className="text-[10px] text-sub uppercase">Bank Ref ID</span>
+                    <span className="text-[10px] text-prime font-mono">VEN-{Math.floor(10000000 + Math.random() * 90000000)}</span>
                   </div>
                   <button onClick={closeModal} className="w-full rounded-xl py-3 mt-4 text-prime font-bold text-sm border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover-lift">
                     Return to Feed
@@ -315,7 +314,6 @@ export default function Modals() {
               )}
             </>
           )}
-
         </div>
       )}
     </div>
