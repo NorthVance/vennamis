@@ -10,8 +10,13 @@
   }
   body.theme-light {
     --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.95);
-    --text-main: #0F172A; --text-muted: #64748B; --border-line: #E2E8F0;
-    --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.1);
+    /* ปรับสีตัวหนังสือในโหมดสว่างให้คมชัดขึ้น */
+    --text-main: #0F172A; 
+    --text-muted: #475569; 
+    --border-line: #E2E8F0;
+    /* ปรับสีเขียวให้เข้มขึ้นเล็กน้อยเพื่อสู้กับพื้นหลังสว่าง */
+    --primary-glow: #047857; 
+    --grid-color: rgba(5, 150, 105, 0.1);
   }
   body.theme-luxury {
     --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.95);
@@ -26,7 +31,8 @@
   .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
   .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.5); }
   .text-sub { color: var(--text-muted) !important; }
-  .glow-text { color: var(--primary-glow); text-shadow: 0 0 15px var(--grid-color); }
+  /* เพิ่ม Shadow ให้ข้อความ Glow Text สมูทและโดดเด่นไม่ว่าพื้นหลังจะเป็นสีอะไร */
+  .glow-text { color: var(--primary-glow); text-shadow: 0px 1px 2px rgba(0,0,0,0.1), 0 0 15px var(--grid-color); }
   
   .glow-border { transition: all 0.3s ease; }
   .glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--grid-color); transform: translateY(-4px) scale(1.01); }
@@ -47,7 +53,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* ================= WALLPAPERS ================= */
+  /* Background Fixes */
   .cyber-grid-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -56,20 +62,26 @@
     animation: cyberPan 30s linear infinite; opacity: 0.6; transition: opacity 0.5s;
   }
   
-  /* ใหม่: จักรวาลเคลื่อนไหว */
+  /* แก้สี Abstract ไม่ให้ขัดกับ Light Theme */
+  .bg-abstract {
+    background: linear-gradient(-45deg, var(--bg-surface), var(--grid-color), var(--bg-base), var(--border-line));
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+    opacity: 0.5;
+  }
+  
   .bg-galaxy {
     position: fixed; inset: 0; z-index: -2;
-    background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #05070a 100%);
+    background: radial-gradient(ellipse at bottom, var(--bg-surface) 0%, var(--bg-base) 100%);
     overflow: hidden;
   }
   .bg-galaxy::after {
     content: ""; position: absolute; top: 0; left: 0; width: 200vw; height: 200vh;
-    background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff80, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff40, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 130px 80px, #ffffff60, rgba(0,0,0,0));
+    background-image: radial-gradient(2px 2px at 20px 30px, var(--border-line), rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.5), rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, rgba(255,255,255,0.3), rgba(0,0,0,0));
     background-repeat: repeat; background-size: 200px 200px;
-    animation: starsMove 100s linear infinite; opacity: 0.5;
+    animation: starsMove 100s linear infinite; opacity: 0.8;
   }
 
-  /* ใหม่: 3D เนออนพุ่ง */
   .bg-3d-matrix {
     position: fixed; inset: 0; z-index: -2; background-color: var(--bg-surface);
     background-image: linear-gradient(var(--primary-glow) 2px, transparent 2px), linear-gradient(90deg, var(--primary-glow) 2px, transparent 2px);
@@ -87,3 +99,4 @@
 @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 @keyframes starsMove { from { transform: translateY(0); } to { transform: translateY(-50vh); } }
 @keyframes gridFlow { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
+@keyframes gradientFlow { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
