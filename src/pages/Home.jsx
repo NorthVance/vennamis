@@ -1,7 +1,3 @@
-// ============================================================
-// Home.jsx — Main page: Hero + Nav + Feed
-// ============================================================
-
 import { useState, useEffect } from 'react';
 import Typewriter        from '../components/common/Typewriter';
 import BentoBlock        from '../components/common/BentoBlock';
