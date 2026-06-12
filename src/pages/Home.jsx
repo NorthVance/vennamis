@@ -4,11 +4,6 @@ import { staticDict } from '../store';
 import Typewriter from '../components/common/Typewriter';
 import { NetworkTranslator } from '../services/api';
 
-/**
- * @component Home
- * @description Main feed rendering engine. Handles dynamic layouts for Gigs (Grid) and Community/Traders (List).
- * @version 16.0.0
- */
 export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
@@ -17,6 +12,7 @@ export default function Home() {
   const [viewData, setViewData] = useState([]);
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // INIT: I18N Sync
   useEffect(() => {
     let isMounted = true;
     const loadTranslations = async () => {
@@ -36,16 +32,10 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [rawData, state.lang, state.transApi]);
 
-  /**
-   * @function handleApply
-   * @description Triggers the Escrow Smart Contract initialization flow
-   */
+  // REQ: Escrow Trigger
   const handleApply = (e, item) => {
     e.stopPropagation();
-    if (!state.user) {
-      setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-      return;
-    }
+    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item }));
   };
 
@@ -68,7 +58,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Unified Search Interface */}
+      {/* CORE: Search */}
       <div className="max-w-3xl mx-auto">
         <div className="glass-panel border p-2 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
           <div className="flex-1 flex items-center px-4 py-2">
@@ -78,7 +68,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Module Navigation */}
+      {/* CORE: Nav */}
       <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
         {['gigs', 'community', 'traders', 'news'].map((nav) => (
           <button 
@@ -95,7 +85,7 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Feed Architecture */}
+      {/* RENDER: Feed */}
       <section>
         <div className="flex justify-between items-center mb-6 sm:mb-8">
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -109,7 +99,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Quick Post Injection */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-8 shadow-sm transition-all duration-300">
             <div className="flex items-start space-x-3 sm:space-x-4">
@@ -137,7 +126,6 @@ export default function Home() {
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full"}>
             {viewData.map(item => {
               
-              // Gigs Block Layout
               if (state.view === 'gigs') {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border glow-border hover-lift rounded-2xl sm:rounded-3xl p-5 sm:p-6 cursor-pointer flex flex-col justify-between h-[200px] sm:h-[220px] relative">
@@ -156,7 +144,6 @@ export default function Home() {
                       <span className="text-[10px] sm:text-xs text-sub font-mono flex items-center">
                         <div className="w-4 h-4 rounded-full bg-gray-600 mr-2 flex items-center justify-center text-[8px] text-white">{item.host[0]}</div> {item.host}
                       </span>
-                      {/* 📍 Integrated Escrow Apply Action */}
                       <button onClick={(e) => handleApply(e, item)} className="text-[10px] font-bold text-[var(--primary-glow)] flex items-center hover:underline">
                         Apply <i data-lucide="arrow-right" className="w-3 h-3 ml-1"></i>
                       </button>
@@ -165,7 +152,6 @@ export default function Home() {
                 );
               }
 
-              // Feed Block Layout (Community/Traders/News)
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover-lift glow-border cursor-pointer relative">
                   <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-5 right-5 text-sub hover:text-red-500 transition p-1" title="Report Post">
