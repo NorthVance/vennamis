@@ -13,18 +13,12 @@
     --text-main: #0F172A; --text-muted: #64748B; --border-line: #E2E8F0;
     --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.1);
   }
-  body.theme-luxury {
-    --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.85);
-    --text-main: #FDF8F5; --text-muted: #B4A596; --border-line: #3A2E24;
-    --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.15);
-  }
   body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
 }
 
 @layer utilities {
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
   
-  /* เพิ่มระดับ Blur และเงาให้ Dropdown อ่านง่ายขึ้นเวลาซ้อนทับภาพ */
   .glass-panel { 
     background-color: var(--bg-glass); 
     backdrop-filter: blur(32px); 
@@ -33,7 +27,6 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
   }
   
-  /* ปรับ Contrast ฟอนต์ */
   .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 3px rgba(0,0,0,0.1); }
   .text-sub { color: var(--text-muted) !important; }
   .glow-text { color: var(--primary-glow); text-shadow: 0 0 15px var(--grid-color); }
