@@ -80,7 +80,7 @@ export default function Header() {
         </div>
 
         {/* Dropdowns */}
-        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
+        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
             <span className="text-[10px] text-[var(--primary-glow)] cursor-pointer hover:underline" onClick={() => setState(prev => ({...prev, notifications: []}))}>Mark all read</span>
@@ -96,8 +96,8 @@ export default function Header() {
           )}
         </div>
 
-        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
-          <div className="flex items-center space-x-2 mb-5 pb-3 border-b border-[var(--border-line)]">
+        <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
+          <div className="flex items-center space-x-2 mb-4 sm:mb-5 pb-3 border-b border-[var(--border-line)]">
             <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
             <h3 className="text-base font-bold text-prime">System Config</h3>
           </div>
@@ -121,13 +121,13 @@ export default function Header() {
               </select>
             </div>
 
-            {/* ลูกพี่ครับ เมนู Translation กลับมาแล้วครับ! */}
+            {/* แก้ไขชื่อ Model API ให้คลีนตามแบบ Professional */}
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Translation API</label>
               <select value={state.transApi} onChange={(e) => changeApi(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
                 <option value="google" className="bg-[var(--bg-surface)] text-prime">Google Translate</option>
-                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL Pro (Premium)</option>
-                <option value="deepseek" className="bg-[var(--bg-surface)] text-prime">DeepSeek AI (Free)</option>
+                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL</option>
+                <option value="deepseek" className="bg-[var(--bg-surface)] text-prime">DeepSeek</option>
               </select>
             </div>
 
@@ -142,8 +142,8 @@ export default function Header() {
         </div>
 
         {state.user && (
-          <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
-            <div className="flex items-center space-x-4 mb-5 pb-5 border-b border-[var(--border-line)] group">
+          <div className={`smart-dropdown absolute top-[120%] right-0 w-[calc(100vw-2rem)] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
+            <div className="flex items-center space-x-4 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-[var(--border-line)] group">
               <div onClick={editAvatar} className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg cursor-pointer hover:opacity-80 transition hover-lift" style={{ background: 'var(--primary-glow)' }} title="Change Avatar">{state.user.avatar}</div>
               <div className="flex-1">
                 <h2 className="text-base font-bold text-prime">{state.user.name}</h2>
