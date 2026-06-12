@@ -1,206 +1,172 @@
-import { useState, useEffect } from 'react';
-import Typewriter        from '../components/common/Typewriter';
-import BentoBlock        from '../components/common/BentoBlock';
-import EditorialBlock    from '../components/common/EditorialBlock';
-import RetroBlock        from '../components/common/RetroBlock';
-import { PostsAPI, NotifAPI, AuthAPI } from '../services/api';
-import { customNewsStore } from '../assets/glows/JS/gigsData';
-import { NetworkTranslator, StaticDict } from '../assets/glows/JS/localization';
+import React, { useContext } from 'react';
+import { AppContext } from '../App';
+import { staticDict } from '../store';
+import Typewriter from '../components/common/Typewriter';
 
-const VIEW_TITLES = { gigs: 'Live Gigs Stream', community: 'Global Community Hub', traders: 'Traders Alpha', news: 'Platform News' };
+export default function Home() {
+  const { state, setState } = useContext(AppContext);
+  const t = staticDict[state.lang] || staticDict['en'];
 
-/**
- * @param {{
- *   user: object | null,
- *   lang: string,
- *   currentView: string,
- *   onSwitchView: (v: string) => void,
- *   onOpenModal: (id: string) => void,
- *   onOpenDetail: (item: object, view: string) => void,
- *   onReport: (id: string) => void
- * }} props
- */
-export default function Home({ user, lang, currentView, onSwitchView, onOpenModal, onOpenDetail, onReport }) {
-  const [data, setData]         = useState({ gigs: [], community: [], traders: [], news: [] });
-  const [loading, setLoading]   = useState(true);
-  const [translated, setTranslated] = useState({});
-
-  // Load all feed data on mount
-  useEffect(() => {
-    (async () => {
-      const [gigs, community, traders, news] = await Promise.all([
-        PostsAPI.fetchByCategory('gigs'),
-        PostsAPI.fetchByCategory('community'),
-        PostsAPI.fetchByCategory('traders'),
-        PostsAPI.fetchByCategory('news')
-      ]);
-      setData({ gigs, community, traders, news });
-      setLoading(false);
-    })();
-  }, []);
-
-  // Translate current feed when lang or view changes
-  useEffect(() => {
-    if (lang === 'en') { setTranslated({}); return; }
-    const items = currentView === 'news'
-      ? [...data[currentView], ...customNewsStore.getAll()]
-      : data[currentView];
-
-    (async () => {
-      const map = {};
-      for (const item of items) {
-        map[item.id] = {
-          title: await NetworkTranslator.translateText(item.title, lang),
-          desc:  await NetworkTranslator.translateText(item.desc, lang)
-        };
-      }
-      setTranslated(map);
-    })();
-  }, [lang, currentView, data]);
-
-  const handleQuickPost = async (title, desc, view) => {
-    if (!user) { onOpenModal('modal-login'); return; }
-    const newPost = { id: 'p' + Date.now(), type: 'post', host: user.name, title, desc, price: 0, tag: view === 'traders' ? 'Signal' : 'Discussion' };
-    await PostsAPI.create(newPost);
-    setData(prev => ({ ...prev, [view]: [newPost, ...prev[view]] }));
-  };
-
-  const handleSubmitGig = async ({ title, desc, loc, price }) => {
-    if (!user) { onOpenModal('modal-login'); return; }
-    const newPost = { id: 'g' + Date.now(), type: 'gig', host: user.name, title, desc, price, loc, tag: 'New Gig' };
-    await PostsAPI.create(newPost);
-    setData(prev => ({ ...prev, gigs: [newPost, ...prev.gigs] }));
-    onSwitchView('gigs');
-  };
-
-  const handleAddCustomNews = (item) => {
-    customNewsStore.add(item);
-    setData(prev => ({ ...prev })); // force re-render
-  };
-
-  const getTitle = (item) => lang === 'en' ? item.title : (translated[item.id]?.title || item.title);
-  const getDesc  = (item) => lang === 'en' ? item.desc  : (translated[item.id]?.desc  || item.desc);
-
-  const currentItems = currentView === 'news'
-    ? [...data.news, ...customNewsStore.getAll()]
-    : data[currentView];
+  const viewData = state.data[state.view] || [];
 
   return (
-    <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-
-      {/* Hero — Gigs only */}
-      {currentView === 'gigs' && (
-        <div className="text-center space-y-6">
+    <div className="space-y-10">
+      
+      {/* HERO SECTION */}
+      {state.view === 'gigs' && (
+        <div className="text-center space-y-6 transition-all duration-500">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border surface-bg text-[10px] font-bold uppercase tracking-widest text-sub">
-            <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }} />
-            <span>{StaticDict[lang]?.badge_secure || 'Global Ecosystem'}</span>
+            <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }}></i>
+            <span>{t.badge_secure}</span>
           </div>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
-            <span>{StaticDict[lang]?.hero_static || 'Find trusted talent for'}</span>
-            <br />
+            <span>{t.hero_static}</span><br/>
             <div className="h-[1.2em] mt-2 flex justify-center items-center">
-              <Typewriter lang={lang} />
+              <Typewriter />
             </div>
           </h1>
-          <p className="text-sm sm:text-lg text-sub max-w-2xl mx-auto">
-            {StaticDict[lang]?.hero_sub || 'Connect with verified professionals globally. Powered by smart contracts.'}
-          </p>
+          <p className="text-sm sm:text-lg text-sub max-w-2xl mx-auto">{t.hero_sub}</p>
         </div>
       )}
 
-      {/* Search bar */}
+      {/* SEARCH BAR */}
       <div className="max-w-3xl mx-auto">
         <div className="glass-panel border p-2 rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
           <div className="flex-1 flex items-center px-4 py-2 border-b sm:border-b-0 sm:border-r border-[var(--border-line)]">
-            <i data-lucide="search" className="w-5 h-5 text-sub mr-3" />
-            <input
-              type="text"
-              className="w-full bg-transparent border-none outline-none text-prime placeholder-[var(--text-muted)]"
-              placeholder="Search skills, posts, or news..."
-            />
+            <i data-lucide="search" className="w-5 h-5 text-sub mr-3"></i>
+            <input type="text" className="w-full bg-transparent border-none outline-none text-prime placeholder-[var(--text-muted)]" placeholder="Search skills, posts, or news..." />
           </div>
         </div>
       </div>
 
-      {/* Navigation tabs */}
-      <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)]">
-        {[
-          { key: 'gigs',      icon: 'briefcase',  label: 'Gigs' },
-          { key: 'community', icon: 'users',       label: 'Community' },
-          { key: 'traders',   icon: 'trending-up', label: 'Traders' },
-          { key: 'news',      icon: 'newspaper',   label: 'News' }
-        ].map(({ key, icon, label }) => (
-          <button
-            key={key}
-            onClick={() => onSwitchView(key)}
-            className={`nav-link flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-sub ${currentView === key ? 'active' : ''}`}
+      {/* NAVIGATION TABS */}
+      <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
+        {['gigs', 'community', 'traders', 'news'].map((nav) => (
+          <button 
+            key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
+            className={`relative transition-colors duration-300 whitespace-nowrap flex items-center gap-1 text-xs font-bold uppercase tracking-widest pb-1 ${state.view === nav ? 'text-[var(--primary-glow)]' : 'text-sub hover:text-prime'}`}
           >
-            <i data-lucide={icon} className="w-5 h-5" /> {label}
+            {nav === 'gigs' && <i data-lucide="briefcase" className="w-5 h-5"></i>}
+            {nav === 'community' && <i data-lucide="users" className="w-5 h-5"></i>}
+            {nav === 'traders' && <i data-lucide="trending-up" className="w-5 h-5"></i>}
+            {nav === 'news' && <i data-lucide="newspaper" className="w-5 h-5"></i>}
+            <span className="ml-1">{nav}</span>
+            {state.view === nav && <span className="absolute bottom-[-4px] left-0 w-full h-[2px] bg-[var(--primary-glow)] rounded-full"></span>}
           </button>
         ))}
       </div>
 
-      {/* Feed section */}
+      {/* DYNAMIC GRID SECTION */}
       <section>
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-3">
-            <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }} />
-            <h2 className="text-xl font-bold text-prime">{VIEW_TITLES[currentView]}</h2>
+            <span className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
+            <h2 className="text-xl font-bold text-prime uppercase tracking-wider">{state.view} Stream</h2>
           </div>
-          {currentView === 'news' && (
-            <button
-              onClick={() => onOpenModal('modal-add-news')}
-              className="px-3 py-1.5 rounded-xl text-white text-xs font-bold hover-lift shadow-md flex items-center gap-1"
-              style={{ background: 'var(--primary-glow)' }}
-            >
-              <i data-lucide="plus" className="w-3.5 h-3.5" /> Add News Source
+          {state.view === 'news' && (
+            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="px-3 py-1.5 rounded-xl text-white text-xs font-bold hover-lift shadow-md flex items-center gap-1" style={{ background: 'var(--primary-glow)' }}>
+              <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News Source
             </button>
           )}
         </div>
 
-        {/* Quick post composer */}
-        {(currentView === 'community' || currentView === 'traders') && (
-          <RetroBlock
-            viewType={currentView}
-            userAvatar={user?.avatar || 'U'}
-            onSubmit={(title, desc) => handleQuickPost(title, desc, currentView)}
-          />
+        {/* QUICK POST (Community & Traders) */}
+        {(state.view === 'community' || state.view === 'traders') && (
+          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-3xl p-6 mb-8 shadow-sm transition-all duration-300">
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>{state.user ? state.user.avatar : 'U'}</div>
+              <div className="flex-1 space-y-3">
+                <input type="text" placeholder={state.view === 'traders' ? 'Share a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-lg outline-none placeholder-[var(--text-muted)]" />
+                <textarea rows="2" placeholder="What are your thoughts?" className="w-full bg-transparent text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)]"></textarea>
+                <div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)]">
+                  <div className="flex space-x-2 text-sub">
+                    <button className="p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="image" className="w-4 h-4"></i></button>
+                    <button className="p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="link" className="w-4 h-4"></i></button>
+                  </div>
+                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="px-6 py-2 rounded-xl text-white font-bold text-xs hover-lift shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* Feed grid */}
-        {loading ? (
-          <div className="text-center py-10">
-            <span className="animate-pulse text-sub">Loading...</span>
-          </div>
-        ) : currentItems.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[var(--border-line)] rounded-3xl">
-            <p className="text-sm text-sub">No data found.</p>
-          </div>
-        ) : currentView === 'gigs' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentItems.map(item => (
-              <BentoBlock
-                key={item.id}
-                item={{ ...item, title: getTitle(item), desc: getDesc(item) }}
-                onOpen={() => onOpenDetail(item, currentView)}
-                onReport={onReport}
-              />
-            ))}
-          </div>
+        {/* FEED RENDERER */}
+        {viewData.length === 0 ? (
+          <div className="col-span-full text-center py-16 border border-dashed border-[var(--border-line)] rounded-3xl"><p className="text-sm text-sub">No data found.</p></div>
         ) : (
-          <div className="flex flex-col space-y-6 max-w-3xl mx-auto w-full">
-            {currentItems.map(item => (
-              <EditorialBlock
-                key={item.id}
-                item={{ ...item, title: getTitle(item), desc: getDesc(item) }}
-                viewType={currentView}
-                onOpen={() => onOpenDetail(item, currentView)}
-                onReport={onReport}
-              />
-            ))}
+          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col space-y-6 max-w-3xl mx-auto w-full"}>
+            {viewData.map(item => {
+              
+              // --- 1. GIGS UI (Grid Layout) ---
+              if (state.view === 'gigs') {
+                return (
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border glow-border rounded-3xl p-6 hover-lift cursor-pointer flex flex-col justify-between h-[220px] relative">
+                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1" title="Report Post">
+                      <i data-lucide="flag" className="w-3.5 h-3.5"></i>
+                    </button>
+                    <div>
+                      <div className="flex justify-between items-start mb-3 pr-6">
+                        <span className="text-[10px] font-bold uppercase text-sub px-2 py-1 rounded bg-white/5 border border-[var(--border-line)]">{item.loc}</span>
+                        <span className="font-black glow-text">${item.price}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
+                      <p className="text-xs text-sub line-clamp-2">{item.desc}</p>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4 mt-4">
+                      <span className="text-xs text-sub font-mono flex items-center">
+                        <div className="w-4 h-4 rounded-full bg-gray-600 mr-2 flex items-center justify-center text-[8px] text-white">{item.host[0]}</div> {item.host}
+                      </span>
+                      <span className="text-[10px] font-bold text-[var(--primary-glow)] flex items-center">Apply <i data-lucide="arrow-right" className="w-3 h-3 ml-1"></i></span>
+                    </div>
+                  </div>
+                );
+              }
+
+              // --- 2. COMMUNITY / TRADERS / NEWS UI (List Layout) ---
+              return (
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border border-[var(--border-line)] rounded-3xl p-6 hover-lift cursor-pointer relative">
+                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 transition p-1" title="Report Post">
+                    <i data-lucide="flag" className="w-4 h-4"></i>
+                  </button>
+                  <div className="flex items-start space-x-4 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white">{item.host[0]}</div>
+                    <div>
+                      <p className="text-sm font-bold text-prime">{item.host}</p>
+                      <p className="text-[10px] text-sub">{item.tag || (state.view === 'news' ? 'Update' : 'Post')}</p>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-prime mb-2">{item.title}</h3>
+                  <p className="text-sm text-sub mb-4">{item.desc}</p>
+                  
+                  <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4">
+                    
+                    {/* Extra HTML by View */}
+                    {state.view === 'community' && (
+                      <div className="flex space-x-4 text-sub text-xs">
+                        <span className="flex items-center hover:text-[var(--primary-glow)]"><i data-lucide="heart" className="w-4 h-4 mr-1"></i> {item.likes || 0}</span>
+                        <span className="flex items-center hover:text-[var(--primary-glow)]"><i data-lucide="message-circle" className="w-4 h-4 mr-1"></i> {item.comments || 0}</span>
+                      </div>
+                    )}
+                    {state.view === 'traders' && (
+                      <div className={`flex space-x-4 text-xs font-bold ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
+                        <span className="flex items-center"><i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-4 h-4 mr-1"></i> {item.sentiment?.toUpperCase()}</span>
+                      </div>
+                    )}
+                    {state.view === 'news' && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] bg-[var(--bg-surface)] px-2 py-1 rounded border border-[var(--border-line)] text-sub">Source: {item.source || 'Custom'}</span>
+                        <button className="text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
+                      </div>
+                    )}
+
+                    <button onClick={(e) => e.stopPropagation()} className="text-sub hover:text-prime"><i data-lucide="share-2" className="w-4 h-4"></i></button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }
