@@ -1,35 +1,49 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../App';
 
+/**
+ * @component Modals
+ * @description Centralized rendering engine for all application modals (Auth, Forms, Workflows).
+ * @version 16.0.0
+ */
 export default function Modals() {
   const { state, setState } = useContext(AppContext);
   const { activeModal, selectedItem, user } = state; 
 
-  // Form States
+  // --- Local States ---
   const [gigForm, setGigForm] = useState({ title: '', price: '', loc: '', desc: '' });
   const [newsUrl, setNewsUrl] = useState('');
   const [newsPreview, setNewsPreview] = useState(null);
   const [isFetchingNews, setIsFetchingNews] = useState(false);
   
-  // Auth Flows States
   const [isRegister, setIsRegister] = useState(false);
   const [googleStep, setGoogleStep] = useState(1);
+  
+  // Escrow Transaction State
+  const [escrowStep, setEscrowStep] = useState(0); // 0: Confirm, 1: Processing, 2: Success
 
-  // Reset Everything cleanly on close
+  /**
+   * @function closeModal
+   * @description Hard resets all modal-related states to prevent data leakage on reopen.
+   */
   const closeModal = () => {
     setState(prev => ({ ...prev, activeModal: null, selectedItem: null }));
     setNewsPreview(null); 
     setNewsUrl(''); 
     setGigForm({ title: '', price: '', loc: '', desc: '' });
-    setTimeout(() => { setIsRegister(false); setGoogleStep(1); }, 300); 
+    setTimeout(() => { 
+      setIsRegister(false); 
+      setGoogleStep(1); 
+      setEscrowStep(0);
+    }, 300); 
   };
 
-  // Re-initialize icons (esp. when Google Step changes)
   useEffect(() => {
     if (activeModal && window.lucide) window.lucide.createIcons();
-  }, [activeModal, selectedItem, newsPreview, isRegister, googleStep]);
+  }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep]);
 
-  // --- API & Logic ---
+  // --- Core Logistics --- //
+
   const mockLogin = (name) => {
     setState(prev => ({
       ...prev, 
@@ -61,6 +75,18 @@ export default function Modals() {
       const newItem = { id: 'n' + Date.now(), type: 'news', host: user ? user.name : 'Anonymous', title: newsPreview.title, desc: newsPreview.desc, source: 'Custom', tag: 'User Added' };
       setState(prev => ({ ...prev, data: { ...prev.data, news: [newItem, ...prev.data.news] }, view: 'news', activeModal: null }));
     }
+  };
+
+  /**
+   * @function handleEscrowTransaction
+   * @description Simulates the deployment of a smart contract and locking of funds.
+   */
+  const handleEscrowTransaction = () => {
+    setEscrowStep(1);
+    // Simulate network delay for Web3/Backend processing
+    setTimeout(() => {
+      setEscrowStep(2);
+    }, 2500);
   };
 
   if (!activeModal) return null;
@@ -162,6 +188,67 @@ export default function Modals() {
                 </p>
               </div>
             </>
+          )}
+
+          {/* 📍 [V.16.0] MODAL: ESCROW SMART CONTRACT DEPLOYMENT */}
+          {activeModal === 'modal-escrow' && selectedItem && (
+            <div className="flex flex-col h-full">
+              <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6">
+                <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--grid-color)] mb-3">
+                  <i data-lucide="shield-check" className="w-6 h-6 text-[var(--primary-glow)]"></i>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-prime">Escrow Contract</h3>
+                <p className="text-[10px] text-sub uppercase tracking-widest mt-1">Vennamis Vault Protocol</p>
+              </div>
+
+              {escrowStep === 0 && (
+                <div className="space-y-5 animate-[fadeStep_0.3s_ease_forwards]">
+                  <div className="surface-bg border border-[var(--border-line)] rounded-xl p-4">
+                    <p className="text-[10px] text-sub uppercase mb-1">Applying for</p>
+                    <p className="text-sm font-bold text-prime">{selectedItem.title}</p>
+                    <p className="text-xs text-sub mt-1">Host: {selectedItem.host}</p>
+                  </div>
+                  <div className="flex justify-between items-center surface-bg border border-[var(--border-line)] rounded-xl p-4">
+                    <span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span>
+                    <span className="text-xl font-black glow-text">${selectedItem.price}</span>
+                  </div>
+                  <div className="text-xs text-sub leading-relaxed bg-white/5 p-3 rounded-lg border border-[var(--border-line)]">
+                    By confirming, funds will be locked securely in the smart contract until both parties approve the deliverables.
+                  </div>
+                  <button onClick={handleEscrowTransaction} className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>
+                    Sign & Lock Funds
+                  </button>
+                </div>
+              )}
+
+              {escrowStep === 1 && (
+                <div className="flex flex-col items-center justify-center py-10 space-y-4 animate-[fadeStep_0.3s_ease_forwards]">
+                  <i data-lucide="loader-2" className="w-10 h-10 text-[var(--primary-glow)] animate-spin"></i>
+                  <p className="text-sm font-bold text-prime">Deploying Smart Contract...</p>
+                  <p className="text-[10px] text-sub font-mono text-center">
+                    Generating Hash... <br/>
+                    Awaiting Network Consensus
+                  </p>
+                </div>
+              )}
+
+              {escrowStep === 2 && (
+                <div className="flex flex-col items-center text-center space-y-4 py-4 animate-[fadeStep_0.3s_ease_forwards]">
+                  <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-2">
+                    <i data-lucide="check" className="w-8 h-8 text-green-500"></i>
+                  </div>
+                  <h3 className="text-xl font-black text-prime">Contract Secured</h3>
+                  <p className="text-xs text-sub">Your application has been sent. Funds are now locked in Escrow Vault.</p>
+                  <div className="w-full bg-white/5 border border-[var(--border-line)] rounded-lg p-3 mt-4">
+                    <p className="text-[10px] text-sub uppercase mb-1">Transaction Hash</p>
+                    <p className="text-[10px] text-prime font-mono truncate">0x{(Math.random() * 1e16).toString(16)}...{(Math.random() * 1e16).toString(16)}</p>
+                  </div>
+                  <button onClick={closeModal} className="w-full rounded-xl py-3 mt-4 text-prime font-bold text-sm border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover-lift">
+                    Return to Feed
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           {/* MODAL: POST GIG */}
