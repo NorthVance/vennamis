@@ -107,10 +107,10 @@ export default function Header() {
             
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
-              <div className="grid grid-cols-3 gap-2">
+              {/* ปรับเหลือแค่ 2 คอลัมน์ เอา Gold ทิ้ง */}
+              <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Clean</button>
                 <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Cyber</button>
-                <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Gold</button>
               </div>
             </div>
             
