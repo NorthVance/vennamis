@@ -10,9 +10,8 @@ export const AppContext = createContext();
 export default function App() {
   const [state, setState] = useState({
     lang: 'en',
-    transApi: 'google', // google, deepl, deepseek
     theme: 'light',
-    bg: 'cyber', // cyber, galaxy, 3d-matrix, landscape
+    bg: 'cyber', // cyber, aurora, landscape
     view: 'gigs',
     user: null,
     activeModal: null,
@@ -23,27 +22,30 @@ export default function App() {
     notifications: []
   });
 
+  // Handle Theme Switching
   useEffect(() => {
     document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`;
   }, [state.theme]);
 
+  // Handle Landscape Slideshow Logic
   const [slideId, setSlideId] = useState(1);
   useEffect(() => {
     if (state.bg !== 'landscape') return;
-    const interval = setInterval(() => setSlideId(prev => (prev % 3) + 1), 6000);
+    const interval = setInterval(() => {
+      setSlideId(prev => (prev % 3) + 1);
+    }, 6000);
     return () => clearInterval(interval);
   }, [state.bg]);
 
+  // Initialize Lucide Icons
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
   }, [state.view, state.data, state.bg]);
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      {/* Dynamic Backgrounds Render */}
+      {/* Background Layer */}
       {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
-      {state.bg === 'galaxy' && <div className="bg-galaxy"></div>}
-      {state.bg === '3d-matrix' && <div className="bg-3d-matrix"></div>}
       
       {state.bg === 'landscape' && (
         <div className="fixed inset-0 z-[-2]">
@@ -55,20 +57,23 @@ export default function App() {
 
       <div className="cyber-vignette"></div>
       
-      {(state.bg === 'cyber' || state.bg === '3d-matrix') && (
+      {/* Aurora Layer */}
+      {(state.bg === 'cyber' || state.bg === 'aurora') && (
         <>
-          <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div>
-          <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
+          <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1]"></div>
+          <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1]" style={{ animationDelay: '1.5s' }}></div>
         </>
       )}
 
+      {/* Main Core Layout */}
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <Home />
         </main>
       </div>
 
+      {/* Floating System layer */}
       <ChatWidget />
       <Modals />
     </AppContext.Provider>
