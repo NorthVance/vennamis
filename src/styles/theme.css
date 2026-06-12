@@ -10,50 +10,88 @@
   }
   body.theme-light {
     --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.95);
-    /* ปรับสีตัวหนังสือในโหมดสว่างให้คมชัดขึ้น */
     --text-main: #0F172A; 
     --text-muted: #475569; 
     --border-line: #E2E8F0;
-    /* ปรับสีเขียวให้เข้มขึ้นเล็กน้อยเพื่อสู้กับพื้นหลังสว่าง */
     --primary-glow: #047857; 
     --grid-color: rgba(5, 150, 105, 0.1);
   }
-  body.theme-luxury {
+  /* Unified Gold / Luxury Theme – activate via class "theme-gold" or "theme-luxury" */
+  body.theme-gold, body.theme-luxury {
     --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.95);
     --text-main: #FDF8F5; --text-muted: #B4A596; --border-line: #3A2E24;
-    --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.15);
+    --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.2);
   }
   body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
 }
 
 @layer utilities {
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
-  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
-  .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.5); }
-  .text-sub { color: var(--text-muted) !important; }
-  /* เพิ่ม Shadow ให้ข้อความ Glow Text สมูทและโดดเด่นไม่ว่าพื้นหลังจะเป็นสีอะไร */
-  .glow-text { color: var(--primary-glow); text-shadow: 0px 1px 2px rgba(0,0,0,0.1), 0 0 15px var(--grid-color); }
   
-  .glow-border { transition: all 0.3s ease; }
-  .glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--grid-color); transform: translateY(-4px) scale(1.01); }
+  /* Enhanced glassmorphism with stronger blur and smooth transition */
+  .glass-panel { 
+    background-color: var(--bg-glass); 
+    backdrop-filter: blur(24px); 
+    -webkit-backdrop-filter: blur(24px); 
+    border-color: var(--border-line); 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2); 
+    transition: all 0.3s ease;
+  }
+  
+  .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.3); }
+  .text-sub { color: var(--text-muted) !important; }
+  
+  /* Glow text with golden or green shimmer */
+  .glow-text { 
+    color: var(--primary-glow); 
+    text-shadow: 0px 0px 8px var(--grid-color), 0px 1px 2px rgba(0,0,0,0.2); 
+  }
+  
+  /* Lift & glow hover effect */
+  .glow-border { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+  .glow-border:hover { 
+    border-color: var(--primary-glow); 
+    box-shadow: 0 0 25px var(--grid-color); 
+    transform: translateY(-4px) scale(1.01); 
+  }
+  
   .hover-lift { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-  .hover-lift:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px var(--grid-color); }
+  .hover-lift:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 35px var(--grid-color); }
 
   .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
   
-  .smart-dropdown { opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
+  /* Pulse glow animation for backgrounds or buttons */
+  .animate-pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+  
+  /* Dropdown & Modal enhanced blur */
+  .smart-dropdown { 
+    opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; 
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; 
+  }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
   
-  .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(8px); }
+  .modal-overlay { 
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease; 
+    backdrop-filter: blur(12px); 
+  }
   .modal-overlay.active { opacity: 1; pointer-events: auto; }
-  .modal-box { transform: scale(0.95) translateY(15px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .modal-box { 
+    transform: scale(0.95) translateY(15px); opacity: 0; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    backdrop-filter: blur(20px);
+    background-color: var(--bg-glass);
+    border: 1px solid var(--border-line);
+    border-radius: 2rem;
+  }
   .modal-overlay.active .modal-box { transform: scale(1) translateY(0); opacity: 1; }
 
   ::-webkit-scrollbar { width: 6px; height: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* Background Fixes */
+  /* --- Background Variations (keep same classes but more polished) --- */
   .cyber-grid-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -62,7 +100,6 @@
     animation: cyberPan 30s linear infinite; opacity: 0.6; transition: opacity 0.5s;
   }
   
-  /* แก้สี Abstract ไม่ให้ขัดกับ Light Theme */
   .bg-abstract {
     background: linear-gradient(-45deg, var(--bg-surface), var(--grid-color), var(--bg-base), var(--border-line));
     background-size: 400% 400%;
@@ -93,9 +130,10 @@
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); pointer-events: none; }
 }
 
+/* Keyframes (all needed) */
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
-@keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+@keyframes pulseGlow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
 @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 @keyframes starsMove { from { transform: translateY(0); } to { transform: translateY(-50vh); } }
 @keyframes gridFlow { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
