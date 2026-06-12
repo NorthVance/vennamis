@@ -47,7 +47,8 @@ export default function Header() {
 
       <div className="flex items-center space-x-2 sm:space-x-4 relative">
         <select value={state.lang} onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))} className="surface-bg border rounded-lg px-2 py-1.5 text-xs text-sub focus:outline-none cursor-pointer hidden md:block hover-lift">
-          <option value="en">EN</option><option value="th">TH</option>
+          <option value="en" className="bg-[var(--bg-surface)] text-prime">EN</option>
+          <option value="th" className="bg-[var(--bg-surface)] text-prime">TH</option>
         </select>
 
         {state.view === 'gigs' && (
@@ -79,6 +80,7 @@ export default function Header() {
           )}
         </div>
 
+        {/* --- Notifications Dropdown --- */}
         <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
@@ -95,52 +97,53 @@ export default function Header() {
           )}
         </div>
 
+        {/* --- Settings Dropdown --- */}
         <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-80 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'settings' ? 'active' : ''}`}>
           <div className="flex items-center space-x-2 mb-4 sm:mb-5 pb-3 border-b border-[var(--border-line)]">
             <i data-lucide="sliders" className="w-4 h-4 text-[var(--primary-glow)]"></i>
             <h3 className="text-base font-bold text-prime">System Config</h3>
           </div>
           <div className="space-y-4">
+            
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Visual Theme</label>
               <div className="grid grid-cols-3 gap-2">
-                {/* Fix: ใส่ backdrop-blur ให้ปุ่มที่ Active ดูหรูหราขึ้น */}
-                <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition hover:border-[var(--primary-glow)] ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)] backdrop-blur-md' : 'border-[var(--border-line)] text-prime bg-transparent hover:bg-white/5'}`}>Clean</button>
-                <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition hover:border-[var(--primary-glow)] ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)] backdrop-blur-md' : 'border-[var(--border-line)] text-prime bg-transparent hover:bg-white/5'}`}>Cyber</button>
-                <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition hover:border-[var(--primary-glow)] ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)] backdrop-blur-md' : 'border-[var(--border-line)] text-prime bg-transparent hover:bg-white/5'}`}>Gold</button>
+                <button onClick={() => changeTheme('light')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'light' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Clean</button>
+                <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Cyber</button>
+                <button onClick={() => changeTheme('luxury')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'luxury' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Gold</button>
               </div>
             </div>
             
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
               <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                <option value="cyber">Cyber Matrix</option>
-                <option value="galaxy">Galaxy Flow</option>
-                <option value="3d-matrix">3D Neon Grid</option>
-                <option value="landscape">Landscapes</option>
+                <option value="cyber" className="bg-[var(--bg-surface)] text-prime">Cyber Matrix</option>
+                <option value="galaxy" className="bg-[var(--bg-surface)] text-prime">Galaxy Flow</option>
+                <option value="3d-matrix" className="bg-[var(--bg-surface)] text-prime">3D Neon Grid</option>
+                <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
               </select>
             </div>
 
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Translation API</label>
-              {/* Fix: ปรับชื่อ API ให้สั้นและตรงประเด็นตามสั่ง */}
               <select value={state.transApi} onChange={(e) => changeApi(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                <option value="google">Google Translate</option>
-                <option value="deepl">DeepL</option>
-                <option value="deepseek">DeepSeek AI</option>
+                <option value="google" className="bg-[var(--bg-surface)] text-prime">Google Translate</option>
+                <option value="deepl" className="bg-[var(--bg-surface)] text-prime">DeepL</option>
+                <option value="deepseek" className="bg-[var(--bg-surface)] text-prime">DeepSeek</option>
               </select>
             </div>
 
             <div className="p-3 surface-bg border rounded-xl space-y-3 md:hidden">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Language</label>
               <select value={state.lang} onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                <option value="en">English (EN)</option>
-                <option value="th">Thai (TH)</option>
+                <option value="en" className="bg-[var(--bg-surface)] text-prime">English (EN)</option>
+                <option value="th" className="bg-[var(--bg-surface)] text-prime">Thai (TH)</option>
               </select>
             </div>
           </div>
         </div>
 
+        {/* --- Profile Dropdown --- */}
         {state.user && (
           <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
             <div className="flex items-center space-x-4 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-[var(--border-line)] group">
