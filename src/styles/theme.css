@@ -4,87 +4,74 @@
 
 @layer base {
   :root {
-    --bg-base: #05070A; --bg-surface: #0B0F19; --bg-glass: rgba(11, 15, 25, 0.90);
-    --text-main: #FFFFFF; --text-muted: #8B949E; --border-line: #1F2937;
-    --primary-glow: #10B981; --grid-color: rgba(16, 185, 129, 0.15);
+    /* UI: Deep Spatial Colors */
+    --bg-base: #030407; 
+    --bg-surface: rgba(13, 17, 25, 0.6); 
+    --bg-glass: rgba(10, 14, 23, 0.4);
+    --text-main: #F8FAFC; 
+    --text-muted: #64748B; 
+    --border-line: rgba(255, 255, 255, 0.05);
+    --primary-glow: #10B981; 
+    --grid-color: rgba(16, 185, 129, 0.08);
   }
   body.theme-light {
-    --bg-base: #F8FAFC; --bg-surface: #FFFFFF; --bg-glass: rgba(255, 255, 255, 0.95);
-    --text-main: #0F172A; --text-muted: #64748B; --border-line: #E2E8F0;
-    --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.1);
-  }
-  body.theme-luxury {
-    --bg-base: #0A0806; --bg-surface: #14100C; --bg-glass: rgba(20, 16, 12, 0.95);
-    --text-main: #FDF8F5; --text-muted: #B4A596; --border-line: #3A2E24;
-    --primary-glow: #D4AF37; --grid-color: rgba(212, 175, 55, 0.15);
+    --bg-base: #F1F5F9; --bg-surface: rgba(255, 255, 255, 0.7); --bg-glass: rgba(255, 255, 255, 0.5);
+    --text-main: #0F172A; --text-muted: #64748B; --border-line: rgba(0, 0, 0, 0.05);
+    --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.05);
   }
   body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
 }
 
 @layer utilities {
+  /* UI: Bento Box Architecture */
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
-  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
-  .text-prime { color: var(--text-main) !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.5); }
-  .text-sub { color: var(--text-muted) !important; }
-  .glow-text { color: var(--primary-glow); text-shadow: 0 0 15px var(--grid-color); }
-  
-  .glow-border { transition: all 0.3s ease; }
-  .glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--grid-color); transform: translateY(-4px) scale(1.01); }
-  
-  .hover-lift { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-  .hover-lift:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px var(--grid-color); }
-  
-  /* UX: Tactile Feedback */
-  .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
-  .btn-press:active { transform: scale(0.95); }
+  .bento-card {
+    background-color: var(--bg-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-line);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
 
-  .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
+  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-color: var(--border-line); }
   
-  .smart-dropdown { opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
+  .text-prime { color: var(--text-main) !important; }
+  .text-sub { color: var(--text-muted) !important; }
+  .glow-text { color: var(--primary-glow); text-shadow: 0 0 20px var(--grid-color); }
+  
+  /* UX: Snappy Micro-interactions */
+  .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+  .btn-press:active { transform: scale(0.97); }
+  
+  .smart-dropdown { opacity: 0; transform: translateY(-5px) scale(0.98); pointer-events: none; transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
   
-  .modal-overlay { backdrop-filter: blur(8px); animation: fadeInOverlay 0.3s ease forwards; }
-  .animate-modal-pop { animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  .modal-overlay { backdrop-filter: blur(12px); animation: fadeInOverlay 0.2s ease forwards; }
+  .animate-modal-pop { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-  ::-webkit-scrollbar { width: 6px; height: 2px; }
+  .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
+
+  ::-webkit-scrollbar { width: 4px; height: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* Wallpapers */
+  /* BG: Immersive Elements */
   .cyber-grid-container {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
-    background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 50px 50px;
-    transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
-    animation: cyberPan 30s linear infinite; opacity: 0.6; transition: opacity 0.5s;
-  }
-  .bg-galaxy {
     position: fixed; inset: 0; z-index: -2;
-    background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #05070a 100%);
-    overflow: hidden;
+    background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+    animation: cyberPan 40s linear infinite; opacity: 0.4;
   }
-  .bg-galaxy::after {
-    content: ""; position: absolute; top: 0; left: 0; width: 200vw; height: 200vh;
-    background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff80, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff40, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 130px 80px, #ffffff60, rgba(0,0,0,0));
-    background-repeat: repeat; background-size: 200px 200px;
-    animation: starsMove 100s linear infinite; opacity: 0.5;
-  }
-  .bg-3d-matrix {
-    position: fixed; inset: 0; z-index: -2; background-color: var(--bg-surface);
-    background-image: linear-gradient(var(--primary-glow) 2px, transparent 2px), linear-gradient(90deg, var(--primary-glow) 2px, transparent 2px);
-    background-size: 100px 100px;
-    transform: perspective(600px) rotateX(75deg) translateY(-100px) translateZ(-300px);
-    animation: gridFlow 10s linear infinite; opacity: 0.2;
-  }
-  .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 80%); pointer-events: none; }
+  .bg-galaxy { position: fixed; inset: 0; z-index: -2; background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #030407 100%); }
+  .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 100%); pointer-events: none; }
 }
 
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
-@keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
-@keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-@keyframes starsMove { from { transform: translateY(0); } to { transform: translateY(-50vh); } }
-@keyframes gridFlow { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
 @keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-@keyframes fadeStep { 0% { opacity: 0; transform: translateX(10px); } 100% { opacity: 1; transform: translateX(0); } }
+@keyframes modalPop { 0% { opacity: 0; transform: scale(0.98) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
