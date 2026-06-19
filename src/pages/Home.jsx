@@ -95,6 +95,19 @@ export default function Home() {
       {/* UI: Content Feed */}
       <section>
         
+        {/* 📍 [RESTORED] Section Header & Add News Button */}
+        <div className="flex justify-between items-center mb-6 sm:mb-8 mt-6">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
+            <h2 className="text-lg sm:text-xl font-black text-prime uppercase tracking-wider">{state.view} Stream</h2>
+          </div>
+          {state.view === 'news' && (
+            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-4 py-2 rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift" style={{ background: 'var(--primary-glow)' }}>
+              <i data-lucide="plus" className="w-3.5 h-3.5"></i> <span className="hidden sm:inline">Add News Source</span>
+            </button>
+          )}
+        </div>
+
         {/* CORE: Quick Post */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="bento-card rounded-[2rem] p-5 mb-8">
