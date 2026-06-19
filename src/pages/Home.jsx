@@ -14,7 +14,7 @@ export default function Home() {
   const [viewData, setViewData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // INIT: Data & Lang Sync
+  // INIT: Data & Lang Fetch
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -39,7 +39,7 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi]);
 
-  // REQ: Escrow App
+  // EXEC: Apply Escrow
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -51,7 +51,7 @@ export default function Home() {
       
       {/* UI: Premium Hero */}
       {state.view === 'gigs' && (
-        <div className="text-center space-y-6 pt-8 pb-4 transition-all duration-700">
+        <div className="text-center space-y-6 pt-8 pb-2 transition-all duration-700">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-[var(--primary-glow)]/30 bg-[var(--primary-glow)]/10 text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)]">
             <i data-lucide="shield-check" className="w-3.5 h-3.5"></i>
             <span>{t.badge_secure}</span>
@@ -66,15 +66,15 @@ export default function Home() {
         </div>
       )}
 
-      {/* UI: Segmented Pill Navigation & Search (Spatial Style) */}
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 bg-[var(--bg-base)]/80 backdrop-blur-xl py-4 rounded-3xl">
+      {/* UI: Contrast-Locked Nav & Search */}
+      <div className="glass-panel flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 py-3 px-4 sm:px-5 rounded-3xl mt-4 shadow-xl">
         
         {/* Pill Nav */}
-        <div className="flex p-1 bg-[var(--border-line)]/50 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar border border-[var(--border-line)]">
+        <div className="flex p-1.5 bg-black/5 border border-[var(--border-line)] rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
           {['gigs', 'community', 'traders', 'news'].map((nav) => (
             <button 
               key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
-              className={`btn-press flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 w-full sm:w-auto ${state.view === nav ? 'bg-white/10 text-prime shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5'}`}
+              className={`btn-press flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 w-full sm:w-auto ${state.view === nav ? 'surface-bg text-prime shadow-md border border-[var(--border-line)]' : 'text-sub hover:text-prime hover:bg-white/5'}`}
             >
               {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
               {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
@@ -85,17 +85,17 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Minimal Search */}
-        <div className="w-full sm:w-72 relative group">
-          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-prime transition"></i>
-          <input type="text" className="w-full bg-[var(--border-line)]/30 border border-[var(--border-line)] hover:border-gray-500/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all" placeholder="Search..." />
+        {/* High-Contrast Search */}
+        <div className="w-full sm:w-80 relative group">
+          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
+          <input type="text" className="w-full bg-[var(--bg-base)] border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm" placeholder="Search skills, posts, or news..." />
         </div>
       </div>
 
       {/* UI: Content Feed */}
       <section>
         
-        {/* Quick Post Box (Minimal) */}
+        {/* CORE: Quick Post */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="bento-card rounded-[2rem] p-5 mb-8">
             <div className="flex items-start space-x-4">
@@ -107,14 +107,14 @@ export default function Home() {
                     <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="image" className="w-4 h-4"></i></button>
                     <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button>
                   </div>
-                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs bg-[var(--primary-glow)] hover:opacity-90">Post</button>
+                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs bg-[var(--primary-glow)] hover:opacity-90 shadow-md">Post</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Feed State */}
+        {/* FEED: State Render */}
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : viewData.length === 0 ? (
@@ -123,28 +123,25 @@ export default function Home() {
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
             {viewData.map(item => {
               
-              // === 1. BENTO GIG CARDS ===
+              // UI: Bento Gigs
               if (state.view === 'gigs') {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
-                    {/* Hover Glow Effect */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[60px] transition-opacity duration-500 rounded-full"></div>
-                    
                     <div>
                       <div className="flex justify-between items-start mb-4">
-                        <span className="text-[10px] font-bold uppercase text-sub bg-white/5 px-3 py-1 rounded-full border border-[var(--border-line)]">{item.loc}</span>
+                        <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
                         <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                       </div>
                       <h3 className="text-xl font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
                       <p className="text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
                     </div>
-
                     <div className="flex justify-between items-end mt-auto pt-4">
                       <div>
                         <p className="text-[10px] text-sub uppercase tracking-wider mb-1">Escrow Budget</p>
                         <span className="text-2xl font-black text-prime">${item.price}</span>
                       </div>
-                      <button onClick={(e) => handleApply(e, item)} className="btn-press w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--primary-glow)] text-white transition-colors duration-300">
+                      <button onClick={(e) => handleApply(e, item)} className="btn-press w-10 h-10 rounded-full surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300">
                         <i data-lucide="arrow-up-right" className="w-5 h-5"></i>
                       </button>
                     </div>
@@ -152,13 +149,13 @@ export default function Home() {
                 );
               }
 
-              // === 2. BENTO FEED CARDS (Community/News) ===
+              // UI: Bento Feed Standard
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
                   <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                   
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-white text-sm">{item.host[0]}</div>
+                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-white text-sm shadow-sm">{item.host[0]}</div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-prime">{item.host}</span>
                       <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
@@ -171,17 +168,17 @@ export default function Home() {
                   <div className="flex items-center space-x-6 text-sub text-xs font-medium">
                     {state.view === 'community' && (
                       <>
-                        <span className="flex items-center hover:text-white transition"><i data-lucide="heart" className="w-4 h-4 mr-2"></i> {item.likes || 0}</span>
-                        <span className="flex items-center hover:text-white transition"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
+                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="heart" className="w-4 h-4 mr-2"></i> {item.likes || 0}</span>
+                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
                       </>
                     )}
                     {state.view === 'traders' && (
-                      <span className={`flex items-center px-3 py-1 rounded-full bg-white/5 border border-[var(--border-line)] ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
                         <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 mr-1.5"></i> {item.sentiment?.toUpperCase()}
                       </span>
                     )}
                     {state.view === 'news' && (
-                      <span className="font-mono text-[10px] bg-white/5 px-2 py-1 rounded">SRC: {item.source || 'SYS'}</span>
+                      <span className="font-mono text-[10px] surface-bg border border-[var(--border-line)] px-2 py-1 rounded shadow-sm">SRC: {item.source || 'SYS'}</span>
                     )}
                   </div>
                 </div>
