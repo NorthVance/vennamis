@@ -2,37 +2,50 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
 import Typewriter from '../components/common/Typewriter';
+import Skeleton from '../components/common/Skeleton';
 import { NetworkTranslator } from '../services/api';
+import { DatabaseService } from '../services/db';
 
 export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
 
-  const rawData = state.data[state.view] || [];
   const [viewData, setViewData] = useState([]);
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // INIT: I18N Sync
+  // INIT: Custom Fetch & Translation (V.17 Combo)
   useEffect(() => {
     let isMounted = true;
-    const loadTranslations = async () => {
-      if (rawData.length === 0) { setViewData([]); return; }
-      if (state.lang === 'en') { setViewData(rawData); return; }
+    const loadDataAndTranslate = async () => {
+      setIsLoading(true);
       
-      setIsTranslating(true);
+      // 1. Fetch from DB
+      const rawData = await DatabaseService.getFeedData(state.view);
+      if (rawData.length === 0) {
+        if (isMounted) { setViewData([]); setIsLoading(false); }
+        return;
+      }
+
+      // 2. Translate if needed
+      if (state.lang === 'en') {
+        if (isMounted) { setViewData(rawData); setIsLoading(false); }
+        return;
+      }
+      
       const translated = await Promise.all(rawData.map(async (item) => {
         const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
         const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
         return { ...item, title: tTitle, desc: tDesc };
       }));
       
-      if (isMounted) { setViewData(translated); setIsTranslating(false); }
+      if (isMounted) { setViewData(translated); setIsLoading(false); }
     };
-    loadTranslations();
-    return () => { isMounted = false; };
-  }, [rawData, state.lang, state.transApi]);
 
-  // REQ: Escrow Trigger
+    loadDataAndTranslate();
+    return () => { isMounted = false; };
+  }, [state.view, state.lang, state.transApi]);
+
+  // REQ: Escrow
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -40,47 +53,48 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 sm:space-y-10">
       
+      {/* HERO */}
       {state.view === 'gigs' && (
-        <div className="text-center space-y-6 transition-all duration-500">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border surface-bg text-[10px] font-bold uppercase tracking-widest text-sub">
+        <div className="text-center space-y-4 sm:space-y-6 transition-all duration-500">
+          <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full border surface-bg text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-sub">
             <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }}></i>
             <span>{t.badge_secure}</span>
           </div>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
             <span>{t.hero_static}</span><br/>
-            <div className="h-[1.2em] mt-2 flex justify-center items-center">
+            <div className="h-[1.2em] mt-1 sm:mt-2 flex justify-center items-center">
               <Typewriter />
             </div>
           </h1>
-          <p className="text-sm sm:text-lg text-sub max-w-2xl mx-auto">{t.hero_sub}</p>
+          <p className="text-xs sm:text-lg text-sub max-w-2xl mx-auto px-4">{t.hero_sub}</p>
         </div>
       )}
 
       {/* CORE: Search */}
       <div className="max-w-3xl mx-auto">
-        <div className="glass-panel border p-2 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
+        <div className="glass-panel border p-1.5 sm:p-2 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
           <div className="flex-1 flex items-center px-4 py-2">
-            <i data-lucide="search" className="w-5 h-5 text-sub mr-3"></i>
-            <input type="text" className="w-full bg-transparent border-none outline-none text-prime placeholder-[var(--text-muted)] text-sm sm:text-base" placeholder="Search skills, posts, or news..." />
+            <i data-lucide="search" className="w-4 h-4 sm:w-5 sm:h-5 text-sub mr-3"></i>
+            <input type="text" className="w-full bg-transparent border-none outline-none text-prime placeholder-[var(--text-muted)] text-sm sm:text-base font-medium" placeholder="Search skills, posts, or news..." />
           </div>
         </div>
       </div>
 
       {/* CORE: Nav */}
-      <div className="nav-scroll flex justify-start gap-4 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
+      <div className="nav-scroll flex justify-start gap-4 sm:gap-6 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
         {['gigs', 'community', 'traders', 'news'].map((nav) => (
           <button 
             key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
-            className={`relative transition-colors duration-300 whitespace-nowrap flex items-center gap-1 text-xs font-bold uppercase tracking-widest pb-1 ${state.view === nav ? 'text-[var(--primary-glow)]' : 'text-sub hover:text-prime'}`}
+            className={`btn-press relative transition-colors duration-300 whitespace-nowrap flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest pb-2 ${state.view === nav ? 'text-[var(--primary-glow)]' : 'text-sub hover:text-prime'}`}
           >
             {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
             {nav === 'community' && <i data-lucide="users" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
             {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
             {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
-            <span className="ml-1">{nav}</span>
-            {state.view === nav && <span className="absolute bottom-[-4px] left-0 w-full h-[2px] bg-[var(--primary-glow)] rounded-full"></span>}
+            <span className="ml-0.5">{nav}</span>
+            {state.view === nav && <span className="absolute bottom-[-2px] left-0 w-full h-[2px] bg-[var(--primary-glow)] rounded-full"></span>}
           </button>
         ))}
       </div>
@@ -89,63 +103,63 @@ export default function Home() {
       <section>
         <div className="flex justify-between items-center mb-6 sm:mb-8">
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
-            <h2 className="text-lg sm:text-xl font-bold text-prime uppercase tracking-wider">{state.view} Stream</h2>
+            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
+            <h2 className="text-base sm:text-xl font-black text-prime uppercase tracking-wider">{state.view} Stream</h2>
           </div>
           {state.view === 'news' && (
-            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="px-3 py-1.5 rounded-lg sm:rounded-xl text-white text-[10px] sm:text-xs font-bold hover-lift shadow-md flex items-center gap-1" style={{ background: 'var(--primary-glow)' }}>
+            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5" style={{ background: 'var(--primary-glow)' }}>
               <i data-lucide="plus" className="w-3.5 h-3.5"></i> <span className="hidden sm:inline">Add News</span>
             </button>
           )}
         </div>
 
+        {/* Quick Post Box */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-8 shadow-sm transition-all duration-300">
+          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-8 shadow-sm">
             <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>{state.user ? state.user.avatar : 'U'}</div>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-xs sm:text-sm" style={{ background: 'var(--primary-glow)' }}>{state.user ? state.user.avatar : 'U'}</div>
               <div className="flex-1 space-y-2 sm:space-y-3">
-                <input type="text" placeholder={state.view === 'traders' ? 'Share a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-base sm:text-lg outline-none placeholder-[var(--text-muted)]" />
+                <input type="text" placeholder={state.view === 'traders' ? 'Share a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-sm sm:text-lg outline-none placeholder-[var(--text-muted)]" />
                 <textarea rows="2" placeholder="What are your thoughts?" className="w-full bg-transparent text-xs sm:text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)]"></textarea>
                 <div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)]">
                   <div className="flex space-x-1 sm:space-x-2 text-sub">
-                    <button className="p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="image" className="w-4 h-4"></i></button>
-                    <button className="p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="link" className="w-4 h-4"></i></button>
+                    <button className="btn-press p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="image" className="w-4 h-4"></i></button>
+                    <button className="btn-press p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="link" className="w-4 h-4"></i></button>
                   </div>
-                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-lg sm:rounded-xl text-white font-bold text-[10px] sm:text-xs hover-lift shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
+                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="btn-press px-5 sm:px-8 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-white font-bold text-[10px] sm:text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {rawData.length === 0 ? (
+        {/* LOADING STATE - SKELETON */}
+        {isLoading ? (
+          <Skeleton view={state.view} />
+        ) : viewData.length === 0 ? (
           <div className="col-span-full text-center py-16 border border-dashed border-[var(--border-line)] rounded-3xl"><p className="text-sm text-sub">No data found.</p></div>
-        ) : isTranslating ? (
-          <div className="col-span-full text-center py-10"><span className="animate-pulse text-sub">Translating & Loading Data...</span></div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full"}>
             {viewData.map(item => {
               
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border glow-border hover-lift rounded-2xl sm:rounded-3xl p-5 sm:p-6 cursor-pointer flex flex-col justify-between h-[200px] sm:h-[220px] relative">
-                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1" title="Report Post">
-                      <i data-lucide="flag" className="w-3.5 h-3.5"></i>
-                    </button>
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press surface-bg border glow-border rounded-2xl sm:rounded-3xl p-5 sm:p-6 cursor-pointer flex flex-col justify-between h-[200px] sm:h-[220px] relative">
+                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1.5"><i data-lucide="flag" className="w-3.5 h-3.5"></i></button>
                     <div>
                       <div className="flex justify-between items-start mb-3 pr-6">
-                        <span className="text-[10px] font-bold uppercase text-sub px-2 py-1 rounded bg-white/5 border border-[var(--border-line)]">{item.loc}</span>
-                        <span className="font-black glow-text">${item.price}</span>
+                        <span className="text-[10px] font-bold uppercase text-sub px-2.5 py-1 rounded bg-white/5 border border-[var(--border-line)]">{item.loc}</span>
+                        <span className="text-base sm:text-lg font-black glow-text">${item.price}</span>
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
-                      <p className="text-[10px] sm:text-xs text-sub line-clamp-2">{item.desc}</p>
+                      <h3 className="text-base sm:text-lg font-bold text-prime mb-1.5 line-clamp-1">{item.title}</h3>
+                      <p className="text-[11px] sm:text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
                     </div>
                     <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4 mt-auto">
                       <span className="text-[10px] sm:text-xs text-sub font-mono flex items-center">
-                        <div className="w-4 h-4 rounded-full bg-gray-600 mr-2 flex items-center justify-center text-[8px] text-white">{item.host[0]}</div> {item.host}
+                        <div className="w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center text-[8px] text-white mr-2">{item.host[0]}</div> {item.host}
                       </span>
-                      <button onClick={(e) => handleApply(e, item)} className="text-[10px] font-bold text-[var(--primary-glow)] flex items-center hover:underline">
-                        Apply <i data-lucide="arrow-right" className="w-3 h-3 ml-1"></i>
+                      <button onClick={(e) => handleApply(e, item)} className="btn-press px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold text-white shadow-sm flex items-center" style={{ background: 'var(--primary-glow)' }}>
+                        Apply <i data-lucide="arrow-right" className="w-3 h-3 ml-1.5"></i>
                       </button>
                     </div>
                   </div>
@@ -153,39 +167,37 @@ export default function Home() {
               }
 
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover-lift glow-border cursor-pointer relative">
-                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-5 right-5 text-sub hover:text-red-500 transition p-1" title="Report Post">
-                    <i data-lucide="flag" className="w-4 h-4"></i>
-                  </button>
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 glow-border cursor-pointer relative">
+                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 sm:top-5 sm:right-5 text-sub hover:text-red-500 transition p-1.5"><i data-lucide="flag" className="w-4 h-4"></i></button>
                   <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white text-xs sm:text-base">{item.host[0]}</div>
                     <div>
                       <p className="text-xs sm:text-sm font-bold text-prime">{item.host}</p>
-                      <p className="text-[9px] sm:text-[10px] text-sub">{item.tag || (state.view === 'news' ? 'Update' : 'Post')}</p>
+                      <p className="text-[9px] sm:text-[10px] text-sub uppercase tracking-wider mt-0.5">{item.tag || (state.view === 'news' ? 'Update' : 'Post')}</p>
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-prime mb-2">{item.title}</h3>
-                  <p className="text-xs sm:text-sm text-sub mb-4">{item.desc}</p>
+                  <h3 className="text-base sm:text-xl font-bold text-prime mb-2 leading-tight">{item.title}</h3>
+                  <p className="text-xs sm:text-sm text-sub mb-4 leading-relaxed">{item.desc}</p>
                   
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4">
                     {state.view === 'community' && (
-                      <div className="flex space-x-3 sm:space-x-4 text-sub text-[10px] sm:text-xs">
-                        <span className="flex items-center hover:text-[var(--primary-glow)]"><i data-lucide="heart" className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1"></i> {item.likes || 0}</span>
-                        <span className="flex items-center hover:text-[var(--primary-glow)]"><i data-lucide="message-circle" className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1"></i> {item.comments || 0}</span>
+                      <div className="flex space-x-4 sm:space-x-6 text-sub text-[11px] sm:text-xs font-medium">
+                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="heart" className="w-4 h-4 mr-1.5"></i> {item.likes || 0}</span>
+                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="message-circle" className="w-4 h-4 mr-1.5"></i> {item.comments || 0}</span>
                       </div>
                     )}
                     {state.view === 'traders' && (
                       <div className={`flex space-x-4 text-[10px] sm:text-xs font-bold ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
-                        <span className="flex items-center"><i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1"></i> {item.sentiment?.toUpperCase()}</span>
+                        <span className="flex items-center bg-white/5 px-2 py-1 rounded-md"><i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5"></i> {item.sentiment?.toUpperCase()}</span>
                       </div>
                     )}
                     {state.view === 'news' && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[9px] sm:text-[10px] bg-[var(--bg-surface)] px-2 py-1 rounded border border-[var(--border-line)] text-sub">Source: {item.source || 'Custom'}</span>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-[9px] sm:text-[10px] bg-[var(--bg-surface)] px-2 py-1 rounded border border-[var(--border-line)] text-sub font-mono">SRC: {item.source || 'SYS'}</span>
                         <button className="text-[10px] sm:text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
                       </div>
                     )}
-                    <button onClick={(e) => e.stopPropagation()} className="text-sub hover:text-prime"><i data-lucide="share-2" className="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
+                    <button onClick={(e) => e.stopPropagation()} className="btn-press text-sub hover:text-prime p-1"><i data-lucide="share-2" className="w-4 h-4 sm:w-4.5 sm:h-4.5"></i></button>
                   </div>
                 </div>
               );
