@@ -10,29 +10,23 @@ export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
 
+  const rawData = state.data[state.view] || [];
   const [viewData, setViewData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // INIT: Custom Fetch & Translation (V.17 Combo)
+  // INIT: Data & Lang Sync
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
       setIsLoading(true);
+      const data = await DatabaseService.getFeedData(state.view);
       
-      // 1. Fetch from DB
-      const rawData = await DatabaseService.getFeedData(state.view);
-      if (rawData.length === 0) {
-        if (isMounted) { setViewData([]); setIsLoading(false); }
-        return;
-      }
-
-      // 2. Translate if needed
-      if (state.lang === 'en') {
-        if (isMounted) { setViewData(rawData); setIsLoading(false); }
+      if (data.length === 0 || state.lang === 'en') {
+        if (isMounted) { setViewData(data); setIsLoading(false); }
         return;
       }
       
-      const translated = await Promise.all(rawData.map(async (item) => {
+      const translated = await Promise.all(data.map(async (item) => {
         const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
         const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
         return { ...item, title: tTitle, desc: tDesc };
@@ -45,7 +39,7 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi]);
 
-  // REQ: Escrow
+  // REQ: Escrow App
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -53,151 +47,142 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-12 max-w-5xl mx-auto pb-20">
       
-      {/* HERO */}
+      {/* UI: Premium Hero */}
       {state.view === 'gigs' && (
-        <div className="text-center space-y-4 sm:space-y-6 transition-all duration-500">
-          <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full border surface-bg text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-sub">
-            <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }}></i>
+        <div className="text-center space-y-6 pt-8 pb-4 transition-all duration-700">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-[var(--primary-glow)]/30 bg-[var(--primary-glow)]/10 text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)]">
+            <i data-lucide="shield-check" className="w-3.5 h-3.5"></i>
             <span>{t.badge_secure}</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
+          <h1 className="text-5xl sm:text-7xl font-black tracking-tighter leading-[1.1] text-prime">
             <span>{t.hero_static}</span><br/>
-            <div className="h-[1.2em] mt-1 sm:mt-2 flex justify-center items-center">
+            <div className="h-[1.2em] mt-1 flex justify-center items-center">
               <Typewriter />
             </div>
           </h1>
-          <p className="text-xs sm:text-lg text-sub max-w-2xl mx-auto px-4">{t.hero_sub}</p>
+          <p className="text-sm sm:text-base text-sub max-w-xl mx-auto px-4 font-medium">{t.hero_sub}</p>
         </div>
       )}
 
-      {/* CORE: Search */}
-      <div className="max-w-3xl mx-auto">
-        <div className="glass-panel border p-1.5 sm:p-2 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row gap-2 shadow-xl hover-lift">
-          <div className="flex-1 flex items-center px-4 py-2">
-            <i data-lucide="search" className="w-4 h-4 sm:w-5 sm:h-5 text-sub mr-3"></i>
-            <input type="text" className="w-full bg-transparent border-none outline-none text-prime placeholder-[var(--text-muted)] text-sm sm:text-base font-medium" placeholder="Search skills, posts, or news..." />
-          </div>
-        </div>
-      </div>
-
-      {/* CORE: Nav */}
-      <div className="nav-scroll flex justify-start gap-4 sm:gap-6 pb-2 border-b border-[var(--border-line)] overflow-x-auto">
-        {['gigs', 'community', 'traders', 'news'].map((nav) => (
-          <button 
-            key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
-            className={`btn-press relative transition-colors duration-300 whitespace-nowrap flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest pb-2 ${state.view === nav ? 'text-[var(--primary-glow)]' : 'text-sub hover:text-prime'}`}
-          >
-            {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
-            {nav === 'community' && <i data-lucide="users" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
-            {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
-            {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4 sm:w-5 sm:h-5"></i>}
-            <span className="ml-0.5">{nav}</span>
-            {state.view === nav && <span className="absolute bottom-[-2px] left-0 w-full h-[2px] bg-[var(--primary-glow)] rounded-full"></span>}
-          </button>
-        ))}
-      </div>
-
-      {/* RENDER: Feed */}
-      <section>
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
-            <h2 className="text-base sm:text-xl font-black text-prime uppercase tracking-wider">{state.view} Stream</h2>
-          </div>
-          {state.view === 'news' && (
-            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5" style={{ background: 'var(--primary-glow)' }}>
-              <i data-lucide="plus" className="w-3.5 h-3.5"></i> <span className="hidden sm:inline">Add News</span>
+      {/* UI: Segmented Pill Navigation & Search (Spatial Style) */}
+      <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 bg-[var(--bg-base)]/80 backdrop-blur-xl py-4 rounded-3xl">
+        
+        {/* Pill Nav */}
+        <div className="flex p-1 bg-[var(--border-line)]/50 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar border border-[var(--border-line)]">
+          {['gigs', 'community', 'traders', 'news'].map((nav) => (
+            <button 
+              key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))}
+              className={`btn-press flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 w-full sm:w-auto ${state.view === nav ? 'bg-white/10 text-prime shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5'}`}
+            >
+              {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
+              {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
+              {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
+              {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
+              <span className="hidden sm:inline">{nav}</span>
             </button>
-          )}
+          ))}
         </div>
 
-        {/* Quick Post Box */}
+        {/* Minimal Search */}
+        <div className="w-full sm:w-72 relative group">
+          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-prime transition"></i>
+          <input type="text" className="w-full bg-[var(--border-line)]/30 border border-[var(--border-line)] hover:border-gray-500/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all" placeholder="Search..." />
+        </div>
+      </div>
+
+      {/* UI: Content Feed */}
+      <section>
+        
+        {/* Quick Post Box (Minimal) */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="w-full max-w-3xl mx-auto surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-8 shadow-sm">
-            <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-xs sm:text-sm" style={{ background: 'var(--primary-glow)' }}>{state.user ? state.user.avatar : 'U'}</div>
-              <div className="flex-1 space-y-2 sm:space-y-3">
-                <input type="text" placeholder={state.view === 'traders' ? 'Share a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-sm sm:text-lg outline-none placeholder-[var(--text-muted)]" />
-                <textarea rows="2" placeholder="What are your thoughts?" className="w-full bg-transparent text-xs sm:text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)]"></textarea>
-                <div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)]">
-                  <div className="flex space-x-1 sm:space-x-2 text-sub">
-                    <button className="btn-press p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="image" className="w-4 h-4"></i></button>
-                    <button className="btn-press p-1.5 sm:p-2 hover:text-[var(--primary-glow)] transition rounded-lg hover:bg-white/5"><i data-lucide="link" className="w-4 h-4"></i></button>
+          <div className="bento-card rounded-[2rem] p-5 mb-8">
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold bg-gray-800 text-sm">{state.user ? state.user.avatar : 'U'}</div>
+              <div className="flex-1">
+                <input type="text" placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-base outline-none placeholder-[var(--text-muted)] mb-2" />
+                <div className="flex justify-between items-center pt-2">
+                  <div className="flex space-x-1 text-sub">
+                    <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="image" className="w-4 h-4"></i></button>
+                    <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button>
                   </div>
-                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="btn-press px-5 sm:px-8 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-white font-bold text-[10px] sm:text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
+                  <button onClick={() => !state.user && setState(prev => ({ ...prev, activeModal: 'modal-login' }))} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs bg-[var(--primary-glow)] hover:opacity-90">Post</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* LOADING STATE - SKELETON */}
+        {/* Feed State */}
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : viewData.length === 0 ? (
-          <div className="col-span-full text-center py-16 border border-dashed border-[var(--border-line)] rounded-3xl"><p className="text-sm text-sub">No data found.</p></div>
+          <div className="text-center py-20"><p className="text-sm text-sub">No data available in this sector.</p></div>
         ) : (
-          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full"}>
+          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
             {viewData.map(item => {
               
+              // === 1. BENTO GIG CARDS ===
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press surface-bg border glow-border rounded-2xl sm:rounded-3xl p-5 sm:p-6 cursor-pointer flex flex-col justify-between h-[200px] sm:h-[220px] relative">
-                    <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 text-sub hover:text-red-500 transition p-1.5"><i data-lucide="flag" className="w-3.5 h-3.5"></i></button>
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
+                    {/* Hover Glow Effect */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[60px] transition-opacity duration-500 rounded-full"></div>
+                    
                     <div>
-                      <div className="flex justify-between items-start mb-3 pr-6">
-                        <span className="text-[10px] font-bold uppercase text-sub px-2.5 py-1 rounded bg-white/5 border border-[var(--border-line)]">{item.loc}</span>
-                        <span className="text-base sm:text-lg font-black glow-text">${item.price}</span>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-[10px] font-bold uppercase text-sub bg-white/5 px-3 py-1 rounded-full border border-[var(--border-line)]">{item.loc}</span>
+                        <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-prime mb-1.5 line-clamp-1">{item.title}</h3>
-                      <p className="text-[11px] sm:text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
+                      <h3 className="text-xl font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
+                      <p className="text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
                     </div>
-                    <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4 mt-auto">
-                      <span className="text-[10px] sm:text-xs text-sub font-mono flex items-center">
-                        <div className="w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center text-[8px] text-white mr-2">{item.host[0]}</div> {item.host}
-                      </span>
-                      <button onClick={(e) => handleApply(e, item)} className="btn-press px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold text-white shadow-sm flex items-center" style={{ background: 'var(--primary-glow)' }}>
-                        Apply <i data-lucide="arrow-right" className="w-3 h-3 ml-1.5"></i>
+
+                    <div className="flex justify-between items-end mt-auto pt-4">
+                      <div>
+                        <p className="text-[10px] text-sub uppercase tracking-wider mb-1">Escrow Budget</p>
+                        <span className="text-2xl font-black text-prime">${item.price}</span>
+                      </div>
+                      <button onClick={(e) => handleApply(e, item)} className="btn-press w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--primary-glow)] text-white transition-colors duration-300">
+                        <i data-lucide="arrow-up-right" className="w-5 h-5"></i>
                       </button>
                     </div>
                   </div>
                 );
               }
 
+              // === 2. BENTO FEED CARDS (Community/News) ===
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press surface-bg border border-[var(--border-line)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 glow-border cursor-pointer relative">
-                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-4 right-4 sm:top-5 sm:right-5 text-sub hover:text-red-500 transition p-1.5"><i data-lucide="flag" className="w-4 h-4"></i></button>
-                  <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white text-xs sm:text-base">{item.host[0]}</div>
-                    <div>
-                      <p className="text-xs sm:text-sm font-bold text-prime">{item.host}</p>
-                      <p className="text-[9px] sm:text-[10px] text-sub uppercase tracking-wider mt-0.5">{item.tag || (state.view === 'news' ? 'Update' : 'Post')}</p>
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
+                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
+                  
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-white text-sm">{item.host[0]}</div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-prime">{item.host}</span>
+                      <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-xl font-bold text-prime mb-2 leading-tight">{item.title}</h3>
-                  <p className="text-xs sm:text-sm text-sub mb-4 leading-relaxed">{item.desc}</p>
                   
-                  <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-prime mb-2">{item.title}</h3>
+                  <p className="text-sm text-sub mb-6 leading-relaxed">{item.desc}</p>
+                  
+                  <div className="flex items-center space-x-6 text-sub text-xs font-medium">
                     {state.view === 'community' && (
-                      <div className="flex space-x-4 sm:space-x-6 text-sub text-[11px] sm:text-xs font-medium">
-                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="heart" className="w-4 h-4 mr-1.5"></i> {item.likes || 0}</span>
-                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="message-circle" className="w-4 h-4 mr-1.5"></i> {item.comments || 0}</span>
-                      </div>
+                      <>
+                        <span className="flex items-center hover:text-white transition"><i data-lucide="heart" className="w-4 h-4 mr-2"></i> {item.likes || 0}</span>
+                        <span className="flex items-center hover:text-white transition"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
+                      </>
                     )}
                     {state.view === 'traders' && (
-                      <div className={`flex space-x-4 text-[10px] sm:text-xs font-bold ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
-                        <span className="flex items-center bg-white/5 px-2 py-1 rounded-md"><i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5"></i> {item.sentiment?.toUpperCase()}</span>
-                      </div>
+                      <span className={`flex items-center px-3 py-1 rounded-full bg-white/5 border border-[var(--border-line)] ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
+                        <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 mr-1.5"></i> {item.sentiment?.toUpperCase()}
+                      </span>
                     )}
                     {state.view === 'news' && (
-                      <div className="flex items-center space-x-3">
-                        <span className="text-[9px] sm:text-[10px] bg-[var(--bg-surface)] px-2 py-1 rounded border border-[var(--border-line)] text-sub font-mono">SRC: {item.source || 'SYS'}</span>
-                        <button className="text-[10px] sm:text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
-                      </div>
+                      <span className="font-mono text-[10px] bg-white/5 px-2 py-1 rounded">SRC: {item.source || 'SYS'}</span>
                     )}
-                    <button onClick={(e) => e.stopPropagation()} className="btn-press text-sub hover:text-prime p-1"><i data-lucide="share-2" className="w-4 h-4 sm:w-4.5 sm:h-4.5"></i></button>
                   </div>
                 </div>
               );
