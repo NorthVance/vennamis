@@ -1,10 +1,14 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../../App';
 import { staticDict } from '../../store';
+import { StorageService } from '../../services/storage';
 
 export default function Header() {
   const { state, setState } = useContext(AppContext);
   const [openDrop, setOpenDrop] = useState(null);
+  
+  // REF: Hidden file input for avatar upload
+  const fileInputRef = useRef(null);
 
   const t = staticDict[state.lang] || staticDict['en'];
 
@@ -31,9 +35,25 @@ export default function Header() {
     const newBio = prompt("Enter your new bio:", state.user.bio);
     if (newBio) setState(prev => ({ ...prev, user: { ...prev.user, bio: newBio } }));
   };
-  const editAvatar = () => {
-    const newAv = prompt("Enter 1-2 letters for Avatar:", state.user.avatar);
-    if (newAv) setState(prev => ({ ...prev, user: { ...prev.user, avatar: newAv.substring(0,2).toUpperCase() } }));
+
+  // EXEC: Handle Image Upload
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Upload & get URL
+    const publicUrl = await StorageService.uploadFile(file, 'avatars');
+    if (publicUrl) {
+      setState(prev => ({ ...prev, user: { ...prev.user, avatar: publicUrl } }));
+    }
+  };
+
+  // UI: Render Avatar (Text or Image)
+  const renderAvatar = (avatarData, sizeClasses) => {
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
+      return <img src={avatarData} alt="User Avatar" className={`object-cover ${sizeClasses}`} />;
+    }
+    return <div className={`flex items-center justify-center text-white font-bold ${sizeClasses}`} style={{ background: 'var(--primary-glow)' }}>{avatarData}</div>;
   };
 
   const hasNotif = state.notifications && state.notifications.length > 0;
@@ -72,7 +92,7 @@ export default function Header() {
         <div className="ml-1 sm:ml-2">
           {state.user ? (
             <button onClick={(e) => toggleDrop('profile', e)} className="drop-trigger flex items-center space-x-2 p-1 border border-[var(--border-line)] rounded-lg sm:rounded-xl bg-white/5 hover:border-[var(--primary-glow)] transition hover-lift">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-white font-bold text-[10px] sm:text-xs" style={{ background: 'var(--primary-glow)' }}>{state.user.avatar}</div>
+              {renderAvatar(state.user.avatar, "w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg text-[10px] sm:text-xs")}
               <span className="text-xs font-bold pr-2 text-prime hidden sm:inline">{state.user.name}</span>
             </button>
           ) : (
@@ -135,20 +155,26 @@ export default function Header() {
         {/* --- Profile Dropdown --- */}
         {state.user && (
           <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
-            <div className="flex items-center space-x-4 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-[var(--border-line)] group">
-              <div onClick={editAvatar} className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg cursor-pointer hover:opacity-80 transition hover-lift" style={{ background: 'var(--primary-glow)' }} title="Change Avatar">{state.user.avatar}</div>
+            <div className="flex items-center space-x-4 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-[var(--border-line)] group">
+              
+              {/* SYS: Hidden input for file upload */}
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
+              
+              <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:opacity-80 transition hover-lift relative" title="Upload New Avatar">
+                {renderAvatar(state.user.avatar, "w-12 h-12 rounded-xl text-lg")}
+                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-1 border border-gray-600">
+                  <i data-lucide="camera" className="w-3 h-3 text-white"></i>
+                </div>
+              </div>
+              
               <div className="flex-1">
                 <h2 className="text-base font-bold text-prime">{state.user.name}</h2>
                 <span className="text-[10px] text-[var(--primary-glow)] flex items-center mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Verified</span>
               </div>
             </div>
             
-            {/* Added: Admin Dashboard Button for Admins */}
             {state.user.name === 'Admin User' && (
-              <button 
-                onClick={() => { setState(prev => ({ ...prev, view: 'admin' })); setOpenDrop(null); }} 
-                className="w-full surface-bg border border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)] rounded-xl py-2 mb-4 font-bold text-xs transition flex justify-center items-center hover-lift"
-              >
+              <button onClick={() => { setState(prev => ({ ...prev, view: 'admin' })); setOpenDrop(null); }} className="w-full surface-bg border border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)] rounded-xl py-2 mb-4 font-bold text-xs transition flex justify-center items-center hover-lift">
                 <i data-lucide="shield" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Admin Dashboard
               </button>
             )}
