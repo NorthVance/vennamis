@@ -10,14 +10,18 @@ export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
 
+  const rawData = state.data[state.view] || [];
   const [viewData, setViewData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // 📍 QUICK POST STATES
   const [quickTitle, setQuickTitle] = useState('');
   const [quickDesc, setQuickDesc] = useState('');
+  
+  // 📍 SYS: Filter State
+  const [activeFilter, setActiveFilter] = useState('all');
 
-  // INIT: Data Sync (Listen to refreshTick)
+  // INIT: Data Fetch & Translate
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -25,7 +29,7 @@ export default function Home() {
       const data = await DatabaseService.getFeedData(state.view);
       
       if (data.length === 0 || state.lang === 'en') {
-        if (isMounted) { setViewData(data); setIsLoading(false); }
+        if (isMounted) { setViewData(data); setFilteredData(data); setIsLoading(false); }
         return;
       }
       
@@ -35,47 +39,48 @@ export default function Home() {
         return { ...item, title: tTitle, desc: tDesc };
       }));
       
-      if (isMounted) { setViewData(translated); setIsLoading(false); }
+      if (isMounted) { setViewData(translated); setFilteredData(translated); setIsLoading(false); }
     };
     loadDataAndTranslate();
     return () => { isMounted = false; };
-  }, [state.view, state.lang, state.transApi, state.refreshTick]); // <-- Listen to refreshTick
+  }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // EXEC: Apply Escrow
+  // EXEC: Apply Filters
+  useEffect(() => {
+    if (activeFilter === 'all') {
+      setFilteredData(viewData);
+    } else if (activeFilter === 'remote') {
+      setFilteredData(viewData.filter(i => i.loc?.toLowerCase() === 'remote'));
+    } else if (activeFilter === 'high_budget') {
+      setFilteredData(viewData.filter(i => i.price >= 1000));
+    } else if (activeFilter === 'top_rated') {
+      setFilteredData(viewData.filter(i => (i.likes || 0) > 100));
+    } else if (activeFilter === 'bullish') {
+      setFilteredData(viewData.filter(i => i.sentiment === 'bullish'));
+    }
+  }, [activeFilter, viewData]);
+
+  // Reset filter when changing views
+  useEffect(() => { setActiveFilter('all'); }, [state.view]);
+
+  // EXEC: Modals & Actions
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item }));
   };
 
-  // EXEC: Public Profile
   const openProfile = (e, hostName, avatarData) => {
     e.stopPropagation();
     setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } }));
   };
 
-  // 📍 EXEC: Submit Quick Post
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!quickTitle.trim() || !quickDesc.trim()) return alert("Please fill in both title and description.");
-    
-    const newPost = {
-      id: 'p' + Date.now(),
-      type: 'post',
-      host: state.user.name,
-      avatar: state.user.avatar,
-      title: quickTitle,
-      desc: quickDesc,
-      tag: state.view === 'traders' ? 'Signal' : 'Discussion',
-      likes: 0,
-      comments: 0
-    };
-
+    const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
-    
-    // Clear form & Trigger feed refresh
-    setQuickTitle('');
-    setQuickDesc('');
+    setQuickTitle(''); setQuickDesc('');
     setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1 }));
   };
 
@@ -85,19 +90,19 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-12 max-w-5xl mx-auto pb-20">
+    <div className="space-y-10 sm:space-y-12 max-w-5xl mx-auto pb-20">
       
       {state.view === 'gigs' && (
-        <div className="text-center space-y-4 sm:space-y-6 transition-all duration-500">
+        <div className="text-center space-y-4 sm:space-y-6 pt-4 sm:pt-8 transition-all duration-500">
           <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full border surface-bg text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-sub">
             <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }}></i>
             <span>{t.badge_secure}</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
             <span>{t.hero_static}</span><br/>
             <div className="h-[1.2em] mt-1 sm:mt-2 flex justify-center items-center"><Typewriter /></div>
           </h1>
-          <p className="text-xs sm:text-lg text-sub max-w-2xl mx-auto px-4">{t.hero_sub}</p>
+          <p className="text-xs sm:text-base text-sub max-w-2xl mx-auto px-4">{t.hero_sub}</p>
         </div>
       )}
 
@@ -121,19 +126,40 @@ export default function Home() {
       </div>
 
       <section>
-        <div className="flex justify-between items-center mb-6 sm:mb-8 mt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 mt-6 gap-4">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
             <h2 className="text-lg sm:text-xl font-black text-prime uppercase tracking-wider">{state.view} Stream</h2>
           </div>
-          {state.view === 'news' && (
-            <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-4 py-2 rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift" style={{ background: 'var(--primary-glow)' }}>
-              <i data-lucide="plus" className="w-3.5 h-3.5"></i> <span className="hidden sm:inline">Add News Source</span>
-            </button>
-          )}
+          
+          {/* 📍 UI: Smart Filter Engine */}
+          <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+            <button onClick={() => setActiveFilter('all')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>All</button>
+            
+            {state.view === 'gigs' && (
+              <>
+                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>Remote Only</button>
+                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1"></i> High Budget</button>
+              </>
+            )}
+
+            {state.view === 'community' && (
+              <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Top Rated</button>
+            )}
+
+            {state.view === 'traders' && (
+              <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Bullish Intel</button>
+            )}
+
+            {state.view === 'news' && (
+              <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-3 py-1.5 rounded-lg text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift whitespace-nowrap ml-auto" style={{ background: 'var(--primary-glow)' }}>
+                <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* 📍 QUICK POST: Connected to Logic */}
+        {/* QUICK POST */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="bento-card rounded-[2rem] p-5 mb-8">
             <div className="flex items-start space-x-4">
@@ -146,20 +172,25 @@ export default function Home() {
                     <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="image" className="w-4 h-4"></i></button>
                     <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button>
                   </div>
-                  <button onClick={handleQuickPost} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs bg-[var(--primary-glow)] hover:opacity-90 shadow-md">Post</button>
+                  <button onClick={handleQuickPost} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* FEED RENDER */}
         {isLoading ? (
           <Skeleton view={state.view} />
-        ) : viewData.length === 0 ? (
-          <div className="text-center py-20"><p className="text-sm text-sub">No data available in this sector.</p></div>
+        ) : filteredData.length === 0 ? (
+          <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
+            <i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
+            <p className="text-sm text-sub">No results match your current filter.</p>
+            <button onClick={() => setActiveFilter('all')} className="mt-3 text-[10px] text-[var(--primary-glow)] uppercase tracking-widest hover:underline font-bold">Clear Filters</button>
+          </div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
-            {viewData.map(item => {
+            {filteredData.map(item => {
               
               if (state.view === 'gigs') {
                 return (
@@ -216,7 +247,7 @@ export default function Home() {
                     )}
                     {state.view === 'news' && (
                       <div className="flex items-center space-x-2">
-                        <span className="text-[9px] sm:text-[10px] bg-[var(--bg-surface)] px-2 py-1 rounded border border-[var(--border-line)] text-sub font-mono">SRC: {item.source || 'SYS'}</span>
+                        <span className="font-mono text-[10px] surface-bg border border-[var(--border-line)] px-2 py-1 rounded shadow-sm">SRC: {item.source || 'SYS'}</span>
                         <button className="text-[10px] sm:text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
                       </div>
                     )}
