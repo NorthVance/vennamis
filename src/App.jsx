@@ -2,7 +2,7 @@ import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
-import Workspace from './pages/Workspace'; // <-- นำเข้า Workspace
+import Workspace from './pages/Workspace';
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
 import { initialData } from './store';
@@ -12,16 +12,13 @@ export const AppContext = createContext();
 
 export default function App() {
   const [state, setState] = useState({
-    lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', 
-    view: 'gigs', // gigs, community, traders, news, admin, workspace <-- เพิ่ม Router
-    user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null,
-    targetUser: null,
-    data: initialData, notifications: []
+    lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs',
+    user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null,
+    data: initialData, notifications: [],
+    refreshTick: 0 // 📍 SYS: เพิ่มตัว Trigger รีเฟรช Feed
   });
 
-  useEffect(() => {
-    document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`;
-  }, [state.theme]);
+  useEffect(() => { document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; }, [state.theme]);
 
   const [slideId, setSlideId] = useState(1);
   useEffect(() => {
@@ -30,9 +27,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  useEffect(() => {
-    if (window.lucide) window.lucide.createIcons();
-  }, [state.view, state.data, state.bg, state.activeModal]);
+  useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [state.view, state.data, state.bg, state.activeModal, state.refreshTick]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -42,13 +37,12 @@ export default function App() {
         setState(prev => ({ ...prev, user: { id: u.id, email: u.email, name: u.user_metadata?.full_name || 'User', avatar: u.user_metadata?.avatar || 'U', balance: u.user_metadata?.balance || '$0.00', bio: 'Ready for global work.' } }));
       }
     });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         const u = session.user;
         setState(prev => ({ ...prev, user: { id: u.id, email: u.email, name: u.user_metadata?.full_name || 'User', avatar: u.user_metadata?.avatar || 'U', balance: u.user_metadata?.balance || '$0.00', bio: 'Ready for global work.' } }));
-      } else {
-        setState(prev => ({ ...prev, user: null }));
-      }
+      } else setState(prev => ({ ...prev, user: null }));
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -66,6 +60,7 @@ export default function App() {
           <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 3 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=80')" }}></div>
         </div>
       )}
+
       <div className="cyber-vignette"></div>
       
       {(state.bg === 'cyber' || state.bg === '3d-matrix') && (
@@ -78,7 +73,6 @@ export default function App() {
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-          {/* ROUTER: สลับหน้าตาม state.view */}
           {state.view === 'admin' ? <Admin /> : state.view === 'workspace' ? <Workspace /> : <Home />}
         </main>
       </div>
