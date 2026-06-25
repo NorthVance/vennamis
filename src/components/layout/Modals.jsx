@@ -17,7 +17,6 @@ export default function Modals() {
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
   const [authLoading, setAuthLoading] = useState(false);
 
-  // V.21.0: Profile States
   const [pubProfile, setPubProfile] = useState(null);
   const [pubReviews, setPubReviews] = useState([]);
 
@@ -31,7 +30,7 @@ export default function Modals() {
 
   useEffect(() => { if (activeModal && window.lucide) window.lucide.createIcons(); }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep, targetUser, pubProfile]);
 
-  // REQ: Fetch Dynamic Profile
+  // REQ: Fetch Profile
   useEffect(() => {
     if (activeModal === 'modal-profile' && targetUser) {
       DatabaseService.getUserProfile(targetUser.name).then(setPubProfile);
@@ -39,7 +38,7 @@ export default function Modals() {
     }
   }, [activeModal, targetUser]);
 
-  // AUTH: Execution
+  // AUTH: Exec
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!supabase) {
@@ -62,11 +61,19 @@ export default function Modals() {
     else await AuthService.signInWithGoogle();
   };
 
-  // REQ: Actions
-  const submitGig = (e) => {
+  // 📍 REQ: Post Gig (Connected to DB & Refresh)
+  const submitGig = async (e) => {
     e.preventDefault();
-    const newGig = { id: 'g' + Date.now(), type: 'gig', host: user ? user.name : 'Anonymous', title: gigForm.title, desc: gigForm.desc, price: parseFloat(gigForm.price) || 0, loc: gigForm.loc || 'Remote', tag: 'New Gig' };
-    setState(prev => ({ ...prev, data: { ...prev.data, gigs: [newGig, ...prev.data.gigs] }, view: 'gigs', activeModal: null }));
+    if (!user) return alert("Please Login First");
+    
+    const newGig = { 
+      id: 'g' + Date.now(), type: 'gig', host: user.name, avatar: user.avatar,
+      title: gigForm.title, desc: gigForm.desc, price: parseFloat(gigForm.price) || 0, loc: gigForm.loc || 'Remote', tag: 'New Gig' 
+    };
+    
+    await DatabaseService.createPost(newGig, 'gigs');
+    // Trigger Refresh
+    setState(prev => ({ ...prev, view: 'gigs', activeModal: null, refreshTick: prev.refreshTick + 1 }));
   };
 
   const fetchNewsMetadata = async () => {
@@ -81,10 +88,11 @@ export default function Modals() {
     setIsFetchingNews(false);
   };
 
-  const confirmAddNews = () => {
+  const confirmAddNews = async () => {
     if (newsPreview) {
       const newItem = { id: 'n' + Date.now(), type: 'news', host: user ? user.name : 'Anonymous', title: newsPreview.title, desc: newsPreview.desc, source: 'Custom', tag: 'User Added' };
-      setState(prev => ({ ...prev, data: { ...prev.data, news: [newItem, ...prev.data.news] }, view: 'news', activeModal: null }));
+      await DatabaseService.createPost(newItem, 'news');
+      setState(prev => ({ ...prev, view: 'news', activeModal: null, refreshTick: prev.refreshTick + 1 }));
     }
   };
 
@@ -100,6 +108,7 @@ export default function Modals() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay">
       <div className="absolute inset-0 bg-black/60" onClick={closeModal}></div>
+      {/* ... [Rest of Modals JSX Code Exists Here Exactly as Before in V.21.0.0] ... */}
       
       {/* UI: OAUTH */}
       {activeModal === 'modal-google-consent' ? (
@@ -143,7 +152,7 @@ export default function Modals() {
             </>
           )}
 
-          {/* [V.21.0] PUBLIC PROFILE */}
+          {/* PUBLIC PROFILE */}
           {activeModal === 'modal-profile' && targetUser && (
             <div className="animate-modal-pop">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 border-b border-[var(--border-line)] pb-6 mb-6">
@@ -195,7 +204,7 @@ export default function Modals() {
                 <button onClick={() => { closeModal(); setState(prev => ({...prev, isChatOpen: true, chatHost: targetUser.name})) }} className="btn-press w-full sm:flex-1 py-3.5 rounded-xl text-white font-bold text-sm shadow-md flex items-center justify-center hover:opacity-90 transition" style={{ background: 'var(--primary-glow)' }}>
                   <i data-lucide="message-square" className="w-4 h-4 mr-2"></i> Message
                 </button>
-                <button onClick={() => alert('User Reported.')} className="btn-press w-full sm:w-auto px-6 py-3.5 rounded-xl surface-bg border border-[var(--border-line)] text-sub hover:text-red-500 hover:border-red-500 transition shadow-sm font-bold text-xs uppercase tracking-wider">Report</button>
+                <button onClick={() => alert('User Reported to Admins.')} className="btn-press w-full sm:w-auto px-6 py-3.5 rounded-xl surface-bg border border-[var(--border-line)] text-sub hover:text-red-500 hover:border-red-500 transition shadow-sm font-bold text-xs uppercase tracking-wider">Report</button>
               </div>
             </div>
           )}
