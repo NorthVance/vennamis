@@ -13,6 +13,7 @@ export default function App() {
   const [state, setState] = useState({
     lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs',
     user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null,
+    targetUser: null, // SYS: Added for Public Profile routing
     data: initialData, notifications: []
   });
 
@@ -32,7 +33,7 @@ export default function App() {
   // UI: Icons
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
-  }, [state.view, state.data, state.bg]);
+  }, [state.view, state.data, state.bg, state.activeModal]);
 
   // AUTH: Session Listener
   useEffect(() => {
