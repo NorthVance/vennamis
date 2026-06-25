@@ -14,7 +14,7 @@ export default function Home() {
   const [viewData, setViewData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // INIT: I18N Sync
+  // INIT: Data & Lang Fetch
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -26,26 +26,34 @@ export default function Home() {
         return;
       }
       
-      setIsTranslating(true);
       const translated = await Promise.all(data.map(async (item) => {
         const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
         const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
         return { ...item, title: tTitle, desc: tDesc };
       }));
       
-      if (isMounted) { setViewData(translated); setIsTranslating(false); }
+      if (isMounted) { setViewData(translated); setIsLoading(false); }
     };
+
     loadDataAndTranslate();
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi]);
-
-  const [isTranslating, setIsTranslating] = useState(false);
 
   // REQ: Escrow Trigger
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item }));
+  };
+
+  // REQ: Open Public Profile
+  const openProfile = (e, hostName, avatarData) => {
+    e.stopPropagation();
+    setState(prev => ({ 
+      ...prev, 
+      activeModal: 'modal-profile', 
+      targetUser: { name: hostName, avatar: avatarData || hostName[0] } 
+    }));
   };
 
   // UI: Render Avatar helper
@@ -60,18 +68,18 @@ export default function Home() {
     <div className="space-y-12 max-w-5xl mx-auto pb-20">
       
       {state.view === 'gigs' && (
-        <div className="text-center space-y-6 pt-8 pb-2 transition-all duration-700">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-[var(--primary-glow)]/30 bg-[var(--primary-glow)]/10 text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)]">
-            <i data-lucide="shield-check" className="w-3.5 h-3.5"></i>
+        <div className="text-center space-y-4 sm:space-y-6 transition-all duration-500">
+          <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full border surface-bg text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-sub">
+            <i data-lucide="globe-2" className="w-3.5 h-3.5" style={{ color: 'var(--primary-glow)' }}></i>
             <span>{t.badge_secure}</span>
           </div>
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tighter leading-[1.1] text-prime">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-tight text-prime">
             <span>{t.hero_static}</span><br/>
-            <div className="h-[1.2em] mt-1 flex justify-center items-center">
+            <div className="h-[1.2em] mt-1 sm:mt-2 flex justify-center items-center">
               <Typewriter />
             </div>
           </h1>
-          <p className="text-sm sm:text-base text-sub max-w-xl mx-auto px-4 font-medium">{t.hero_sub}</p>
+          <p className="text-xs sm:text-lg text-sub max-w-2xl mx-auto px-4">{t.hero_sub}</p>
         </div>
       )}
 
@@ -151,9 +159,13 @@ export default function Home() {
                       <p className="text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
                     </div>
                     <div className="flex justify-between items-end mt-auto pt-4">
-                      <div>
-                        <p className="text-[10px] text-sub uppercase tracking-wider mb-1">Escrow Budget</p>
-                        <span className="text-2xl font-black text-prime">${item.price}</span>
+                      {/* กดที่ชื่อ/รูป เพื่อดูโปรไฟล์ผู้จ้าง */}
+                      <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="hover:opacity-80 transition cursor-pointer">
+                        <p className="text-[10px] text-sub uppercase tracking-wider mb-1">Host Identity</p>
+                        <span className="text-sm font-bold text-prime flex items-center hover:underline">
+                          {renderAvatar(item.avatar || item.host[0], "w-5 h-5 rounded-full mr-2 text-[8px]")}
+                          {item.host}
+                        </span>
                       </div>
                       <button onClick={(e) => handleApply(e, item)} className="btn-press w-10 h-10 rounded-full surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300">
                         <i data-lucide="arrow-up-right" className="w-5 h-5"></i>
@@ -167,11 +179,12 @@ export default function Home() {
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
                   <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                   
-                  <div className="flex items-center space-x-3 mb-4">
+                  {/* กดที่รูปโปรไฟล์ใน Feed เพื่อดู Profile */}
+                  <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="flex items-center space-x-3 mb-4 hover:opacity-80 transition cursor-pointer w-fit">
                     {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm")}
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-prime">{item.host}</span>
-                      <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
+                      <span className="text-sm font-bold text-prime hover:underline">{item.host}</span>
+                      <span className="text-[10px] text-[var(--primary-glow)] flex items-center"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Verified</span>
                     </div>
                   </div>
                   
