@@ -1,23 +1,31 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../App';
+import { AuthService, supabase } from '../../services/db';
 
 export default function Modals() {
   const { state, setState } = useContext(AppContext);
   const { activeModal, selectedItem, user } = state; 
 
+  // Form States
   const [gigForm, setGigForm] = useState({ title: '', price: '', loc: '', desc: '' });
   const [newsUrl, setNewsUrl] = useState('');
   const [newsPreview, setNewsPreview] = useState(null);
   const [isFetchingNews, setIsFetchingNews] = useState(false);
   
+  // Auth Flows States
   const [isRegister, setIsRegister] = useState(false);
   const [googleStep, setGoogleStep] = useState(1);
   const [escrowStep, setEscrowStep] = useState(0); 
+  
+  // Real Auth Form
+  const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
+  const [authLoading, setAuthLoading] = useState(false);
 
   // SYS: Reset
   const closeModal = () => {
     setState(prev => ({ ...prev, activeModal: null, selectedItem: null }));
     setNewsPreview(null); setNewsUrl(''); setGigForm({ title: '', price: '', loc: '', desc: '' });
+    setAuthForm({ name: '', email: '', password: '' });
     setTimeout(() => { setIsRegister(false); setGoogleStep(1); setEscrowStep(0); }, 300); 
   };
 
@@ -25,13 +33,37 @@ export default function Modals() {
     if (activeModal && window.lucide) window.lucide.createIcons();
   }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep]);
 
-  // AUTH: Mock
-  const mockLogin = (name) => {
-    setState(prev => ({
-      ...prev, 
-      user: { name: name, avatar: name.substring(0,2).toUpperCase(), balance: '$1,500.00', bio: 'Global Worker ready for action.' }, 
-      activeModal: null 
-    }));
+  // AUTH: Real Supabase Auth Execution
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    
+    // Fallback to Mock if DB is not connected
+    if (!supabase) {
+      const mockName = isRegister ? (authForm.name || 'New User') : 'Admin User';
+      setState(prev => ({ ...prev, user: { name: mockName, avatar: mockName.substring(0,2).toUpperCase(), balance: '$1,500.00', bio: 'Global Worker.' }, activeModal: null }));
+      return;
+    }
+
+    setAuthLoading(true);
+    if (isRegister) {
+      const { error } = await AuthService.signUp(authForm.email, authForm.password, authForm.name);
+      if (error) alert(error.message);
+      else { alert('Registration sent! Check your email to verify.'); closeModal(); }
+    } else {
+      const { error } = await AuthService.signIn(authForm.email, authForm.password);
+      if (error) alert(error.message);
+      else closeModal();
+    }
+    setAuthLoading(false);
+  };
+
+  const handleGoogleAuth = async () => {
+    if (!supabase) {
+      // Mock flow
+      setState(prev => ({ ...prev, user: { name: 'Alex Google', avatar: 'AL', balance: '$1,500.00', bio: 'Global Worker.' }, activeModal: null }));
+    } else {
+      await AuthService.signInWithGoogle();
+    }
   };
 
   // REQ: Post
@@ -104,9 +136,6 @@ export default function Modals() {
                   </div>
                 </button>
               </div>
-              <p className="text-[10px] text-gray-500 text-center leading-relaxed">
-                To continue, Google will share your name, email address, <br className="hidden sm:block"/> and profile picture with Vennamis.
-              </p>
             </div>
           )}
 
@@ -120,12 +149,12 @@ export default function Modals() {
                 </div>
                 <div className="flex items-start">
                   <i data-lucide="check-circle-2" className="w-5 h-5 text-blue-600 mr-3 shrink-0"></i>
-                  <p className="text-sm text-gray-700 leading-snug">Associate your identity with Vennamis Escrow Vault for secure payments.</p>
+                  <p className="text-sm text-gray-700 leading-snug">Associate your identity with Vennamis Escrow Vault.</p>
                 </div>
               </div>
               <div className="flex justify-end space-x-3">
                 <button onClick={closeModal} className="px-5 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition">Cancel</button>
-                <button onClick={() => mockLogin('Alex Google')} className="px-5 py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition shadow-sm">Allow</button>
+                <button onClick={handleGoogleAuth} className="px-5 py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition shadow-sm">Allow</button>
               </div>
             </div>
           )}
@@ -150,13 +179,16 @@ export default function Modals() {
               
               <div className="flex items-center space-x-4 mb-6"><div className="flex-1 border-t border-[var(--border-line)]"></div><span className="text-[10px] text-sub uppercase">or email</span><div className="flex-1 border-t border-[var(--border-line)]"></div></div>
               
-              <form onSubmit={(e) => { e.preventDefault(); mockLogin(isRegister ? 'New User' : 'Admin User'); }} className="space-y-4">
-                {isRegister && <input type="text" required placeholder="Full Name" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />}
-                <input type="email" required placeholder="Encrypted Email" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
-                <input type="password" required placeholder="Password" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
+              <form onSubmit={handleAuth} className="space-y-4">
+                {isRegister && <input type="text" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} required placeholder="Full Name" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />}
+                <input type="email" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required placeholder="Encrypted Email" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
+                <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required placeholder="Password" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
                 
                 {!isRegister && <div className="text-right"><a href="#" className="text-[10px] text-[var(--primary-glow)] hover:underline">Forgot Password?</a></div>}
-                <button type="submit" className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift" style={{ background: 'var(--primary-glow)' }}>{isRegister ? 'Create Account' : 'Initialize Session'}</button>
+                
+                <button type="submit" disabled={authLoading} className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift disabled:opacity-50" style={{ background: 'var(--primary-glow)' }}>
+                  {authLoading ? 'Processing...' : (isRegister ? 'Create Account' : 'Initialize Session')}
+                </button>
               </form>
 
               <div className="mt-6 text-center">
@@ -192,9 +224,6 @@ export default function Modals() {
                     <span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span>
                     <span className="text-xl font-black glow-text">${selectedItem.price}</span>
                   </div>
-                  <div className="text-xs text-sub leading-relaxed bg-white/5 p-3 rounded-lg border border-[var(--border-line)]">
-                    By confirming, funds will be securely held in the <strong>Vennamis Escrow Account</strong>. Payment is only released to the host when you approve the delivered work.
-                  </div>
                   <button onClick={handleEscrowTransaction} className="w-full rounded-xl py-3.5 text-white font-bold text-sm hover-lift flex justify-center items-center" style={{ background: 'var(--primary-glow)' }}>
                     <i data-lucide="credit-card" className="w-4 h-4 mr-2"></i> Proceed to Secure Checkout
                   </button>
@@ -214,10 +243,6 @@ export default function Modals() {
                     <i data-lucide="check" className="w-8 h-8 text-green-500"></i>
                   </div>
                   <h3 className="text-xl font-black text-prime">Payment Secured</h3>
-                  <div className="w-full bg-white/5 border border-[var(--border-line)] rounded-lg p-3 mt-4 text-left flex justify-between items-center">
-                    <span className="text-[10px] text-sub uppercase">Bank Ref ID</span>
-                    <span className="text-[10px] text-prime font-mono">VEN-{Math.floor(10000000 + Math.random() * 90000000)}</span>
-                  </div>
                   <button onClick={closeModal} className="w-full rounded-xl py-3 mt-4 text-prime font-bold text-sm border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover-lift">
                     Return to Feed
                   </button>
@@ -230,14 +255,7 @@ export default function Modals() {
           {activeModal === 'modal-post' && (
             <>
               <h3 className="text-xl sm:text-2xl font-black text-prime mb-2">Post a New Gig</h3>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 sm:p-4 mb-6 flex items-start space-x-3">
-                <i data-lucide="shield-alert" className="text-amber-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></i>
-                <div>
-                  <h4 className="text-[10px] sm:text-xs font-bold text-amber-500 uppercase tracking-widest">Secure Workspace Policy</h4>
-                  <p className="text-[9px] sm:text-[10px] text-sub mt-1">To protect our community, please avoid sharing external links. Payments secured via Escrow.</p>
-                </div>
-              </div>
-              <form onSubmit={submitGig} className="space-y-4">
+              <form onSubmit={submitGig} className="space-y-4 mt-6">
                 <input type="text" value={gigForm.title} onChange={e => setGigForm({...gigForm, title: e.target.value})} required placeholder="Gig Title" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input type="number" value={gigForm.price} onChange={e => setGigForm({...gigForm, price: e.target.value})} required placeholder="Budget (USD)" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" />
