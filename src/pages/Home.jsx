@@ -14,7 +14,7 @@ export default function Home() {
   const [viewData, setViewData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // INIT: Data & Lang Fetch
+  // INIT: I18N Sync
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -26,30 +26,39 @@ export default function Home() {
         return;
       }
       
+      setIsTranslating(true);
       const translated = await Promise.all(data.map(async (item) => {
         const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
         const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
         return { ...item, title: tTitle, desc: tDesc };
       }));
       
-      if (isMounted) { setViewData(translated); setIsLoading(false); }
+      if (isMounted) { setViewData(translated); setIsTranslating(false); }
     };
-
     loadDataAndTranslate();
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi]);
 
-  // EXEC: Apply Escrow
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // REQ: Escrow Trigger
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item }));
   };
 
+  // UI: Render Avatar helper
+  const renderAvatar = (avatarData, sizeClasses) => {
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
+      return <img src={avatarData} alt="Avatar" className={`object-cover ${sizeClasses}`} />;
+    }
+    return <div className={`flex items-center justify-center text-white font-bold bg-gray-700 ${sizeClasses}`}>{avatarData ? avatarData[0] : 'U'}</div>;
+  };
+
   return (
     <div className="space-y-12 max-w-5xl mx-auto pb-20">
       
-      {/* UI: Premium Hero */}
       {state.view === 'gigs' && (
         <div className="text-center space-y-6 pt-8 pb-2 transition-all duration-700">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-[var(--primary-glow)]/30 bg-[var(--primary-glow)]/10 text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)]">
@@ -66,10 +75,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* UI: Contrast-Locked Nav & Search */}
+      {/* CORE: Search */}
       <div className="glass-panel flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 py-3 px-4 sm:px-5 rounded-3xl mt-4 shadow-xl">
-        
-        {/* Pill Nav */}
         <div className="flex p-1.5 bg-black/5 border border-[var(--border-line)] rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
           {['gigs', 'community', 'traders', 'news'].map((nav) => (
             <button 
@@ -85,17 +92,14 @@ export default function Home() {
           ))}
         </div>
 
-        {/* High-Contrast Search */}
         <div className="w-full sm:w-80 relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
           <input type="text" className="w-full bg-[var(--bg-base)] border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm" placeholder="Search skills, posts, or news..." />
         </div>
       </div>
 
-      {/* UI: Content Feed */}
+      {/* RENDER: Feed */}
       <section>
-        
-        {/* 📍 [RESTORED] Section Header & Add News Button */}
         <div className="flex justify-between items-center mb-6 sm:mb-8 mt-6">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-glow)', boxShadow: '0 0 10px var(--primary-glow)' }}></span>
@@ -108,11 +112,10 @@ export default function Home() {
           )}
         </div>
 
-        {/* CORE: Quick Post */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="bento-card rounded-[2rem] p-5 mb-8">
             <div className="flex items-start space-x-4">
-              <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold bg-gray-800 text-sm">{state.user ? state.user.avatar : 'U'}</div>
+              {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm")}
               <div className="flex-1">
                 <input type="text" placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-base outline-none placeholder-[var(--text-muted)] mb-2" />
                 <div className="flex justify-between items-center pt-2">
@@ -127,7 +130,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* FEED: State Render */}
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : viewData.length === 0 ? (
@@ -136,7 +138,6 @@ export default function Home() {
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
             {viewData.map(item => {
               
-              // UI: Bento Gigs
               if (state.view === 'gigs') {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
@@ -162,13 +163,12 @@ export default function Home() {
                 );
               }
 
-              // UI: Bento Feed Standard
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
                   <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                   
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-white text-sm shadow-sm">{item.host[0]}</div>
+                    {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm")}
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-prime">{item.host}</span>
                       <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
