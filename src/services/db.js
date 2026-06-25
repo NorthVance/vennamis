@@ -22,7 +22,13 @@ export const DatabaseService = {
 
   // REQ: Insert
   async createPost(postData, table = 'gigs') {
-    if (!supabase) return true;
+    if (!supabase) {
+      // 📍 MOCK FIX: ให้มันจำข้อมูลจำลองลง Memory จะได้เทสเห็นภาพ
+      if (!initialData[table]) initialData[table] = [];
+      initialData[table].unshift(postData);
+      console.log(`[DB Mock] Inserted to ${table}:`, postData);
+      return true;
+    }
     try {
       const { error } = await supabase.from(table).insert([postData]);
       if (error) throw error;
@@ -40,26 +46,15 @@ export const DatabaseService = {
     } catch (error) { console.error("[DB Error] Delete failed:", error); return false; }
   },
 
-  // REQ: Public Profile Data (V.21.0)
+  // REQ: Public Profile Data
   async getUserProfile(userName) {
-    if (!supabase) {
-      // Mock Profile Simulation
-      return { name: userName, bio: 'Expert digital professional. Consistently delivers secure work via Escrow.', successRate: Math.floor(Math.random() * 10 + 90), jobs: Math.floor(Math.random() * 200 + 10), rating: (Math.random() * 1 + 4).toFixed(1), joined: '2024' };
-    }
-    // Prod: return await supabase.from('profiles').select('*').eq('name', userName).single();
+    if (!supabase) return { name: userName, bio: 'Expert digital professional. Consistently delivers secure work via Escrow.', successRate: Math.floor(Math.random() * 10 + 90), jobs: Math.floor(Math.random() * 200 + 10), rating: (Math.random() * 1 + 4).toFixed(1), joined: '2024' };
     return null;
   },
 
-  // REQ: User Reviews (V.21.0)
+  // REQ: User Reviews
   async getReviews(userName) {
-    if (!supabase) {
-      // Mock Reviews Simulation
-      return [
-        { id: 'r1', client: 'DeFi Labs', comment: 'Outstanding quality. Secure and fast delivery!', rating: 5, date: '2 days ago' },
-        { id: 'r2', client: 'Studio X', comment: 'Good communication, highly recommended.', rating: 4.5, date: '1 week ago' }
-      ];
-    }
-    // Prod: return await supabase.from('reviews').select('*').eq('target_user', userName);
+    if (!supabase) return [ { id: 'r1', client: 'DeFi Labs', comment: 'Outstanding quality. Secure and fast delivery!', rating: 5, date: '2 days ago' }, { id: 'r2', client: 'Studio X', comment: 'Good communication, highly recommended.', rating: 4.5, date: '1 week ago' } ];
     return [];
   }
 };
