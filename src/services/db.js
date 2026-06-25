@@ -23,7 +23,6 @@ export const DatabaseService = {
   // REQ: Insert
   async createPost(postData, table = 'gigs') {
     if (!supabase) {
-      // 📍 MOCK FIX: ให้มันจำข้อมูลจำลองลง Memory จะได้เทสเห็นภาพ
       if (!initialData[table]) initialData[table] = [];
       initialData[table].unshift(postData);
       console.log(`[DB Mock] Inserted to ${table}:`, postData);
@@ -36,9 +35,15 @@ export const DatabaseService = {
     } catch (error) { console.error("[DB Error] Insert failed:", error); return false; }
   },
 
-  // REQ: Del
+  // 📍 REQ: Del (Updated for Mock Deletion)
   async deleteContent(contentId, table = 'gigs') {
-    if (!supabase) return true;
+    if (!supabase) {
+      if (initialData[table]) {
+        initialData[table] = initialData[table].filter(item => item.id !== contentId);
+      }
+      console.log(`[DB Mock] Dropped ${contentId} from ${table}`);
+      return true;
+    }
     try {
       const { error } = await supabase.from(table).delete().match({ id: contentId });
       if (error) throw error;
