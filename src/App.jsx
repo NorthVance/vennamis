@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
+import Workspace from './pages/Workspace'; // <-- นำเข้า Workspace
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
 import { initialData } from './store';
@@ -11,18 +12,17 @@ export const AppContext = createContext();
 
 export default function App() {
   const [state, setState] = useState({
-    lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs',
+    lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', 
+    view: 'gigs', // gigs, community, traders, news, admin, workspace <-- เพิ่ม Router
     user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null,
-    targetUser: null, // SYS: Added for Public Profile routing
+    targetUser: null,
     data: initialData, notifications: []
   });
 
-  // THEME: Sync
   useEffect(() => {
     document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`;
   }, [state.theme]);
 
-  // BG: Landscape Slideshow
   const [slideId, setSlideId] = useState(1);
   useEffect(() => {
     if (state.bg !== 'landscape') return;
@@ -30,22 +30,18 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  // UI: Icons
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
   }, [state.view, state.data, state.bg, state.activeModal]);
 
-  // AUTH: Session Listener
   useEffect(() => {
     if (!supabase) return;
-    
     AuthService.getSession().then(({ data: { session } }) => {
       if (session) {
         const u = session.user;
         setState(prev => ({ ...prev, user: { id: u.id, email: u.email, name: u.user_metadata?.full_name || 'User', avatar: u.user_metadata?.avatar || 'U', balance: u.user_metadata?.balance || '$0.00', bio: 'Ready for global work.' } }));
       }
     });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         const u = session.user;
@@ -54,7 +50,6 @@ export default function App() {
         setState(prev => ({ ...prev, user: null }));
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -71,7 +66,6 @@ export default function App() {
           <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 3 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=80')" }}></div>
         </div>
       )}
-
       <div className="cyber-vignette"></div>
       
       {(state.bg === 'cyber' || state.bg === '3d-matrix') && (
@@ -84,7 +78,8 @@ export default function App() {
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-          {state.view === 'admin' ? <Admin /> : <Home />}
+          {/* ROUTER: สลับหน้าตาม state.view */}
+          {state.view === 'admin' ? <Admin /> : state.view === 'workspace' ? <Workspace /> : <Home />}
         </main>
       </div>
 
