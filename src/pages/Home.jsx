@@ -17,11 +17,9 @@ export default function Home() {
   
   const [quickTitle, setQuickTitle] = useState('');
   const [quickDesc, setQuickDesc] = useState('');
-  
-  // 📍 SYS: Filter State
   const [activeFilter, setActiveFilter] = useState('all');
 
-  // INIT: Data Fetch & Translate
+  // INIT: Feed Engine
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -45,25 +43,18 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // EXEC: Apply Filters
+  // EXEC: Filters
   useEffect(() => {
-    if (activeFilter === 'all') {
-      setFilteredData(viewData);
-    } else if (activeFilter === 'remote') {
-      setFilteredData(viewData.filter(i => i.loc?.toLowerCase() === 'remote'));
-    } else if (activeFilter === 'high_budget') {
-      setFilteredData(viewData.filter(i => i.price >= 1000));
-    } else if (activeFilter === 'top_rated') {
-      setFilteredData(viewData.filter(i => (i.likes || 0) > 100));
-    } else if (activeFilter === 'bullish') {
-      setFilteredData(viewData.filter(i => i.sentiment === 'bullish'));
-    }
+    if (activeFilter === 'all') setFilteredData(viewData);
+    else if (activeFilter === 'remote') setFilteredData(viewData.filter(i => i.loc?.toLowerCase() === 'remote'));
+    else if (activeFilter === 'high_budget') setFilteredData(viewData.filter(i => i.price >= 1000));
+    else if (activeFilter === 'top_rated') setFilteredData(viewData.filter(i => (i.likes || 0) > 100));
+    else if (activeFilter === 'bullish') setFilteredData(viewData.filter(i => i.sentiment === 'bullish'));
   }, [activeFilter, viewData]);
 
-  // Reset filter when changing views
   useEffect(() => { setActiveFilter('all'); }, [state.view]);
 
-  // EXEC: Modals & Actions
+  // EXEC: Core Actions
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -75,13 +66,36 @@ export default function Home() {
     setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } }));
   };
 
+  // 📍 EXEC: Share Action (Triggers Toast)
+  const handleShare = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(window.location.href);
+    setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied to clipboard!' } }));
+  };
+
+  // 📍 EXEC: Report Action (Triggers Toast)
+  const handleReport = (e) => {
+    e.stopPropagation();
+    setState(prev => ({ ...prev, toast: { type: 'info', message: 'Content flagged for review.' } }));
+  };
+
+  // 📍 EXEC: Quick Post (Triggers Toast & Notification)
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-    if (!quickTitle.trim() || !quickDesc.trim()) return alert("Please fill in both title and description.");
+    if (!quickTitle.trim() || !quickDesc.trim()) {
+      return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields cannot be empty.' } }));
+    }
+    
     const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
+    
     setQuickTitle(''); setQuickDesc('');
-    setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1 }));
+    setState(prev => ({ 
+      ...prev, 
+      refreshTick: prev.refreshTick + 1,
+      toast: { type: 'success', message: 'Post published successfully!' },
+      notifications: [{ title: 'Post Published', desc: 'Your post is now live.' }, ...prev.notifications]
+    }));
   };
 
   const renderAvatar = (avatarData, sizeClasses) => {
@@ -106,7 +120,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* CORE: Nav & Search */}
+      {/* Nav & Search */}
       <div className="glass-panel flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 py-3 px-4 sm:px-5 rounded-3xl mt-4 shadow-xl">
         <div className="flex p-1.5 bg-black/5 border border-[var(--border-line)] rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
           {['gigs', 'community', 'traders', 'news'].map((nav) => (
@@ -132,30 +146,17 @@ export default function Home() {
             <h2 className="text-lg sm:text-xl font-black text-prime uppercase tracking-wider">{state.view} Stream</h2>
           </div>
           
-          {/* 📍 UI: Smart Filter Engine */}
           <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
             <button onClick={() => setActiveFilter('all')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>All</button>
-            
             {state.view === 'gigs' && (
               <>
                 <button onClick={() => setActiveFilter('remote')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>Remote Only</button>
                 <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1"></i> High Budget</button>
               </>
             )}
-
-            {state.view === 'community' && (
-              <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Top Rated</button>
-            )}
-
-            {state.view === 'traders' && (
-              <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Bullish Intel</button>
-            )}
-
-            {state.view === 'news' && (
-              <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-3 py-1.5 rounded-lg text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift whitespace-nowrap ml-auto" style={{ background: 'var(--primary-glow)' }}>
-                <i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News
-              </button>
-            )}
+            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Top Rated</button>}
+            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1"></i> Bullish Intel</button>}
+            {state.view === 'news' && <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-3 py-1.5 rounded-lg text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift whitespace-nowrap ml-auto" style={{ background: 'var(--primary-glow)' }}><i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News</button>}
           </div>
         </div>
 
@@ -169,8 +170,8 @@ export default function Home() {
                 <textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-xs sm:text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)]"></textarea>
                 <div className="flex justify-between items-center pt-2 border-t border-[var(--border-line)] mt-2">
                   <div className="flex space-x-1 text-sub">
-                    <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="image" className="w-4 h-4"></i></button>
-                    <button className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button>
+                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'File upload coming soon.'}}))} className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="image" className="w-4 h-4"></i></button>
+                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link attachment disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-white/5 rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button>
                   </div>
                   <button onClick={handleQuickPost} className="btn-press px-6 py-2 rounded-xl text-white font-bold text-xs shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
@@ -199,7 +200,7 @@ export default function Home() {
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
-                        <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
+                        <button onClick={(e) => handleReport(e)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                       </div>
                       <h3 className="text-xl font-bold text-prime mb-2 line-clamp-1">{item.title}</h3>
                       <p className="text-xs text-sub line-clamp-2 leading-relaxed">{item.desc}</p>
@@ -222,7 +223,7 @@ export default function Home() {
 
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
-                  <button onClick={(e) => { e.stopPropagation(); alert('Reported'); }} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
+                  <button onClick={(e) => handleReport(e)} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="more-horizontal" className="w-4 h-4"></i></button>
                   <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="flex items-center space-x-3 mb-4 hover:opacity-80 transition cursor-pointer w-fit">
                     {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm")}
                     <div className="flex flex-col">
@@ -236,7 +237,7 @@ export default function Home() {
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4">
                     {state.view === 'community' && (
                       <div className="flex space-x-4 sm:space-x-6 text-sub text-[11px] sm:text-xs font-medium">
-                        <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="heart" className="w-4 h-4 mr-1.5"></i> {item.likes || 0}</span>
+                        <span onClick={(e) => {e.stopPropagation(); setState(prev=>({...prev, toast: {type:'success', message:'Post liked!'}}))}} className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="heart" className="w-4 h-4 mr-1.5"></i> {item.likes || 0}</span>
                         <span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="message-circle" className="w-4 h-4 mr-1.5"></i> {item.comments || 0}</span>
                       </div>
                     )}
@@ -251,7 +252,7 @@ export default function Home() {
                         <button className="text-[10px] sm:text-xs font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1"></i></button>
                       </div>
                     )}
-                    <button onClick={(e) => e.stopPropagation()} className="btn-press text-sub hover:text-prime p-1"><i data-lucide="share-2" className="w-4 h-4 sm:w-4.5 sm:h-4.5"></i></button>
+                    <button onClick={(e) => handleShare(e)} className="btn-press text-sub hover:text-[var(--primary-glow)] p-1"><i data-lucide="share-2" className="w-4 h-4 sm:w-4.5 sm:h-4.5"></i></button>
                   </div>
                 </div>
               );
