@@ -5,6 +5,7 @@ import Admin from './pages/Admin';
 import Workspace from './pages/Workspace';
 import Modals from './components/layout/Modals';
 import ChatWidget from './components/security/ChatWidget';
+import Toast from './components/common/Toast'; // 📍 IMPORT
 import { initialData } from './store';
 import { supabase, AuthService } from './services/db';
 
@@ -14,8 +15,8 @@ export default function App() {
   const [state, setState] = useState({
     lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs',
     user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null,
-    data: initialData, notifications: [],
-    refreshTick: 0 // 📍 SYS: เพิ่มตัว Trigger รีเฟรช Feed
+    data: initialData, notifications: [], refreshTick: 0,
+    toast: null // 📍 SYS: Global Toast State
   });
 
   useEffect(() => { document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; }, [state.theme]);
@@ -27,7 +28,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [state.view, state.data, state.bg, state.activeModal, state.refreshTick]);
+  useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [state.view, state.data, state.bg, state.activeModal, state.refreshTick, state.toast]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -69,6 +70,9 @@ export default function App() {
           <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
         </>
       )}
+
+      {/* 📍 RENDER: Global Toast */}
+      <Toast />
 
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
