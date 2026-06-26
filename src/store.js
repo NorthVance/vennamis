@@ -1,3 +1,5 @@
+// CFG: Global Mock Data Store & Dictionary
+
 export const initialData = {
   gigs: [
     { id: 'g1', type: 'gig', host: 'Alex Corp', title: 'React Native Developer', desc: 'Build a fintech mobile app.', price: 1500, loc: 'Remote' },
@@ -14,24 +16,41 @@ export const initialData = {
   news: [
     { id: 'n1', type: 'news', host: 'Vennamis Official', title: 'V12 Released: Feed Ecosystem', desc: 'New floating UI and multi-verse categories added.', source: 'System Update' },
     { id: 'n2', type: 'news', host: 'Tech Insider', title: 'AI takes over freelance coding', desc: 'How generative AI is shaping the future of gig economy.', source: 'TechCrunch' }
+  ],
+  // 📍 SYS: Workspace Mock Data (V.31.0)
+  contracts: [
+    { id: 'ct-1', title: 'React Native Developer', host: 'Alex Corp', amount: 1500, status: 'In Progress', deadline: '3 days left' },
+    { id: 'ct-2', title: 'Smart Contract Audit', host: 'DeFi Labs', amount: 3200, status: 'In Review', deadline: 'Pending Approval' }
+  ],
+  transactions: [
+    { id: 'tx-8821', type: 'Escrow Locked', target: 'Alex Corp', amount: -1500, date: 'Today, 10:30 AM', status: 'secured' },
+    { id: 'tx-7742', type: 'Payout Released', target: 'Studio X', amount: 850, date: 'Jun 22, 2026', status: 'completed' }
   ]
 };
 
 export const staticDict = {
   en: { 
-    nav_explore: "Explore Gigs", nav_how: "How it Works", nav_safety: "Safety", 
-    btn_post: "Post Gig", badge_secure: "Global Ecosystem", 
-    hero_static: "Find trusted talent for", hero_sub: "Connect with verified professionals globally. Powered by smart contracts.", 
-    title_feed: "Live Global Stream",
-    antiScamTitle: "Secure Workspace Policy",
-    antiScamDesc: "To protect our community, please avoid sharing external links or personal contacts. All payments are secured via Escrow."
+    nav_explore: "Explore Gigs", 
+    nav_how: "How it Works", 
+    nav_safety: "Safety", 
+    btn_post: "Post Gig", 
+    badge_secure: "Global Ecosystem", 
+    hero_static: "Find trusted talent for", 
+    hero_sub: "Connect with verified professionals globally. Powered by smart contracts.", 
+    title_feed: "Live Global Stream", 
+    antiScamTitle: "Secure Workspace Policy", 
+    antiScamDesc: "To protect our community, please avoid sharing external links or personal contacts. All payments are secured via Escrow." 
   },
   th: { 
-    nav_explore: "หางาน", nav_how: "วิธีใช้งาน", nav_safety: "ความปลอดภัย", 
-    btn_post: "ลงประกาศ", badge_secure: "ระบบนิเวศระดับโลก", 
-    hero_static: "ค้นหาผู้เชี่ยวชาญด้าน", hero_sub: "เชื่อมต่อกับมืออาชีพทั่วโลก พร้อมระบบสัญญาอัจฉริยะ", 
-    title_feed: "กระดานอัปเดตล่าสุด",
-    antiScamTitle: "นโยบายความปลอดภัย",
-    antiScamDesc: "เพื่อปกป้องชุมชนของเรา กรุณาหลีกเลี่ยงการแชร์ลิงก์ภายนอกหรือข้อมูลติดต่อส่วนตัว การชำระเงินทั้งหมดได้รับการคุ้มครองผ่านระบบ Escrow"
+    nav_explore: "หางาน", 
+    nav_how: "วิธีใช้งาน", 
+    nav_safety: "ความปลอดภัย", 
+    btn_post: "ลงประกาศ", 
+    badge_secure: "ระบบนิเวศระดับโลก", 
+    hero_static: "ค้นหาผู้เชี่ยวชาญด้าน", 
+    hero_sub: "เชื่อมต่อกับมืออาชีพทั่วโลก พร้อมระบบคุ้มครองการจ่ายเงิน", 
+    title_feed: "กระดานอัปเดตล่าสุด", 
+    antiScamTitle: "นโยบายความปลอดภัย", 
+    antiScamDesc: "เพื่อปกป้องชุมชนของเรา กรุณาหลีกเลี่ยงการแชร์ลิงก์ภายนอกหรือข้อมูลติดต่อส่วนตัว การชำระเงินทั้งหมดได้รับการคุ้มครองผ่านระบบ Escrow" 
   }
 };
