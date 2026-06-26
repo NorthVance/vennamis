@@ -1,6 +1,6 @@
 {
   "name": "vennamis-api-gateway",
-  "version": "23.0.0",
+  "version": "26.0.0",
   "description": "Core Backend API for Vennamis P2P Platform",
   "main": "server.js",
   "type": "module",
@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0"
   }
