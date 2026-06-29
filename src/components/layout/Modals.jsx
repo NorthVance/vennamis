@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../App';
 import { AuthService, DatabaseService, supabase } from '../../services/db';
+import { NetworkTranslator } from '../../services/api'; // 📍 SYS: นำเข้าระบบแปลภาษา
 
 export default function Modals() {
   const { state, setState } = useContext(AppContext);
@@ -26,7 +27,7 @@ export default function Modals() {
   // 📍 SYS: Comment Thread States
   const [commentInput, setCommentInput] = useState('');
   const [postComments, setPostComments] = useState([
-    { id: 1, user: 'CryptoNinja', avatar: 'C', text: 'Totally agree with this!', time: '2h ago' },
+    { id: 1, user: 'CryptoNinja', avatar: 'C', text: 'Esto es increíble, me encanta esta plataforma!', time: '2h ago' }, // ลองใส่ภาษาสเปนจำลองไว้เทสแปล
     { id: 2, user: 'DevGuru', avatar: 'D', text: 'Have you tried using Supabase for this? It saved me a ton of time.', time: '5m ago' }
   ]);
 
@@ -108,20 +109,32 @@ export default function Modals() {
     closeModal();
   };
 
-  // 📍 EXEC: Handle Public Comment Submission
+  // EXEC: Handle Public Comment Submission
   const handleCommentSubmit = (e) => {
     e.preventDefault();
     if (!user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!commentInput.trim()) return;
     
     setPostComments(prev => [...prev, {
-      id: Date.now(),
-      user: user.name,
-      avatar: user.avatar,
-      text: commentInput,
-      time: 'Just now'
+      id: Date.now(), user: user.name, avatar: user.avatar, text: commentInput, time: 'Just now'
     }]);
     setCommentInput('');
+  };
+
+  // 📍 EXEC: Translate Specific Comment
+  const handleTranslateComment = async (commentId, text) => {
+    setPostComments(prev => prev.map(c => c.id === commentId ? { ...c, isTranslating: true } : c));
+    try {
+      const translatedText = await NetworkTranslator.translateText(text, state.lang, state.transApi);
+      setPostComments(prev => prev.map(c => c.id === commentId ? { ...c, text: translatedText, isTranslating: false, translated: true, originalText: text } : c));
+    } catch (error) {
+      setPostComments(prev => prev.map(c => c.id === commentId ? { ...c, isTranslating: false } : c));
+      setState(prev => ({...prev, toast: {type:'error', message:'Translation failed.'}}));
+    }
+  };
+
+  const revertTranslation = (commentId) => {
+    setPostComments(prev => prev.map(c => c.id === commentId && c.originalText ? { ...c, text: c.originalText, translated: false } : c));
   };
 
   const renderAvatar = (avatarData, sizeClasses) => {
@@ -157,7 +170,7 @@ export default function Modals() {
       ) : (
         /* MAIN MODALS */
         <div className={`relative glass-panel border rounded-3xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto animate-modal-pop ${activeModal === 'modal-gig-detail' || activeModal === 'modal-post' || activeModal === 'modal-profile' ? 'max-w-2xl' : 'max-w-md'}`}>
-          <button onClick={closeModal} className="btn-press absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime bg-white/5 border border-[var(--border-line)] rounded-full p-2 hover:bg-[var(--primary-glow)] transition-colors z-10"><i data-lucide="x" className="w-4 h-4"></i></button>
+          <button onClick={closeModal} className="btn-press absolute top-4 right-4 sm:top-6 sm:right-6 text-sub hover:text-prime bg-white/5 border border-[var(--border-line)] rounded-full p-2 hover:bg-[var(--primary-glow)] transition-colors z-10"><i data-lucide="x" className="w-5 h-5"></i></button>
           
           {/* AUTH */}
           {activeModal === 'modal-login' && (
@@ -180,16 +193,8 @@ export default function Modals() {
           {/* DELIVERY WORKFLOW */}
           {activeModal === 'modal-deliver' && selectedItem && (
             <div className="animate-[fadeStep_0.3s_ease_forwards]">
-              <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12">
-                <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] mb-3"><i data-lucide="send" className="w-5 h-5"></i></div>
-                <h3 className="text-xl sm:text-2xl font-black text-prime">Submit Delivery</h3>
-                <p className="text-[10px] text-sub uppercase tracking-widest mt-1">Contract: {selectedItem.id.toUpperCase()}</p>
-              </div>
-              <div className="surface-bg border border-[var(--border-line)] rounded-xl p-4 mb-6">
-                <p className="text-[10px] text-sub uppercase mb-1">Delivering to</p>
-                <p className="text-sm font-bold text-prime">{selectedItem.host}</p>
-                <p className="text-xs text-[var(--primary-glow)] mt-1 font-bold">Escrow Payout: ${selectedItem.amount}</p>
-              </div>
+              <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12"><div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] mb-3"><i data-lucide="send" className="w-5 h-5"></i></div><h3 className="text-xl sm:text-2xl font-black text-prime">Submit Delivery</h3><p className="text-[10px] text-sub uppercase tracking-widest mt-1">Contract: {selectedItem.id.toUpperCase()}</p></div>
+              <div className="surface-bg border border-[var(--border-line)] rounded-xl p-4 mb-6"><p className="text-[10px] text-sub uppercase mb-1">Delivering to</p><p className="text-sm font-bold text-prime">{selectedItem.host}</p><p className="text-xs text-[var(--primary-glow)] mt-1 font-bold">Escrow Payout: ${selectedItem.amount}</p></div>
               <form onSubmit={handleDeliverWork} className="space-y-4">
                 <div><label className="text-[10px] text-sub font-bold uppercase tracking-widest mb-1 block">Work URL / Repository <span className="text-red-500">*</span></label><input type="url" required value={deliveryUrl} onChange={e => setDeliveryUrl(e.target.value)} placeholder="https://github.com/... or Figma link" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /></div>
                 <div><label className="text-[10px] text-sub font-bold uppercase tracking-widest mb-1 block">Delivery Notes (Optional)</label><textarea value={deliveryNote} onChange={e => setDeliveryNote(e.target.value)} rows="3" placeholder="Briefly describe what you've delivered..." className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition resize-none"></textarea></div>
@@ -221,23 +226,15 @@ export default function Modals() {
 
           {/* ESCROW */}
           {activeModal === 'modal-escrow' && selectedItem && (
-            <div className="flex flex-col h-full">
-              <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12"><div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--grid-color)] mb-3"><i data-lucide="lock" className="w-5 h-5 text-[var(--primary-glow)]"></i></div><h3 className="text-xl sm:text-2xl font-black text-prime">Secure Escrow Payment</h3><p className="text-[10px] text-[var(--primary-glow)] uppercase tracking-widest mt-1 flex items-center justify-center"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Bank-Grade AES-256</p></div>
-              {escrowStep === 0 && (<div className="space-y-5 animate-[fadeStep_0.3s_ease_forwards]"><div className="surface-bg border border-[var(--border-line)] rounded-xl p-4"><p className="text-[10px] text-sub uppercase mb-1">Applying for</p><p className="text-sm font-bold text-prime">{selectedItem.title}</p><p className="text-xs text-sub mt-1">Host: {selectedItem.host}</p></div><div className="flex justify-between items-center surface-bg border border-[var(--border-line)] rounded-xl p-4"><span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span><span className="text-xl font-black glow-text">${selectedItem.price}</span></div><button onClick={handleEscrowTransaction} className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md flex justify-center items-center" style={{ background: 'var(--primary-glow)' }}><i data-lucide="credit-card" className="w-4 h-4 mr-2"></i> Proceed to Secure Checkout</button></div>)}
-              {escrowStep === 1 && (<div className="flex flex-col items-center justify-center py-10 space-y-4 animate-[fadeStep_0.3s_ease_forwards]"><i data-lucide="loader-2" className="w-10 h-10 text-[var(--primary-glow)] animate-spin"></i><p className="text-sm font-bold text-prime">Connecting to Gateway...</p></div>)}
-              {escrowStep === 2 && (<div className="flex flex-col items-center text-center space-y-4 py-4 animate-[fadeStep_0.3s_ease_forwards]"><div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-2"><i data-lucide="check" className="w-8 h-8 text-green-500"></i></div><h3 className="text-xl font-black text-prime">Payment Secured</h3><button onClick={closeModal} className="btn-press w-full rounded-xl py-3 mt-4 text-prime font-bold text-sm border border-[var(--border-line)] hover:border-[var(--primary-glow)]">Return to Feed</button></div>)}
-            </div>
+            <div className="flex flex-col h-full"><div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12"><div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--grid-color)] mb-3"><i data-lucide="lock" className="w-5 h-5 text-[var(--primary-glow)]"></i></div><h3 className="text-xl sm:text-2xl font-black text-prime">Secure Escrow Payment</h3><p className="text-[10px] text-[var(--primary-glow)] uppercase tracking-widest mt-1 flex items-center justify-center"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Bank-Grade AES-256</p></div>{escrowStep === 0 && (<div className="space-y-5 animate-[fadeStep_0.3s_ease_forwards]"><div className="surface-bg border border-[var(--border-line)] rounded-xl p-4"><p className="text-[10px] text-sub uppercase mb-1">Applying for</p><p className="text-sm font-bold text-prime">{selectedItem.title}</p><p className="text-xs text-sub mt-1">Host: {selectedItem.host}</p></div><div className="flex justify-between items-center surface-bg border border-[var(--border-line)] rounded-xl p-4"><span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span><span className="text-xl font-black glow-text">${selectedItem.price}</span></div><button onClick={handleEscrowTransaction} className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md flex justify-center items-center" style={{ background: 'var(--primary-glow)' }}><i data-lucide="credit-card" className="w-4 h-4 mr-2"></i> Proceed to Secure Checkout</button></div>)}{escrowStep === 1 && (<div className="flex flex-col items-center justify-center py-10 space-y-4 animate-[fadeStep_0.3s_ease_forwards]"><i data-lucide="loader-2" className="w-10 h-10 text-[var(--primary-glow)] animate-spin"></i><p className="text-sm font-bold text-prime">Connecting to Gateway...</p></div>)}{escrowStep === 2 && (<div className="flex flex-col items-center text-center space-y-4 py-4 animate-[fadeStep_0.3s_ease_forwards]"><div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-2"><i data-lucide="check" className="w-8 h-8 text-green-500"></i></div><h3 className="text-xl font-black text-prime">Payment Secured</h3><button onClick={closeModal} className="btn-press w-full rounded-xl py-3 mt-4 text-prime font-bold text-sm border border-[var(--border-line)] hover:border-[var(--primary-glow)]">Return to Feed</button></div>)}</div>
           )}
 
           {/* CREATE GIG */}
           {activeModal === 'modal-post' && (
-            <>
-              <h3 className="text-xl sm:text-2xl font-black text-prime mb-2 pr-12">Post a New Gig</h3>
-              <form onSubmit={submitGig} className="space-y-4 mt-6"><input type="text" value={gigForm.title} onChange={e => setGigForm({...gigForm, title: e.target.value})} required placeholder="Gig Title" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="number" value={gigForm.price} onChange={e => setGigForm({...gigForm, price: e.target.value})} required placeholder="Budget (USD)" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><input type="text" value={gigForm.loc} onChange={e => setGigForm({...gigForm, loc: e.target.value})} required placeholder="Location" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /></div><textarea required value={gigForm.desc} onChange={e => setGigForm({...gigForm, desc: e.target.value})} rows="4" placeholder="Requirements" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition"></textarea><button type="submit" className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md mt-4" style={{ background: 'var(--primary-glow)' }}>Publish Gig Securely</button></form>
-            </>
+            <><h3 className="text-xl sm:text-2xl font-black text-prime mb-2 pr-12">Post a New Gig</h3><form onSubmit={submitGig} className="space-y-4 mt-6"><input type="text" value={gigForm.title} onChange={e => setGigForm({...gigForm, title: e.target.value})} required placeholder="Gig Title" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="number" value={gigForm.price} onChange={e => setGigForm({...gigForm, price: e.target.value})} required placeholder="Budget (USD)" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><input type="text" value={gigForm.loc} onChange={e => setGigForm({...gigForm, loc: e.target.value})} required placeholder="Location" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /></div><textarea required value={gigForm.desc} onChange={e => setGigForm({...gigForm, desc: e.target.value})} rows="4" placeholder="Requirements" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition"></textarea><button type="submit" className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md mt-4" style={{ background: 'var(--primary-glow)' }}>Publish Gig Securely</button></form></>
           )}
 
-          {/* 📍 CONTENT DETAIL (GIGS VS POSTS) */}
+          {/* GIG DETAIL & DISCUSSION THREAD */}
           {activeModal === 'modal-gig-detail' && selectedItem && (
             <div className="space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 pr-12 sm:pr-14">
@@ -249,7 +246,6 @@ export default function Modals() {
               </div>
               <div className="p-3 sm:p-4 surface-bg border rounded-xl mb-4 text-xs sm:text-sm text-prime leading-relaxed">{selectedItem.desc}</div>
               
-              {/* 📍 แยก Logic: ถ้าเป็น Gig ให้ทักแชท ถ้าเป็น Post ให้คอมเมนต์ */}
               {selectedItem.type === 'gig' ? (
                 <div className="flex flex-col sm:flex-row justify-between p-3 sm:p-4 bg-white/5 rounded-xl border border-[var(--border-line)] gap-4">
                   <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => { setState(prev => ({...prev, activeModal: 'modal-profile', targetUser: {name: selectedItem.host, avatar: selectedItem.avatar || selectedItem.host[0]}})) }}>
@@ -262,14 +258,27 @@ export default function Modals() {
                 <div className="mt-6 border-t border-[var(--border-line)] pt-6">
                   <h4 className="text-sm font-bold text-prime mb-4 flex items-center"><i data-lucide="message-circle" className="w-4 h-4 mr-2 text-sub"></i> Discussion Thread</h4>
                   
-                  {/* แสดงคอมเมนต์ */}
+                  {/* แสดงคอมเมนต์พร้อมปุ่ม Translate */}
                   <div className="space-y-4 mb-6 max-h-60 overflow-y-auto hide-scrollbar">
                     {postComments.map(c => (
                       <div key={c.id} className="flex space-x-3 bg-white/5 p-3 rounded-xl border border-[var(--border-line)]">
                         {renderAvatar(c.avatar, "w-8 h-8 rounded-full text-xs shrink-0")}
                         <div className="flex-1">
-                          <div className="flex justify-between items-baseline mb-1"><span className="font-bold text-xs text-prime">{c.user}</span><span className="text-[9px] text-sub">{c.time}</span></div>
+                          <div className="flex justify-between items-baseline mb-1">
+                            <span className="font-bold text-xs text-prime">{c.user}</span>
+                            <span className="text-[9px] text-sub">{c.time}</span>
+                          </div>
                           <p className="text-xs text-sub leading-relaxed">{c.text}</p>
+                          
+                          {/* 📍 NEW: ปุ่มแปลภาษาสำหรับแต่ละคอมเมนต์ */}
+                          <button 
+                            onClick={() => c.translated ? revertTranslation(c.id) : handleTranslateComment(c.id, c.text)} 
+                            disabled={c.isTranslating}
+                            className="btn-press text-[9px] text-[var(--primary-glow)] hover:underline mt-1.5 flex items-center disabled:opacity-50 font-bold tracking-wider uppercase"
+                          >
+                            {c.isTranslating ? <i data-lucide="loader-2" className="w-3 h-3 mr-1 animate-spin"></i> : <i data-lucide="languages" className="w-3 h-3 mr-1"></i>}
+                            {c.isTranslating ? 'Translating...' : (c.translated ? 'Show Original' : `Translate to ${state.lang.toUpperCase()}`)}
+                          </button>
                         </div>
                       </div>
                     ))}
