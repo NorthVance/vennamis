@@ -4,54 +4,67 @@
 
 @layer base {
   :root {
-    /* UI: Deep Spatial Colors */
     --bg-base: #030407; 
-    --bg-surface: rgba(13, 17, 25, 0.6); 
-    --bg-glass: rgba(10, 14, 23, 0.4);
+    --bg-surface: rgba(13, 17, 25, 0.75); 
+    --bg-glass: rgba(10, 14, 23, 0.6);
     --text-main: #F8FAFC; 
-    --text-muted: #64748B; 
-    --border-line: rgba(255, 255, 255, 0.05);
+    --text-muted: #94A3B8; 
+    --border-line: rgba(255, 255, 255, 0.1);
     --primary-glow: #10B981; 
     --grid-color: rgba(16, 185, 129, 0.08);
   }
   body.theme-light {
-    --bg-base: #F1F5F9; --bg-surface: rgba(255, 255, 255, 0.7); --bg-glass: rgba(255, 255, 255, 0.5);
-    --text-main: #0F172A; --text-muted: #64748B; --border-line: rgba(0, 0, 0, 0.05);
-    --primary-glow: #059669; --grid-color: rgba(5, 150, 105, 0.05);
+    --bg-base: #F8FAFC; 
+    /* 📍 FIX: ทำให้การ์ดโหมดสว่างทึบขึ้น (85%) และขอบชัดขึ้น เพื่อให้อ่านตัวหนังสือออก 100% */
+    --bg-surface: rgba(255, 255, 255, 0.85); 
+    --bg-glass: rgba(255, 255, 255, 0.75);
+    --text-main: #0F172A; 
+    --text-muted: #475569; 
+    --border-line: rgba(0, 0, 0, 0.08);
+    --primary-glow: #059669; 
+    --grid-color: rgba(5, 150, 105, 0.05);
   }
   body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
 }
 
 @layer utilities {
-  /* UI: Bento Box Architecture */
+  /* 📍 FIX: การ์ด Bento แบบใหม่ อ่านง่าย โดดเด่น */
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
   .bento-card {
     background-color: var(--bg-surface);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--border-line);
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
+  /* แสงนำสายตาตอน Hover */
   .bento-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.03);
+    border-color: var(--primary-glow);
+    box-shadow: 0 10px 30px var(--grid-color);
   }
 
-  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-color: var(--border-line); }
+  .glass-panel { background-color: var(--bg-glass); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-color: var(--border-line); box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
   
+  /* 📍 FIX: เอา Text Shadow ออกในโหมดหน้าหลัก เพราะมึงบอกทำให้อ่านยาก */
   .text-prime { color: var(--text-main) !important; }
   .text-sub { color: var(--text-muted) !important; }
   .glow-text { color: var(--primary-glow); text-shadow: 0 0 20px var(--grid-color); }
   
-  /* UX: Snappy Micro-interactions */
+  .glow-border { transition: all 0.3s ease; }
+  .glow-border:hover { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--grid-color); transform: translateY(-4px) scale(1.01); }
+  
   .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
-  .btn-press:active { transform: scale(0.97); }
+  .btn-press:active { transform: scale(0.95); }
   
   .smart-dropdown { opacity: 0; transform: translateY(-5px) scale(0.98); pointer-events: none; transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top right; }
   .smart-dropdown.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
   
   .modal-overlay { backdrop-filter: blur(12px); animation: fadeInOverlay 0.2s ease forwards; }
   .animate-modal-pop { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+  /* 📍 NEW: Animation สำหรับการกด Like (Micro-interaction) */
+  .animate-heart-burst { animation: heartBurst 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
   .type-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--primary-glow); }
 
@@ -75,3 +88,5 @@
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 @keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(0.98) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+/* 📍 Keyframe สำหรับปุ่มกด Like */
+@keyframes heartBurst { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
