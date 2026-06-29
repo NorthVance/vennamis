@@ -66,12 +66,7 @@ export default function Home() {
   const openProfile = (e, hostName, avatarData) => { e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
   const handleLike = (e, id) => { e.stopPropagation(); setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); };
-  
-  const handleReport = (e, item) => { 
-    e.stopPropagation(); 
-    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-    setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); 
-  };
+  const handleReport = (e, item) => { e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); };
 
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -109,10 +104,10 @@ export default function Home() {
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[260px] group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[60px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
+                      {/* 📍 FIX GIGS: จัดกล่อง Flex ให้ปุ่ม Report อยู่คู่กับปุ่มโลเคชั่น ไม่ทับซ้อน */}
                       <div className="flex justify-between items-start mb-5">
                         <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
-                        {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag และเพิ่ม Title ให้อ่านง่าย */}
-                        <button onClick={(e) => handleReport(e, item)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                        <button onClick={(e) => handleReport(e, item)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10 shrink-0" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
                       </div>
                       <h3 className="text-xl sm:text-2xl font-black text-prime mb-2 line-clamp-1">{item.title}</h3><p className="text-sm text-sub line-clamp-2 leading-relaxed font-medium">{item.desc}</p>
                     </div>
@@ -120,12 +115,21 @@ export default function Home() {
                   </div>
                 );
               }
+
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer relative group">
-                  {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag */}
-                  <button onClick={(e) => handleReport(e, item)} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                  {/* 📍 FIX COMMUNITY: รื้อ absolute ออก จับใส่ flex box ให้ผลักกันเอง */}
+                  <div className="flex justify-between items-start mb-5">
+                    <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="flex items-center space-x-4 hover:opacity-80 transition cursor-pointer w-fit">
+                      {renderAvatar(item.avatar || item.host[0], "w-12 h-12 rounded-full text-base shadow-sm")}
+                      <div className="flex flex-col">
+                        <span className="text-base font-bold text-prime hover:underline">{item.host}</span>
+                        <span className="text-[10px] text-[var(--primary-glow)] flex items-center font-bold mt-0.5"><i data-lucide="shield-check" className="w-3.5 h-3.5 mr-1"></i> Verified Content</span>
+                      </div>
+                    </div>
+                    <button onClick={(e) => handleReport(e, item)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10 shrink-0" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                  </div>
                   
-                  <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="flex items-center space-x-4 mb-5 hover:opacity-80 transition cursor-pointer w-fit">{renderAvatar(item.avatar || item.host[0], "w-12 h-12 rounded-full text-base shadow-sm")}<div className="flex flex-col"><span className="text-base font-bold text-prime hover:underline">{item.host}</span><span className="text-[10px] text-[var(--primary-glow)] flex items-center font-bold mt-0.5"><i data-lucide="shield-check" className="w-3.5 h-3.5 mr-1"></i> Verified Content</span></div></div>
                   <h3 className="text-xl sm:text-2xl font-black text-prime mb-3 leading-tight">{item.title}</h3><p className="text-sm sm:text-base text-sub mb-6 leading-relaxed font-medium">{item.desc}</p>
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4 sm:pt-5">
                     {state.view === 'community' && (<div className="flex space-x-6 text-sub text-xs font-bold"><button onClick={(e) => handleLike(e, item.id)} className={`btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-[var(--primary-glow)]'}`}><i data-lucide="heart" className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}</button><span className="flex items-center hover:text-[var(--primary-glow)] transition"><i data-lucide="message-circle" className="w-4 h-4 sm:w-5 sm:h-5 mr-2"></i> {item.comments || 0}</span></div>)}
