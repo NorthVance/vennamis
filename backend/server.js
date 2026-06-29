@@ -8,7 +8,14 @@ import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { DB } from './database.js';
 
+// SYS: เพิ่ม Library สำหรับจัดการ Path หน้าบ้าน
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
@@ -16,7 +23,9 @@ const PORT = process.env.PORT || 5000;
 
 // SEC: Middleware Shield
 const limiter = rateLimit({ windowMs: 15*60*1000, max: 150, message: { error: 'Rate limit exceeded' } });
-app.use(helmet()); 
+app.use(helmet({
+    contentSecurityPolicy: false, // 📍 FIX: ปิด CSP ชั่วคราวเพื่อไม่ให้เบราว์เซอร์บล็อกไฟล์ React
+})); 
 app.use(limiter);
 
 const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : ['*'];
@@ -30,7 +39,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(morgan('dev'));
 
-// 📍 SYS: WebSocket Engine (Real-time Chat - RESTORED)
+// 📍 SYS: WebSocket Engine
 const io = new Server(httpServer, { cors: { origin: allowedOrigins, methods: ["GET", "POST"] } });
 io.on('connection', (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);
@@ -42,10 +51,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log(`[Socket] User disconnected: ${socket.id}`));
 });
 
-// SYS: Health
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '35.1.0' }));
-
-// ROUTE: DB Feed
+// ROUTE: API Health & Feeds
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '40.0.2' }));
 app.get('/api/feed/:type', async (req, res) => {
     try {
         const table = ['gigs', 'news', 'community'].includes(req.params.type) ? req.params.type : 'gigs';
@@ -64,7 +71,7 @@ app.post('/api/feed/:type', async (req, res) => {
     } catch (e) { res.status(500).json({ error: 'Internal Error' }); }
 });
 
-// 📍 ROUTE: Multi-Engine Translation Gateway (DeepSeek/DeepL/MyMemory)
+// ROUTE: Multi-Engine Translation Gateway
 app.post('/api/translate', async (req, res) => {
     try {
         const { text, targetLang, provider } = req.body;
@@ -96,21 +103,28 @@ app.post('/api/translate', async (req, res) => {
             if (dpData.translations) return res.status(200).json({ translatedText: dpData.translations[0].text });
         }
 
-        // Fallback
         console.warn(`[API] Primary engine failed or missing key. Falling back to free tier for: ${targetLang}`);
         const fbRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`);
         const fbData = await fbRes.json();
         if (fbData.responseStatus === 200) return res.status(200).json({ translatedText: fbData.responseData.translatedText });
 
-        res.status(200).json({ translatedText: text }); // Failsafe
+        res.status(200).json({ translatedText: text }); 
     } catch (e) {
         console.error('[API Error] Translation Engine:', e);
         res.status(500).json({ error: 'Gateway Error' });
     }
 });
 
+// SYS: FRONTEND STATIC SERVING 
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// 📍 ROUTE: Catch-All ให้ React Router 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
 // SYS: Global Handler
 app.use((err, req, res, next) => { console.error('[CRITICAL]', err.stack); res.status(500).json({ error: 'Gateway Failure' }); });
 
-// INIT: Boot HTTP & WebSocket Server Together
-httpServer.listen(PORT, () => console.log(`[SYS] Vennamis Gateway & Socket active on port ${PORT}`));
+// INIT
+httpServer.listen(PORT, () => console.log(`[SYS] Vennamis Gateway active on port ${PORT}`));
