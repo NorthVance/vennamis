@@ -25,6 +25,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
+  // INIT: Load Data & Translation Engine
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -38,6 +39,7 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
+  // EXEC: Filter & Sort Engine
   useEffect(() => {
     let result = [...viewData];
     if (searchQuery.trim()) { const q = searchQuery.toLowerCase(); result = result.filter(i => (i.title?.toLowerCase().includes(q)) || (i.desc?.toLowerCase().includes(q)) || (i.host?.toLowerCase().includes(q))); }
@@ -53,20 +55,23 @@ export default function Home() {
   }, [activeFilter, viewData, searchQuery, sortBy]);
 
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
+  
+  // FIX: Stable Icon Injection
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
+  // EXEC: Modals & Actions
   const handleApply = (e, item) => { e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
   const openProfile = (e, hostName, avatarData) => { e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
   const handleLike = (e, id) => { e.stopPropagation(); setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); };
   const handleReport = (e, item) => { e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); };
 
-  // 📍 FIX: เคลียร์ค่า input.value ทิ้ง เพื่อให้เลือกรูปเดิมซ้ำได้เบราว์เซอร์ไม่งง
+  // FIX: Safe Image Upload Reset
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setState(prev => ({ ...prev, toast: { type: 'error', message: 'Image > 5MB' } }));
+        setState(prev => ({ ...prev, toast: { type: 'error', message: 'Image exceeds 5MB limit' } }));
         e.target.value = ''; 
         return;
       }
@@ -77,13 +82,14 @@ export default function Home() {
 
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-    if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields empty.' } }));
+    if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields cannot be empty' } }));
     const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
     setQuickTitle(''); setQuickDesc(''); setQuickImage(null);
-    setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Published!' } }));
+    setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Published successfully' } }));
   };
 
+  // FIX: Avatar Fallback Rendering
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
     if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" className={`object-cover ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
@@ -104,10 +110,10 @@ export default function Home() {
           <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar w-full sm:w-auto pb-1 sm:pb-0"><button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}>All</button>{state.view === 'gigs' && (<><button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}>Remote Only</button><button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="flame" className="w-3 h-3 mr-1.5"></i> High Budget</button></>)}{state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Top Rated</button>}{state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Bullish Intel</button>}<div className="flex items-center space-x-2 border-l border-[var(--border-line)] pl-2 sm:pl-3 ml-1"><i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i><select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-[10px] sm:text-xs font-bold text-prime outline-none cursor-pointer"><option value="newest" className="bg-[var(--bg-surface)]">Newest</option>{state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Highest Price</option>}{(state.view === 'community' || state.view === 'gigs') && <option value="popular" className="bg-[var(--bg-surface)]">Most Popular</option>}</select></div>{state.view === 'news' && <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-4 py-2 rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift whitespace-nowrap ml-auto" style={{ background: 'var(--primary-glow)' }}><i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News</button>}</div>
         </div>
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 mb-8"><div className="flex items-start space-x-4">{renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm")}<div className="flex-1"><input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-lg outline-none placeholder-[var(--text-muted)] mb-2" /><textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)] font-medium"></textarea>{quickImage && (<div className="relative mt-3 mb-2 w-fit"><img src={quickImage} alt="Preview" className="h-32 rounded-xl border border-[var(--border-line)] object-cover shadow-sm" /><button onClick={() => setQuickImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:scale-110 transition"><i data-lucide="x" className="w-3 h-3"></i></button></div>)}<div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)] mt-3"><div className="flex space-x-2 text-sub"><input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" /><button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4"></i></button><button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button></div><button onClick={handleQuickPost} className="btn-press px-8 py-2.5 rounded-xl text-white font-bold text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button></div></div></div></div>
+          <div className="bento-card rounded-[2rem] p-5 mb-8"><div className="flex items-start space-x-4">{renderAvatar(state.user?.avatar, "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}<div className="flex-1"><input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-lg outline-none placeholder-[var(--text-muted)] mb-2" /><textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)] font-medium"></textarea>{quickImage && (<div className="relative mt-3 mb-2 w-fit"><img src={quickImage} alt="Preview" className="h-32 rounded-xl border border-[var(--border-line)] object-cover shadow-sm" /><button onClick={() => setQuickImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:scale-110 transition"><i data-lucide="x" className="w-3 h-3"></i></button></div>)}<div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)] mt-3"><div className="flex space-x-2 text-sub"><input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" /><button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4"></i></button><button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link attachment disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition"><i data-lucide="link" className="w-4 h-4"></i></button></div><button onClick={handleQuickPost} className="btn-press px-8 py-2.5 rounded-xl text-white font-bold text-sm shadow-md" style={{ background: 'var(--primary-glow)' }}>Post</button></div></div></div></div>
         )}
         {isLoading ? <Skeleton view={state.view} /> : filteredData.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl"><i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i><p className="text-sm font-medium text-sub">No results match your current filter.</p><button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift">Clear Filters</button></div>
+          <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl"><i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i><p className="text-sm font-medium text-sub">No results match your filters.</p><button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift">Clear Filters</button></div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
             {filteredData.map(item => {
@@ -115,7 +121,10 @@ export default function Home() {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[260px] group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[60px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
-                    <div><div className="flex justify-between items-start mb-5"><span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span><button onClick={(e) => handleReport(e, item)} className="text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button></div><h3 className="text-xl sm:text-2xl font-black text-prime mb-2 line-clamp-1">{item.title}</h3><p className="text-sm text-sub line-clamp-2 leading-relaxed font-medium">{item.desc}</p></div>
+                    <div>
+                      <div className="flex justify-between items-start mb-5"><span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span><button onClick={(e) => handleReport(e, item)} className="text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button></div>
+                      <h3 className="text-xl sm:text-2xl font-black text-prime mb-2 line-clamp-1">{item.title}</h3><p className="text-sm text-sub line-clamp-2 leading-relaxed font-medium">{item.desc}</p>
+                    </div>
                     <div className="flex justify-between items-end mt-auto pt-5 border-t border-[var(--border-line)]/50"><div onClick={(e) => openProfile(e, item.host, item.avatar)} className="hover:opacity-80 transition cursor-pointer flex items-center space-x-3">{renderAvatar(item.avatar || item.host[0], "w-8 h-8 rounded-full text-xs shadow-sm", item.host[0])}<div><p className="text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold">Host Identity</p><span className="text-sm font-bold text-prime hover:underline">{item.host}</span></div></div><button onClick={(e) => handleApply(e, item)} className="btn-press px-5 py-2.5 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2">Apply <i data-lucide="arrow-up-right" className="w-4 h-4"></i></button></div>
                   </div>
                 );
