@@ -18,8 +18,6 @@ export default function Home() {
   const [quickTitle, setQuickTitle] = useState('');
   const [quickDesc, setQuickDesc] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-
-  // 📍 SYS: State สำหรับจำว่าโพสต์ไหนถูกกด Like ไปแล้วบ้าง (Micro-interaction)
   const [likedPosts, setLikedPosts] = useState({});
 
   useEffect(() => {
@@ -55,7 +53,13 @@ export default function Home() {
 
   useEffect(() => { setActiveFilter('all'); }, [state.view]);
 
-  // EXEC: Apply Escrow
+  // 📍 FIX: บังคับวาดไอคอนใหม่ทุกครั้งที่รายการ Feed เปลี่ยน หรือเรนเดอร์เสร็จ
+  useEffect(() => {
+    if (window.lucide) {
+      setTimeout(() => window.lucide.createIcons(), 50); // Delay นิดนึงรอ DOM วาดเสร็จ
+    }
+  }, [filteredData, state.view]);
+
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -78,11 +82,9 @@ export default function Home() {
     setState(prev => ({ ...prev, toast: { type: 'info', message: 'Content flagged for review.' } }));
   };
 
-  // 📍 NEW: Handle Like Animation
   const handleLike = (e, id) => {
     e.stopPropagation();
     setLikedPosts(prev => ({ ...prev, [id]: !prev[id] }));
-    // Optional: ยิงซาวน์เอฟเฟกต์เล็กๆ หรือส่งเข้า Database ตรงนี้
   };
 
   const handleQuickPost = async () => {
@@ -230,14 +232,12 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  {/* 📍 FIX: ขยายตัวอักษรให้อ่านง่าย แตกต่างจากพื้นหลัง */}
                   <h3 className="text-xl sm:text-2xl font-black text-prime mb-3 leading-tight">{item.title}</h3>
                   <p className="text-sm sm:text-base text-sub mb-6 leading-relaxed font-medium">{item.desc}</p>
                   
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4 sm:pt-5">
                     {state.view === 'community' && (
                       <div className="flex space-x-6 text-sub text-xs font-bold">
-                        {/* 📍 NEW: ปุ่ม Like เด้ง Pop */}
                         <button onClick={(e) => handleLike(e, item.id)} className={`btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-[var(--primary-glow)]'}`}>
                           <i data-lucide="heart" className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> 
                           {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
