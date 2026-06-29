@@ -95,9 +95,13 @@ export default function ChatWidget() {
               {(messages[state.chatHost] || []).map((m) => (
                 <div key={m.id} className={`flex flex-col ${m.sender === 'me' ? 'items-end' : 'items-start'}`}>
                   {m.sender === 'system' ? (
-                    <div className="self-center bg-white/5 border border-[var(--border-line)] px-3 py-1.5 rounded-full text-[9px] text-sub flex items-center my-2"><i data-lucide="lock" className="w-3 h-3 mr-1.5"></i> {m.text}</div>
+                    <div className="self-center bg-white/5 border border-[var(--border-line)] px-3 py-1.5 rounded-full text-[9px] text-sub flex items-center my-2 text-center break-words"><i data-lucide="lock" className="w-3 h-3 mr-1.5"></i> {m.text}</div>
                   ) : (
-                    <><div className={`max-w-[85%] p-3 text-sm shadow-sm ${m.sender === 'me' ? 'bg-[var(--primary-glow)] text-white rounded-2xl rounded-tr-sm' : 'surface-bg border border-[var(--border-line)] text-prime rounded-2xl rounded-tl-sm'}`}>{m.text}</div><div className="flex items-center mt-1 space-x-1"><span className="text-[9px] text-sub">{m.time}</span>{m.sender === 'me' && <i data-lucide="check-check" className="w-3 h-3 text-[var(--primary-glow)] opacity-80"></i>}</div></>
+                    <>
+                      {/* FIX: break-words whitespace-pre-wrap กันข้อความทะลุจอและเคาะบรรทัด */}
+                      <div className={`max-w-[85%] p-3 text-sm shadow-sm break-words whitespace-pre-wrap ${m.sender === 'me' ? 'bg-[var(--primary-glow)] text-white rounded-2xl rounded-tr-sm' : 'surface-bg border border-[var(--border-line)] text-prime rounded-2xl rounded-tl-sm'}`}>{m.text}</div>
+                      <div className="flex items-center mt-1 space-x-1"><span className="text-[9px] text-sub">{m.time}</span>{m.sender === 'me' && <i data-lucide="check-check" className="w-3 h-3 text-[var(--primary-glow)] opacity-80"></i>}</div>
+                    </>
                   )}
                 </div>
               ))}
