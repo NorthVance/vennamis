@@ -17,9 +17,15 @@ export default function Home() {
   
   const [quickTitle, setQuickTitle] = useState('');
   const [quickDesc, setQuickDesc] = useState('');
+  
+  // 📍 SYS: Filter, Search & Sort States
   const [activeFilter, setActiveFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  
   const [likedPosts, setLikedPosts] = useState({});
 
+  // INIT: Load & Translate
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -43,23 +49,47 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
+  // 📍 EXEC: Master Filter Engine (Search + Filter + Sort)
   useEffect(() => {
-    if (activeFilter === 'all') setFilteredData(viewData);
-    else if (activeFilter === 'remote') setFilteredData(viewData.filter(i => i.loc?.toLowerCase() === 'remote'));
-    else if (activeFilter === 'high_budget') setFilteredData(viewData.filter(i => i.price >= 1000));
-    else if (activeFilter === 'top_rated') setFilteredData(viewData.filter(i => (i.likes || 0) > 100));
-    else if (activeFilter === 'bullish') setFilteredData(viewData.filter(i => i.sentiment === 'bullish'));
-  }, [activeFilter, viewData]);
+    let result = [...viewData];
 
-  useEffect(() => { setActiveFilter('all'); }, [state.view]);
-
-  // 📍 FIX: บังคับวาดไอคอนใหม่ทุกครั้งที่รายการ Feed เปลี่ยน หรือเรนเดอร์เสร็จ
-  useEffect(() => {
-    if (window.lucide) {
-      setTimeout(() => window.lucide.createIcons(), 50); // Delay นิดนึงรอ DOM วาดเสร็จ
+    // 1. Apply Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(i => 
+        (i.title && i.title.toLowerCase().includes(q)) || 
+        (i.desc && i.desc.toLowerCase().includes(q)) || 
+        (i.host && i.host.toLowerCase().includes(q))
+      );
     }
-  }, [filteredData, state.view]);
 
+    // 2. Apply Category Filters
+    if (activeFilter !== 'all') {
+      if (activeFilter === 'remote') result = result.filter(i => i.loc?.toLowerCase() === 'remote');
+      else if (activeFilter === 'high_budget') result = result.filter(i => i.price >= 1000);
+      else if (activeFilter === 'top_rated') result = result.filter(i => (i.likes || 0) > 100);
+      else if (activeFilter === 'bullish') result = result.filter(i => i.sentiment === 'bullish');
+    }
+
+    // 3. Apply Sorting
+    if (sortBy === 'price_desc') {
+      result.sort((a, b) => (b.price || 0) - (a.price || 0));
+    } else if (sortBy === 'popular') {
+      result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    } // default is newest (already sorted by DB)
+
+    setFilteredData(result);
+  }, [activeFilter, viewData, searchQuery, sortBy]);
+
+  // Reset states on view change
+  useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
+
+  // UI: Icons
+  useEffect(() => {
+    if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50);
+  }, [filteredData, state.view, sortBy]);
+
+  // EXEC: Actions
   const handleApply = (e, item) => {
     e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -90,10 +120,8 @@ export default function Home() {
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields cannot be empty.' } }));
-    
     const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
-    
     setQuickTitle(''); setQuickDesc('');
     setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Post published successfully!' }, notifications: [{ title: 'Post Published', desc: 'Your post is now live.' }, ...prev.notifications] }));
   };
@@ -120,7 +148,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Nav & Search */}
+      {/* CORE: Nav & Search */}
       <div className="glass-panel flex flex-col-reverse sm:flex-row justify-between items-center gap-4 sticky top-[72px] z-30 py-3 px-4 sm:px-5 rounded-3xl mt-4 shadow-xl">
         <div className="flex p-1.5 bg-[var(--bg-base)]/50 border border-[var(--border-line)] rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
           {['gigs', 'community', 'traders', 'news'].map((nav) => (
@@ -135,7 +163,8 @@ export default function Home() {
         </div>
         <div className="w-full sm:w-80 relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
-          <input type="text" className="w-full bg-[var(--bg-base)] border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          {/* 📍 UI: Search Input connected to State */}
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-base)] border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
       </div>
 
@@ -156,6 +185,17 @@ export default function Home() {
             )}
             {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Top Rated</button>}
             {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Bullish Intel</button>}
+            
+            {/* 📍 UI: Sort Dropdown */}
+            <div className="flex items-center space-x-2 border-l border-[var(--border-line)] pl-2 sm:pl-3 ml-1">
+              <i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-[10px] sm:text-xs font-bold text-prime outline-none cursor-pointer">
+                <option value="newest" className="bg-[var(--bg-surface)]">Newest</option>
+                {state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Highest Price</option>}
+                {(state.view === 'community' || state.view === 'gigs') && <option value="popular" className="bg-[var(--bg-surface)]">Most Popular</option>}
+              </select>
+            </div>
+
             {state.view === 'news' && <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press px-4 py-2 rounded-xl text-white text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5 hover-lift whitespace-nowrap ml-auto" style={{ background: 'var(--primary-glow)' }}><i data-lucide="plus" className="w-3.5 h-3.5"></i> Add News</button>}
           </div>
         </div>
@@ -186,8 +226,8 @@ export default function Home() {
         ) : filteredData.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
             <i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
-            <p className="text-sm font-medium text-sub">No results match your current filter.</p>
-            <button onClick={() => setActiveFilter('all')} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift">Clear Filters</button>
+            <p className="text-sm font-medium text-sub">No results match your current filter or search.</p>
+            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift">Clear Search/Filters</button>
           </div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6"}>
