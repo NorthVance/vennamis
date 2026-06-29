@@ -9,10 +9,12 @@ import { DatabaseService } from '../services/db';
 export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
+
   const rawData = state.data[state.view] || [];
   const [viewData, setViewData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
   const [quickTitle, setQuickTitle] = useState('');
   const [quickDesc, setQuickDesc] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -25,8 +27,18 @@ export default function Home() {
     const loadDataAndTranslate = async () => {
       setIsLoading(true);
       const data = await DatabaseService.getFeedData(state.view);
-      if (data.length === 0 || state.lang === 'en') { if (isMounted) { setViewData(data); setFilteredData(data); setIsLoading(false); } return; }
-      const translated = await Promise.all(data.map(async (item) => ({ ...item, title: await NetworkTranslator.translateText(item.title, state.lang, state.transApi), desc: await NetworkTranslator.translateText(item.desc, state.lang, state.transApi) })));
+      
+      if (data.length === 0 || state.lang === 'en') {
+        if (isMounted) { setViewData(data); setFilteredData(data); setIsLoading(false); }
+        return;
+      }
+      
+      const translated = await Promise.all(data.map(async (item) => {
+        const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
+        const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
+        return { ...item, title: tTitle, desc: tDesc };
+      }));
+      
       if (isMounted) { setViewData(translated); setFilteredData(translated); setIsLoading(false); }
     };
     loadDataAndTranslate();
@@ -55,7 +67,6 @@ export default function Home() {
   const handleShare = (e) => { e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
   const handleLike = (e, id) => { e.stopPropagation(); setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); };
   
-  // 📍 FIX: Trigger Report Modal
   const handleReport = (e, item) => { 
     e.stopPropagation(); 
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -97,14 +108,23 @@ export default function Home() {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[260px] group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[60px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
-                    <div><div className="flex justify-between items-start mb-5"><span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span><button onClick={(e) => handleReport(e, item)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"><i data-lucide="more-horizontal" className="w-5 h-5"></i></button></div><h3 className="text-xl sm:text-2xl font-black text-prime mb-2 line-clamp-1">{item.title}</h3><p className="text-sm text-sub line-clamp-2 leading-relaxed font-medium">{item.desc}</p></div>
+                    <div>
+                      <div className="flex justify-between items-start mb-5">
+                        <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
+                        {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag และเพิ่ม Title ให้อ่านง่าย */}
+                        <button onClick={(e) => handleReport(e, item)} className="text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-prime mb-2 line-clamp-1">{item.title}</h3><p className="text-sm text-sub line-clamp-2 leading-relaxed font-medium">{item.desc}</p>
+                    </div>
                     <div className="flex justify-between items-end mt-auto pt-5 border-t border-[var(--border-line)]/50"><div onClick={(e) => openProfile(e, item.host, item.avatar)} className="hover:opacity-80 transition cursor-pointer flex items-center space-x-3">{renderAvatar(item.avatar || item.host[0], "w-8 h-8 rounded-full text-xs shadow-sm")}<div><p className="text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold">Host Identity</p><span className="text-sm font-bold text-prime hover:underline">{item.host}</span></div></div><button onClick={(e) => handleApply(e, item)} className="btn-press px-5 py-2.5 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2">Apply <i data-lucide="arrow-up-right" className="w-4 h-4"></i></button></div>
                   </div>
                 );
               }
               return (
                 <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer relative group">
-                  <button onClick={(e) => handleReport(e, item)} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"><i data-lucide="more-horizontal" className="w-5 h-5"></i></button>
+                  {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag */}
+                  <button onClick={(e) => handleReport(e, item)} className="absolute top-6 right-6 text-sub hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2 bg-white/5 rounded-xl border border-transparent hover:border-red-500/30 hover:bg-red-500/10" title="Report this post"><i data-lucide="flag" className="w-4 h-4"></i></button>
+                  
                   <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="flex items-center space-x-4 mb-5 hover:opacity-80 transition cursor-pointer w-fit">{renderAvatar(item.avatar || item.host[0], "w-12 h-12 rounded-full text-base shadow-sm")}<div className="flex flex-col"><span className="text-base font-bold text-prime hover:underline">{item.host}</span><span className="text-[10px] text-[var(--primary-glow)] flex items-center font-bold mt-0.5"><i data-lucide="shield-check" className="w-3.5 h-3.5 mr-1"></i> Verified Content</span></div></div>
                   <h3 className="text-xl sm:text-2xl font-black text-prime mb-3 leading-tight">{item.title}</h3><p className="text-sm sm:text-base text-sub mb-6 leading-relaxed font-medium">{item.desc}</p>
                   <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4 sm:pt-5">
