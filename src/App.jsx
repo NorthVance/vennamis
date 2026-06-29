@@ -13,51 +13,23 @@ export const AppContext = createContext();
 
 export default function App() {
   
-  // 📍 SYS: Local Memory Engine (UI Preferences ONLY - Safe Mode)
   const [state, setState] = useState(() => {
     try {
       const localMem = localStorage.getItem('vennamis_ui_prefs');
       if (localMem) {
         const parsed = JSON.parse(localMem);
         return {
-          lang: parsed.lang || 'en',
-          transApi: parsed.transApi || 'google',
-          theme: parsed.theme || 'light',
-          bg: parsed.bg || 'cyber',
-          // 🛑 SEC: User state is intentionally EXCLUDED from local storage
-          user: null, 
-          view: 'gigs',
-          activeModal: null,
-          isChatOpen: false,
-          chatHost: null,
-          selectedItem: null,
-          targetUser: null,
-          data: initialData,
-          notifications: [],
-          refreshTick: 0,
-          toast: null
+          lang: parsed.lang || 'en', transApi: parsed.transApi || 'google', theme: parsed.theme || 'light', bg: parsed.bg || 'cyber',
+          user: null, view: 'gigs', activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null,
+          data: initialData, notifications: [], refreshTick: 0, toast: null
         };
       }
-    } catch (e) {
-      console.error("[Mem Error] Cache corrupted, loading defaults.");
-    }
-    
-    return {
-      lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs',
-      user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null,
-      data: initialData, notifications: [], refreshTick: 0, toast: null
-    };
+    } catch (e) { console.error("[Mem Error] Cache corrupted."); }
+    return { lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
   });
 
-  // 📍 SYS: Save UI Preferences (No sensitive data)
   useEffect(() => {
-    const memoryToSave = {
-      lang: state.lang,
-      transApi: state.transApi,
-      theme: state.theme,
-      bg: state.bg
-    };
-    localStorage.setItem('vennamis_ui_prefs', JSON.stringify(memoryToSave));
+    localStorage.setItem('vennamis_ui_prefs', JSON.stringify({ lang: state.lang, transApi: state.transApi, theme: state.theme, bg: state.bg }));
   }, [state.lang, state.transApi, state.theme, state.bg]);
 
   useEffect(() => { document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; }, [state.theme]);
@@ -69,13 +41,11 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [state.view, state.data, state.bg, state.activeModal, state.refreshTick, state.toast]);
+  // 📍 FIX: Bulletproof Icon Engine (Runs on every render safely)
+  useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
-  // 📍 AUTH: Secure Session Restoration (Handled by Supabase internally)
   useEffect(() => {
     if (!supabase) return;
-    
-    // Restore session securely
     AuthService.getSession().then(({ data: { session } }) => {
       if (session) {
         const u = session.user;
@@ -83,14 +53,11 @@ export default function App() {
       }
     });
 
-    // Listen to changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         const u = session.user;
         setState(prev => ({ ...prev, user: { id: u.id, email: u.email, name: u.user_metadata?.full_name || 'User', avatar: u.user_metadata?.avatar || 'U', balance: u.user_metadata?.balance || '$0.00', bio: 'Ready for global work.' } }));
-      } else {
-        setState(prev => ({ ...prev, user: null }));
-      }
+      } else setState(prev => ({ ...prev, user: null }));
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -100,7 +67,6 @@ export default function App() {
       {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
       {state.bg === 'galaxy' && <div className="bg-galaxy"></div>}
       {state.bg === '3d-matrix' && <div className="bg-3d-matrix"></div>}
-      
       {state.bg === 'landscape' && (
         <div className="fixed inset-0 z-[-2]">
           <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 1 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80')" }}></div>
@@ -108,18 +74,12 @@ export default function App() {
           <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 3 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=80')" }}></div>
         </div>
       )}
-
       <div className="cyber-vignette"></div>
-      
       {(state.bg === 'cyber' || state.bg === '3d-matrix') && (
-        <>
-          <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div>
-          <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
-        </>
+        <><div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div><div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div></>
       )}
 
       <Toast />
-
       <div className="relative flex flex-col min-h-screen z-10">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
