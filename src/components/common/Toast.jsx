@@ -5,6 +5,7 @@ export default function Toast() {
   const { state, setState } = useContext(AppContext);
   const { toast } = state;
 
+  // EXEC: Auto-dismiss
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
@@ -17,12 +18,29 @@ export default function Toast() {
   if (!toast) return null;
 
   return (
-    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[110] animate-[modalPop_0.3s_cubic-bezier(0.16,1,0.3,1)_forwards] w-[90%] sm:w-auto max-w-sm pointer-events-none">
-      <div className="glass-panel border border-[var(--border-line)] rounded-full px-5 py-3 shadow-2xl flex items-center space-x-3 backdrop-blur-3xl bg-[var(--bg-surface)]/90">
-        {toast.type === 'success' && <i data-lucide="check-circle-2" className="w-5 h-5 text-[var(--primary-glow)] shrink-0"></i>}
-        {toast.type === 'error' && <i data-lucide="alert-circle" className="w-5 h-5 text-red-500 shrink-0"></i>}
-        {toast.type === 'info' && <i data-lucide="info" className="w-5 h-5 text-blue-500 shrink-0"></i>}
-        <span className="text-sm font-bold text-prime truncate">{toast.message}</span>
+    // FIX: Moved to bottom-10 (Mobile) & bottom-12 (PC) to prevent Header overlap
+    <div className="fixed bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 z-[150] animate-modal-pop w-[90%] sm:w-auto max-w-md pointer-events-none">
+      <div className="glass-panel border border-[var(--border-line)] rounded-2xl px-4 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex items-center space-x-3">
+        
+        {toast.type === 'success' && (
+          <div className="w-8 h-8 rounded-full bg-[var(--primary-glow)]/20 flex items-center justify-center shrink-0">
+            <i data-lucide="check-circle-2" className="w-4 h-4 text-[var(--primary-glow)]"></i>
+          </div>
+        )}
+        
+        {toast.type === 'error' && (
+          <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="alert-circle" className="w-4 h-4 text-red-500"></i>
+          </div>
+        )}
+        
+        {toast.type === 'info' && (
+          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="info" className="w-4 h-4 text-blue-500"></i>
+          </div>
+        )}
+
+        <span className="text-sm font-bold text-prime pr-2">{toast.message}</span>
       </div>
     </div>
   );
