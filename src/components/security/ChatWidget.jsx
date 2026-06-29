@@ -2,7 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../../App';
 import io from 'socket.io-client';
 
-// CFG: Socket Connection Endpoint
+// CFG
 const SOCKET_URL = 'https://ใส่_URL_RENDER_ของมึงตรงนี้.onrender.com';
 let socket;
 
@@ -13,19 +13,18 @@ export default function ChatWidget() {
   const [isConnected, setIsConnected] = useState(false);
   const chatEndRef = useRef(null);
 
-  // MOCK: Active Contacts
+  // MOCK
   const contacts = [
     { id: 'u1', name: 'Alex Corp', status: 'online', unread: 2 },
     { id: 'u2', name: 'Studio X', status: 'offline', unread: 0 },
     { id: 'u3', name: 'DataFlow', status: 'online', unread: 0 }
   ];
 
-  // INIT: Real-time Socket Engine
+  // INIT
   useEffect(() => {
     socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
-    
     socket.on('receive_message', (data) => {
       setMessages(prev => ({ ...prev, [data.senderName]: [...(prev[data.senderName] || []), { ...data, sender: 'host' }] }));
       if (!state.isChatOpen || state.chatHost !== data.senderName) {
@@ -35,13 +34,16 @@ export default function ChatWidget() {
     return () => socket.disconnect();
   }, []);
 
+  // EXEC
   const toggleChat = () => setState(prev => ({ ...prev, isChatOpen: !prev.isChatOpen }));
   const closeChat = () => setState(prev => ({ ...prev, isChatOpen: false }));
+  
   const openRoom = (hostName) => {
     setState(prev => ({ ...prev, chatHost: hostName }));
     socket.emit('join_room', hostName);
     if (!messages[hostName]) setMessages(prev => ({ ...prev, [hostName]: [{ id: 'sys-1', sender: 'system', text: `End-to-end encrypted channel with ${hostName}.`, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }] }));
   };
+  
   const backToContacts = () => setState(prev => ({ ...prev, chatHost: null }));
 
   const sendChat = () => {
@@ -53,19 +55,18 @@ export default function ChatWidget() {
   };
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); if (window.lucide) window.lucide.createIcons(); }, [messages, state.chatHost, state.isChatOpen]);
+  
   const getStatusColor = (status) => status === 'online' ? 'bg-green-500' : (status === 'away' ? 'bg-amber-500' : 'bg-gray-500');
 
+  // RENDER
   return (
     <>
-      {/* UI: Floating Action Button */}
       <button onClick={toggleChat} className="btn-press fixed bottom-4 right-4 sm:bottom-6 sm:right-6 p-3 sm:p-4 rounded-full text-white shadow-[0_0_20px_var(--grid-color)] hover:scale-110 transition-transform z-[90]" style={{ background: 'var(--primary-glow)' }}>
         <i data-lucide="message-square" className="w-5 h-5 sm:w-6 sm:h-6"></i>
         {contacts.reduce((acc, c) => acc + c.unread, 0) > 0 && <span className="absolute top-0 right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-red-500 border-2 border-[var(--bg-base)] rounded-full"></span>}
       </button>
 
-      {/* UI: Responsive Chat Container */}
       <div className={`fixed bottom-0 right-0 w-full h-[85vh] sm:h-[500px] sm:w-[360px] sm:bottom-24 sm:right-6 glass-panel border-t sm:border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 z-[100] ${state.isChatOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-full sm:translate-y-5 pointer-events-none'}`}>
-        
         <div className="p-3 sm:p-4 border-b border-[var(--border-line)] flex justify-between items-center bg-black/5 backdrop-blur-md">
           <div className="flex items-center space-x-3">
             {state.chatHost ? (
@@ -102,8 +103,6 @@ export default function ChatWidget() {
               ))}
               <div ref={chatEndRef} />
             </div>
-            
-            {/* FIX: Prevent Mobile Keyboard Overlap */}
             <div className="p-3 bg-[var(--bg-surface)] border-t border-[var(--border-line)] pb-6 sm:pb-3">
               <div className="flex items-center gap-2 bg-black/20 border border-[var(--border-line)] rounded-2xl p-1 pr-1.5 focus-within:border-[var(--primary-glow)] transition-colors">
                 <button className="btn-press p-2 text-sub hover:text-[var(--primary-glow)] transition rounded-xl"><i data-lucide="paperclip" className="w-4 h-4"></i></button>
