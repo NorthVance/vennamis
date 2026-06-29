@@ -23,20 +23,23 @@ export default function Modals() {
   const [pubProfile, setPubProfile] = useState(null);
   const [pubReviews, setPubReviews] = useState([]);
 
+  // 📍 SYS: Comment Thread States
+  const [commentInput, setCommentInput] = useState('');
+  const [postComments, setPostComments] = useState([
+    { id: 1, user: 'CryptoNinja', avatar: 'C', text: 'Totally agree with this!', time: '2h ago' },
+    { id: 2, user: 'DevGuru', avatar: 'D', text: 'Have you tried using Supabase for this? It saved me a ton of time.', time: '5m ago' }
+  ]);
+
   // SYS: Reset
   const closeModal = () => {
     setState(prev => ({ ...prev, activeModal: null, selectedItem: null, targetUser: null }));
     setNewsPreview(null); setNewsUrl(''); setGigForm({ title: '', price: '', loc: '', desc: '' });
     setAuthForm({ name: '', email: '', password: '' }); setPubProfile(null); setPubReviews([]);
-    setDeliveryUrl(''); setDeliveryNote('');
+    setDeliveryUrl(''); setDeliveryNote(''); setCommentInput('');
     setTimeout(() => { setIsRegister(false); setGoogleStep(1); setEscrowStep(0); }, 300); 
   };
 
-  useEffect(() => { 
-    if (activeModal && window.lucide) {
-      setTimeout(() => window.lucide.createIcons(), 50); // Delay slightly for DOM paint
-    }
-  }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep, targetUser, pubProfile]);
+  useEffect(() => { if (activeModal && window.lucide) { setTimeout(() => window.lucide.createIcons(), 50); } }, [activeModal, selectedItem, newsPreview, isRegister, googleStep, escrowStep, targetUser, pubProfile, postComments]);
 
   useEffect(() => {
     if (activeModal === 'modal-profile' && targetUser) {
@@ -64,11 +67,10 @@ export default function Modals() {
   };
 
   const handleGoogleAuth = async () => {
-    if (!supabase) setState(prev => ({ ...prev, user: { name: 'Alex Google', avatar: 'AL', balance: '$1,500.00', bio: 'Global Worker.' }, activeModal: null }));
+    if (!supabase) setState(prev => ({ ...prev, user: { name: 'Alex Google', avatar: 'AG', balance: '$1,500.00', bio: 'Global Worker.' }, activeModal: null }));
     else await AuthService.signInWithGoogle();
   };
 
-  // REQ: Post Gig
   const submitGig = async (e) => {
     e.preventDefault();
     if (!user) return alert("Please Login First");
@@ -102,12 +104,24 @@ export default function Modals() {
   const handleDeliverWork = (e) => {
     e.preventDefault();
     if(!deliveryUrl.trim()) return setState(prev => ({...prev, toast: {type:'error', message:'Delivery link is required.'}}));
-    setState(prev => ({
-      ...prev,
-      toast: { type: 'success', message: 'Work delivered! Waiting for client approval.' },
-      notifications: [{ title: 'Submission Sent', desc: `Client notified for: ${selectedItem?.title}` }, ...prev.notifications]
-    }));
+    setState(prev => ({ ...prev, toast: { type: 'success', message: 'Work delivered! Waiting for client approval.' }, notifications: [{ title: 'Submission Sent', desc: `Client notified for: ${selectedItem?.title}` }, ...prev.notifications] }));
     closeModal();
+  };
+
+  // 📍 EXEC: Handle Public Comment Submission
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
+    if (!commentInput.trim()) return;
+    
+    setPostComments(prev => [...prev, {
+      id: Date.now(),
+      user: user.name,
+      avatar: user.avatar,
+      text: commentInput,
+      time: 'Just now'
+    }]);
+    setCommentInput('');
   };
 
   const renderAvatar = (avatarData, sizeClasses) => {
@@ -148,7 +162,6 @@ export default function Modals() {
           {/* AUTH */}
           {activeModal === 'modal-login' && (
             <>
-              {/* 📍 FIX: เพิ่ม pr-14 เพื่อหลบปุ่ม X */}
               <h3 className="text-2xl sm:text-3xl font-black text-prime mb-2 pr-14">Vennamis</h3>
               <p className="text-[10px] sm:text-xs text-sub mb-6 sm:mb-8 uppercase tracking-widest">{isRegister ? 'Create Escrow Account' : 'Secure Authentication'}</p>
               <div className="space-y-3 mb-6"><button onClick={() => setState(prev => ({...prev, activeModal: 'modal-google-consent'}))} className="btn-press w-full surface-bg border border-[var(--border-line)] hover:border-[var(--primary-glow)] rounded-xl py-3 flex justify-center items-center space-x-3 hover-lift text-prime text-sm font-bold transition"><svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.63l3.2-3.2C17.51 1.64 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.62l3.85 2.99C6.18 7.37 8.86 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.63z"/><path fill="#FBBC05" d="M5.26 14.37c-.24-.72-.38-1.49-.38-2.37s.14-1.65.38-2.37L1.41 6.63C.51 8.44 0 10.46 0 12.6s.51 4.16 1.41 5.97l3.85-2.99s.12-.09 0 0z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.14 0-5.82-2.33-6.77-5.46l-3.85 2.99C3.37 20.32 7.35 23 12 23z"/></svg><span>{isRegister ? 'Sign up with Google' : 'Continue with Google'}</span></button></div>
@@ -167,7 +180,6 @@ export default function Modals() {
           {/* DELIVERY WORKFLOW */}
           {activeModal === 'modal-deliver' && selectedItem && (
             <div className="animate-[fadeStep_0.3s_ease_forwards]">
-              {/* 📍 FIX: เพิ่ม pr-12 หลบปุ่ม X */}
               <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12">
                 <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] mb-3"><i data-lucide="send" className="w-5 h-5"></i></div>
                 <h3 className="text-xl sm:text-2xl font-black text-prime">Submit Delivery</h3>
@@ -189,7 +201,6 @@ export default function Modals() {
           {/* PUBLIC PROFILE */}
           {activeModal === 'modal-profile' && targetUser && (
             <div className="animate-modal-pop">
-               {/* 📍 FIX: เพิ่ม pr-14 หลบปุ่ม X */}
                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 border-b border-[var(--border-line)] pb-6 mb-6 pr-10 sm:pr-14">
                 {renderAvatar(targetUser.avatar, "w-24 h-24 sm:w-28 sm:h-28 rounded-3xl text-4xl shadow-2xl border border-[var(--border-line)] shrink-0")}
                 <div className="text-center sm:text-left flex-1">
@@ -211,7 +222,6 @@ export default function Modals() {
           {/* ESCROW */}
           {activeModal === 'modal-escrow' && selectedItem && (
             <div className="flex flex-col h-full">
-              {/* 📍 FIX: เพิ่ม pr-12 หลบปุ่ม X */}
               <div className="text-center border-b border-[var(--border-line)] pb-4 mb-6 pr-12"><div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-[var(--grid-color)] mb-3"><i data-lucide="lock" className="w-5 h-5 text-[var(--primary-glow)]"></i></div><h3 className="text-xl sm:text-2xl font-black text-prime">Secure Escrow Payment</h3><p className="text-[10px] text-[var(--primary-glow)] uppercase tracking-widest mt-1 flex items-center justify-center"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Bank-Grade AES-256</p></div>
               {escrowStep === 0 && (<div className="space-y-5 animate-[fadeStep_0.3s_ease_forwards]"><div className="surface-bg border border-[var(--border-line)] rounded-xl p-4"><p className="text-[10px] text-sub uppercase mb-1">Applying for</p><p className="text-sm font-bold text-prime">{selectedItem.title}</p><p className="text-xs text-sub mt-1">Host: {selectedItem.host}</p></div><div className="flex justify-between items-center surface-bg border border-[var(--border-line)] rounded-xl p-4"><span className="text-xs text-sub font-bold uppercase">Escrow Deposit</span><span className="text-xl font-black glow-text">${selectedItem.price}</span></div><button onClick={handleEscrowTransaction} className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md flex justify-center items-center" style={{ background: 'var(--primary-glow)' }}><i data-lucide="credit-card" className="w-4 h-4 mr-2"></i> Proceed to Secure Checkout</button></div>)}
               {escrowStep === 1 && (<div className="flex flex-col items-center justify-center py-10 space-y-4 animate-[fadeStep_0.3s_ease_forwards]"><i data-lucide="loader-2" className="w-10 h-10 text-[var(--primary-glow)] animate-spin"></i><p className="text-sm font-bold text-prime">Connecting to Gateway...</p></div>)}
@@ -222,16 +232,14 @@ export default function Modals() {
           {/* CREATE GIG */}
           {activeModal === 'modal-post' && (
             <>
-              {/* 📍 FIX: เพิ่ม pr-12 หลบปุ่ม X */}
               <h3 className="text-xl sm:text-2xl font-black text-prime mb-2 pr-12">Post a New Gig</h3>
               <form onSubmit={submitGig} className="space-y-4 mt-6"><input type="text" value={gigForm.title} onChange={e => setGigForm({...gigForm, title: e.target.value})} required placeholder="Gig Title" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="number" value={gigForm.price} onChange={e => setGigForm({...gigForm, price: e.target.value})} required placeholder="Budget (USD)" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /><input type="text" value={gigForm.loc} onChange={e => setGigForm({...gigForm, loc: e.target.value})} required placeholder="Location" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition" /></div><textarea required value={gigForm.desc} onChange={e => setGigForm({...gigForm, desc: e.target.value})} rows="4" placeholder="Requirements" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-3 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition"></textarea><button type="submit" className="btn-press w-full rounded-xl py-3.5 text-white font-bold text-sm shadow-md mt-4" style={{ background: 'var(--primary-glow)' }}>Publish Gig Securely</button></form>
             </>
           )}
 
-          {/* GIG DETAIL */}
+          {/* 📍 CONTENT DETAIL (GIGS VS POSTS) */}
           {activeModal === 'modal-gig-detail' && selectedItem && (
             <div className="space-y-4 sm:space-y-6">
-              {/* 📍 FIX: ห่อกล่อง Header และเพิ่ม pr-12 หลบปุ่ม X */}
               <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 pr-12 sm:pr-14">
                 <div>
                   <h2 className="text-xl sm:text-3xl font-black text-prime mb-2">{selectedItem.title}</h2>
@@ -240,17 +248,47 @@ export default function Modals() {
                 {selectedItem.price > 0 && <span className="text-xl sm:text-2xl font-black glow-text">${selectedItem.price}</span>}
               </div>
               <div className="p-3 sm:p-4 surface-bg border rounded-xl mb-4 text-xs sm:text-sm text-prime leading-relaxed">{selectedItem.desc}</div>
-              <div className="flex flex-col sm:flex-row justify-between p-3 sm:p-4 bg-white/5 rounded-xl border border-[var(--border-line)] gap-4"><div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => { setState(prev => ({...prev, activeModal: 'modal-profile', targetUser: {name: selectedItem.host, avatar: selectedItem.avatar || selectedItem.host[0]}})) }}>{renderAvatar(selectedItem.avatar || selectedItem.host[0], "w-10 h-10 rounded-full text-base")}<div className="flex flex-col"><span className="text-sm font-bold text-prime hover:underline">{selectedItem.host}</span><span className="text-[9px] text-[var(--primary-glow)]">Verified User</span></div></div><button onClick={() => { closeModal(); setState(prev => ({...prev, isChatOpen: true, chatHost: selectedItem.host})) }} className="btn-press w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: 'var(--primary-glow)' }}>Message Host</button></div>
+              
+              {/* 📍 แยก Logic: ถ้าเป็น Gig ให้ทักแชท ถ้าเป็น Post ให้คอมเมนต์ */}
+              {selectedItem.type === 'gig' ? (
+                <div className="flex flex-col sm:flex-row justify-between p-3 sm:p-4 bg-white/5 rounded-xl border border-[var(--border-line)] gap-4">
+                  <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => { setState(prev => ({...prev, activeModal: 'modal-profile', targetUser: {name: selectedItem.host, avatar: selectedItem.avatar || selectedItem.host[0]}})) }}>
+                    {renderAvatar(selectedItem.avatar || selectedItem.host[0], "w-10 h-10 rounded-full text-base")}
+                    <div className="flex flex-col"><span className="text-sm font-bold text-prime hover:underline">{selectedItem.host}</span><span className="text-[9px] text-[var(--primary-glow)]">Verified User</span></div>
+                  </div>
+                  <button onClick={() => { closeModal(); setState(prev => ({...prev, isChatOpen: true, chatHost: selectedItem.host})) }} className="btn-press w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: 'var(--primary-glow)' }}>Message Host</button>
+                </div>
+              ) : (
+                <div className="mt-6 border-t border-[var(--border-line)] pt-6">
+                  <h4 className="text-sm font-bold text-prime mb-4 flex items-center"><i data-lucide="message-circle" className="w-4 h-4 mr-2 text-sub"></i> Discussion Thread</h4>
+                  
+                  {/* แสดงคอมเมนต์ */}
+                  <div className="space-y-4 mb-6 max-h-60 overflow-y-auto hide-scrollbar">
+                    {postComments.map(c => (
+                      <div key={c.id} className="flex space-x-3 bg-white/5 p-3 rounded-xl border border-[var(--border-line)]">
+                        {renderAvatar(c.avatar, "w-8 h-8 rounded-full text-xs shrink-0")}
+                        <div className="flex-1">
+                          <div className="flex justify-between items-baseline mb-1"><span className="font-bold text-xs text-prime">{c.user}</span><span className="text-[9px] text-sub">{c.time}</span></div>
+                          <p className="text-xs text-sub leading-relaxed">{c.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* ฟอร์มพิมพ์คอมเมนต์ */}
+                  <form onSubmit={handleCommentSubmit} className="flex items-center gap-2">
+                    {renderAvatar(user ? user.avatar : 'U', "w-8 h-8 rounded-full text-xs shrink-0")}
+                    <input type="text" value={commentInput} onChange={e => setCommentInput(e.target.value)} placeholder="Add a public comment..." className="flex-1 bg-transparent surface-bg border rounded-xl px-4 py-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] transition" />
+                    <button type="submit" disabled={!commentInput.trim()} className="btn-press p-2 rounded-xl text-white shadow-md disabled:opacity-50" style={{ background: 'var(--primary-glow)' }}><i data-lucide="send" className="w-4 h-4"></i></button>
+                  </form>
+                </div>
+              )}
             </div>
           )}
 
           {/* ADD NEWS */}
           {activeModal === 'modal-add-news' && (
-            <>
-              {/* 📍 FIX: เพิ่ม pr-12 หลบปุ่ม X */}
-              <h3 className="text-lg sm:text-xl font-black mb-3 pr-12">Add News Source</h3>
-              <input type="url" value={newsUrl} onChange={e => setNewsUrl(e.target.value)} placeholder="https://example.com/article" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-2 mb-3 text-xs sm:text-sm outline-none focus:border-[var(--primary-glow)] transition" /><button onClick={fetchNewsMetadata} disabled={isFetchingNews} className="btn-press w-full py-2 rounded-xl text-white text-xs sm:text-sm mb-3 disabled:opacity-50" style={{ background: 'var(--primary-glow)' }}>{isFetchingNews ? 'Fetching...' : 'Fetch & Preview'}</button>{newsPreview && (<><div className="p-3 border rounded-xl mb-3 surface-bg"><div className="font-bold text-xs sm:text-sm">{newsPreview.title}</div><div className="text-[10px] sm:text-xs text-sub mt-1">{newsPreview.desc}</div></div><button onClick={confirmAddNews} className="btn-press w-full py-2 rounded-xl text-white text-xs sm:text-sm" style={{ background: 'var(--primary-glow)' }}>Add to News Feed</button></>)}
-            </>
+            <><h3 className="text-lg sm:text-xl font-black mb-3 pr-12">Add News Source</h3><input type="url" value={newsUrl} onChange={e => setNewsUrl(e.target.value)} placeholder="https://example.com/article" className="w-full bg-transparent surface-bg border rounded-xl px-4 py-2 mb-3 text-xs sm:text-sm outline-none focus:border-[var(--primary-glow)] transition" /><button onClick={fetchNewsMetadata} disabled={isFetchingNews} className="btn-press w-full py-2 rounded-xl text-white text-xs sm:text-sm mb-3 disabled:opacity-50" style={{ background: 'var(--primary-glow)' }}>{isFetchingNews ? 'Fetching...' : 'Fetch & Preview'}</button>{newsPreview && (<><div className="p-3 border rounded-xl mb-3 surface-bg"><div className="font-bold text-xs sm:text-sm">{newsPreview.title}</div><div className="text-[10px] sm:text-xs text-sub mt-1">{newsPreview.desc}</div></div><button onClick={confirmAddNews} className="btn-press w-full py-2 rounded-xl text-white text-xs sm:text-sm" style={{ background: 'var(--primary-glow)' }}>Add to News Feed</button></>)}</>
           )}
 
         </div>
