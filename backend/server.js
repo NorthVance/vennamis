@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
     socket.on('send_message', (data) => socket.to(data.room).emit('receive_message', data));
 });
 
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '40.0.6' }));
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '40.0.8' }));
 
 app.get('/api/feed/:type', async (req, res) => {
     try {
@@ -99,10 +99,10 @@ app.post('/api/translate', async (req, res) => {
 
 app.all('/api/*', (req, res) => res.status(404).json({ error: 'API route not found' }));
 
+// 📍 FIX: บังคับเสิร์ฟไฟล์ Static แบบเจาะจง ป้องกัน MIME Type Error
 const distPath = path.resolve(__dirname, '../dist');
 app.use(express.static(distPath));
-
-app.all('/assets/*', (req, res) => res.status(404).send('Asset not found'));
+app.use('/assets', express.static(path.resolve(distPath, 'assets')));
 
 app.get('*', (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
