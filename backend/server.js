@@ -19,13 +19,20 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
-const limiter = rateLimit({ windowMs: 15*60*1000, max: 150, message: { error: 'Rate limit exceeded' } });
-app.use(helmet({ contentSecurityPolicy: false })); 
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 150 });
+
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+})); 
 app.use(limiter);
 
 const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : ['*'];
 app.use(cors({ 
-    origin: (origin, cb) => { if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) cb(null, true); else cb(new Error('CORS BLOCKED')); }, 
+    origin: (origin, cb) => { 
+        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) cb(null, true); 
+        else cb(new Error('CORS BLOCKED')); 
+    }, 
     methods: ['GET', 'POST', 'DELETE'], 
     credentials: true 
 }));
@@ -40,7 +47,7 @@ io.on('connection', (socket) => {
     socket.on('send_message', (data) => socket.to(data.room).emit('receive_message', data));
 });
 
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '40.0.4' }));
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'online', version: '40.0.5' }));
 
 app.get('/api/feed/:type', async (req, res) => {
     try {
@@ -89,22 +96,17 @@ app.post('/api/translate', async (req, res) => {
 
         res.status(200).json({ translatedText: text }); 
     } catch (e) {
-        console.error('[API Error]', e);
         res.status(500).json({ error: 'Gateway Error' });
     }
 });
 
-// SYS: Static Assets (Cache allowed for JS/CSS)
-app.use(express.static(path.join(__dirname, '../dist'), { index: false }));
+const distPath = path.resolve(__dirname, '../dist');
+app.use(express.static(distPath));
 
-// SYS: Catch-All Route (No-Cache for Base HTML)
 app.get('*', (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+    res.sendFile(path.resolve(distPath, 'index.html'));
 });
 
-app.use((err, req, res, next) => { console.error('[CRITICAL]', err.stack); res.status(500).json({ error: 'Gateway Failure' }); });
+app.use((err, req, res, next) => { res.status(500).json({ error: 'Gateway Failure' }); });
 
 httpServer.listen(PORT, () => console.log(`[SYS] Vennamis Gateway active on port ${PORT}`));
