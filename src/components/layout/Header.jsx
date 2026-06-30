@@ -6,8 +6,6 @@ import { StorageService } from '../../services/storage';
 export default function Header() {
   const { state, setState } = useContext(AppContext);
   const [openDrop, setOpenDrop] = useState(null);
-  
-  // REF: Hidden file input for avatar upload
   const fileInputRef = useRef(null);
 
   const t = staticDict[state.lang] || staticDict['en'];
@@ -36,32 +34,33 @@ export default function Header() {
     if (newBio) setState(prev => ({ ...prev, user: { ...prev.user, bio: newBio } }));
   };
 
-  // EXEC: Handle Image Upload
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    // Upload & get URL
     const publicUrl = await StorageService.uploadFile(file, 'avatars');
-    if (publicUrl) {
-      setState(prev => ({ ...prev, user: { ...prev.user, avatar: publicUrl } }));
-    }
+    if (publicUrl) setState(prev => ({ ...prev, user: { ...prev.user, avatar: publicUrl } }));
   };
 
-  // UI: Render Avatar (Text or Image)
   const renderAvatar = (avatarData, sizeClasses) => {
     if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
-      return <img src={avatarData} alt="User Avatar" className={`object-cover ${sizeClasses}`} />;
+      return <img src={avatarData} alt="Avatar" className={`object-cover ${sizeClasses}`} />;
     }
-    return <div className={`flex items-center justify-center text-white font-bold ${sizeClasses}`} style={{ background: 'var(--primary-glow)' }}>{avatarData}</div>;
+    return <div className={`flex items-center justify-center text-white font-bold ${sizeClasses}`} style={{ background: 'var(--primary-glow)' }}>{avatarData ? avatarData[0] : 'U'}</div>;
   };
 
   const hasNotif = state.notifications && state.notifications.length > 0;
 
   return (
-    <header className="glass-panel border-b sticky top-0 z-40 px-3 sm:px-8 py-3 sm:py-4 flex justify-between items-center shadow-sm">
-      <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition" onClick={() => setState(prev => ({ ...prev, view: 'gigs' }))}>
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-md" style={{ background: 'var(--primary-glow)' }}>V</div>
+    <header className="glass-panel border-b sticky top-0 z-40 px-3 sm:px-8 py-3 flex justify-between items-center shadow-sm">
+      
+      {/* Brand & New Logo Integration */}
+      <div className="flex items-center space-x-2.5 cursor-pointer hover:opacity-80 transition" onClick={() => setState(prev => ({ ...prev, view: 'gigs' }))}>
+        {/* 📍 NEW LOGO: Custom Professional SVG V-Human Logo */}
+        <svg className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 20 L50 85 L85 20 L68 20 L50 60 L32 20 Z" fill="#10B981" />
+          <circle cx="50" cy="40" r="10" fill="#10B981" />
+          <path d="M30 15 Q50 32 70 15" stroke="#10B981" strokeWidth="6" strokeLinecap="round" />
+        </svg>
         <span className="font-bold text-xl sm:text-2xl tracking-tighter text-prime hidden sm:block">Vennamis</span>
       </div>
 
@@ -100,7 +99,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* --- Dropdowns --- */}
+        {/* Dropdowns */}
         <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-96 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col z-50 ${openDrop === 'notif' ? 'active' : ''}`}>
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border-line)]">
             <h3 className="text-sm font-bold text-prime flex items-center">Notifications</h3>
@@ -130,7 +129,6 @@ export default function Header() {
                 <button onClick={() => changeTheme('dark')} className={`border p-2 rounded-lg text-xs transition font-medium ${state.theme === 'dark' ? 'border-[var(--primary-glow)] text-[var(--primary-glow)] bg-[var(--grid-color)]' : 'border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)]'}`}>Cyber</button>
               </div>
             </div>
-            
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
               <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
@@ -140,7 +138,6 @@ export default function Header() {
                 <option value="landscape" className="bg-[var(--bg-surface)] text-prime">Landscapes</option>
               </select>
             </div>
-
             <div className="p-3 surface-bg border rounded-xl space-y-3">
               <label className="text-[10px] uppercase text-sub font-bold tracking-widest">Translation API</label>
               <select value={state.transApi} onChange={(e) => changeApi(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-2 text-xs text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
@@ -152,33 +149,29 @@ export default function Header() {
           </div>
         </div>
 
-        {/* --- Profile Dropdown --- */}
         {state.user && (
           <div className={`smart-dropdown absolute top-[120%] right-0 w-[280px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 sm:p-6 z-50 ${openDrop === 'profile' ? 'active' : ''}`}>
             <div className="flex items-center space-x-4 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-[var(--border-line)] group">
-              
-              {/* SYS: Hidden input for file upload */}
               <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
-              
               <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:opacity-80 transition hover-lift relative" title="Upload New Avatar">
                 {renderAvatar(state.user.avatar, "w-12 h-12 rounded-xl text-lg")}
-                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-1 border border-gray-600">
-                  <i data-lucide="camera" className="w-3 h-3 text-white"></i>
-                </div>
+                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-1 border border-gray-600"><i data-lucide="camera" className="w-3 h-3 text-white"></i></div>
               </div>
-              
               <div className="flex-1">
                 <h2 className="text-base font-bold text-prime">{state.user.name}</h2>
                 <span className="text-[10px] text-[var(--primary-glow)] flex items-center mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Verified</span>
               </div>
             </div>
-            
-            {state.user.name === 'Admin User' && (
-              <button onClick={() => { setState(prev => ({ ...prev, view: 'admin' })); setOpenDrop(null); }} className="w-full surface-bg border border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)] rounded-xl py-2 mb-4 font-bold text-xs transition flex justify-center items-center hover-lift">
-                <i data-lucide="shield" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Admin Dashboard
+            <div className="space-y-2 mb-5">
+              <button onClick={() => { setState(prev => ({ ...prev, view: 'workspace' })); setOpenDrop(null); }} className="btn-press w-full surface-bg border border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)] rounded-xl py-2.5 font-bold text-xs transition flex justify-center items-center shadow-sm">
+                <i data-lucide="layout-dashboard" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> My Workspace
               </button>
-            )}
-
+              {state.user.name === 'Admin User' && (
+                <button onClick={() => { setState(prev => ({ ...prev, view: 'admin' })); setOpenDrop(null); }} className="btn-press w-full surface-bg border border-[var(--border-line)] text-prime hover:border-red-500 rounded-xl py-2.5 font-bold text-xs transition flex justify-center items-center shadow-sm">
+                  <i data-lucide="shield" className="w-4 h-4 mr-2 text-red-500"></i> Admin Center
+                </button>
+              )}
+            </div>
             <div className="mb-4">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] text-sub uppercase tracking-widest">Bio</span>
@@ -186,13 +179,11 @@ export default function Header() {
               </div>
               <p className="text-xs text-prime italic bg-[var(--bg-surface)] p-2 rounded-lg border border-[var(--border-line)]">"{state.user.bio}"</p>
             </div>
-            
             <div className="surface-bg border rounded-xl p-4 mb-4 text-center transition hover:border-[var(--primary-glow)] cursor-default">
               <p className="text-[10px] text-sub uppercase tracking-widest mb-1">Escrow Vault</p>
               <p className="text-2xl font-black glow-text">{state.user.balance}</p>
             </div>
-            
-            <button onClick={logout} className="w-full border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-xl py-2.5 font-bold text-xs transition flex justify-center items-center hover-lift">
+            <button onClick={logout} className="w-full border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-xl py-2.5 font-bold text-xs transition flex justify-center items-center hover-lift mt-4">
               <i data-lucide="log-out" className="w-4 h-4 mr-2"></i>Sign Out
             </button>
           </div>
