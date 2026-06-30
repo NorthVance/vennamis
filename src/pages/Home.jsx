@@ -36,7 +36,12 @@ export default function Home() {
         return;
       }
       
-      const translated = await Promise.all(data.map(async (item) => ({ ...item, title: await NetworkTranslator.translateText(item.title, state.lang, state.transApi), desc: await NetworkTranslator.translateText(item.desc, state.lang, state.transApi) })));
+      const translated = await Promise.all(data.map(async (item) => {
+        const tTitle = await NetworkTranslator.translateText(item.title, state.lang, state.transApi);
+        const tDesc = await NetworkTranslator.translateText(item.desc, state.lang, state.transApi);
+        return { ...item, title: tTitle, desc: tDesc };
+      }));
+      
       if (isMounted) { setViewData(translated); setFilteredData(translated); setIsLoading(false); }
     };
     loadDataAndTranslate();
@@ -60,11 +65,33 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
-  const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
-  const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
-  const handleLike = (e, id) => { e.preventDefault(); e.stopPropagation(); setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); };
-  const handleReport = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); };
+  const handleApply = (e, item) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); 
+    setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); 
+  };
+
+  const openProfile = (e, hostName, avatarData) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); 
+  };
+
+  const handleShare = (e) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    navigator.clipboard.writeText(window.location.href); 
+    setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); 
+  };
+
+  const handleLike = (e, id) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); 
+  };
+  
+  const handleReport = (e, item) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
+    setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); 
+  };
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -78,21 +105,25 @@ export default function Home() {
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields empty.' } }));
+
     const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
+    
     setQuickTitle(''); setQuickDesc(''); setQuickImage(null);
     setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Published!' } }));
   };
 
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
-    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
+      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
+    }
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 pointer-events-none ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
       
-      {/* 📍 LEFT COLUMN: Nav Sidebar (Desktop Only) */}
+      {/* LEFT COLUMN: Nav Sidebar (Desktop Only) */}
       <aside className="hidden lg:block w-56 lg:w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
@@ -100,7 +131,8 @@ export default function Home() {
             <div className="space-y-1">
               {['gigs', 'community', 'traders', 'news'].map((nav) => (
                 <button 
-                  key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
+                  key={nav} 
+                  onClick={() => setState(prev => ({ ...prev, view: nav }))} 
                   className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/20 shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5 border border-transparent'}`}
                 >
                   {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
@@ -119,6 +151,7 @@ export default function Home() {
               <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                 <i data-lucide="compass" className="w-3.5 h-3.5"></i> All Feed
               </button>
+              
               {state.view === 'gigs' && (
                 <>
                   <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
@@ -129,11 +162,13 @@ export default function Home() {
                   </button>
                 </>
               )}
+
               {state.view === 'community' && (
                 <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                   <i data-lucide="trending-up" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i> Top Rated
                 </button>
               )}
+
               {state.view === 'traders' && (
                 <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                   <i data-lucide="trending-up" className="w-3.5 h-3.5 text-green-500"></i> Bullish Intel
@@ -144,24 +179,28 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* 📍 MIDDLE COLUMN: Feed Core */}
+      {/* MIDDLE COLUMN */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
-        {/* Mobile Navigation (Responsive Overlay) */}
+        {/* 📍 FIX MOBILE: ปรับขนาดโครงสร้างปุ่มนำทางให้แชร์พื้นที่เท่ากัน (flex-1) และแสดงไอคอนคู่กับตัวหนังสือแนวตั้ง (flex-col) */}
         <div className="lg:hidden space-y-4">
-          <div className="glass-panel p-1.5 bg-[var(--bg-base)]/50 border border-[var(--border-line)] rounded-2xl flex overflow-x-auto hide-scrollbar shadow-sm">
+          <div className="glass-panel p-1 bg-[var(--bg-base)]/50 border border-[var(--border-line)] rounded-2xl flex w-full shadow-sm">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
-              <button key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} className={`btn-press flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all w-full shrink-0 sm:w-auto ${state.view === nav ? 'surface-bg text-prime shadow-md border border-[var(--border-line)]' : 'text-sub hover:text-prime hover:bg-white/10'}`}>
-                {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
-                {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
-                {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
-                {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
-                <span className="hidden sm:inline">{nav}</span>
+              <button 
+                key={nav} 
+                onClick={() => setState(prev => ({ ...prev, view: nav }))} 
+                className={`btn-press flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold uppercase transition-all duration-300 ${state.view === nav ? 'surface-bg text-prime shadow-md border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}
+              >
+                {nav === 'gigs' && <i data-lucide="briefcase" className="w-3.5 h-3.5 shrink-0"></i>}
+                {nav === 'community' && <i data-lucide="users" className="w-3.5 h-3.5 shrink-0"></i>}
+                {nav === 'traders' && <i data-lucide="trending-up" className="w-3.5 h-3.5 shrink-0"></i>}
+                {nav === 'news' && <i data-lucide="newspaper" className="w-3.5 h-3.5 shrink-0"></i>}
+                <span>{nav === 'news' ? 'News' : nav}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar pb-1">
+          <div className="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar pb-1">
             <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}>All</button>
             {state.view === 'gigs' && (
               <>
@@ -170,7 +209,7 @@ export default function Home() {
               </>
             )}
             {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5 pointer-events-none"></i> Top Rated</button>}
-            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5 pointer-events-none"></i> Bullish</button>}
+            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5 pointer-events-none"></i> Bullish Intel</button>}
           </div>
         </div>
 
@@ -311,7 +350,7 @@ export default function Home() {
                         <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}>
                           <i data-lucide="heart" className={`w-4 h-4 mr-2 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
                         </button>
-                        <span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
+                        <span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-4 h-4 sm:w-5 sm:h-5 mr-2"></i> {item.comments || 0}</span>
                       </div>
                     )}
                     {state.view === 'traders' && (
@@ -323,7 +362,7 @@ export default function Home() {
                       <span className="font-mono text-[10px] bg-white/5 px-2 py-1 rounded pointer-events-none">SRC: {item.source || 'SYS'}</span>
                     )}
                     <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1.5 rounded-lg hover:bg-white/5 transition">
-                      <i data-lucide="share-2" className="w-4 h-4 pointer-events-none"></i>
+                      <i data-lucide="share-2" className="w-4 h-4 sm:w-5 sm:h-5 pointer-events-none"></i>
                     </button>
                   </div>
                 </div>
@@ -333,7 +372,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* 📍 RIGHT SIDEBAR (Desktop Only) */}
+      {/* RIGHT SIDEBAR */}
       <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           
