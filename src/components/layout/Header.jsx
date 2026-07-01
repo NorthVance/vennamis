@@ -10,7 +10,6 @@ export default function Header() {
 
   const t = staticDict[state.lang] || staticDict['en'];
 
-  // INIT
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.smart-dropdown') && !e.target.closest('.drop-trigger')) setOpenDrop(null);
@@ -19,7 +18,6 @@ export default function Header() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // EXEC
   const toggleDrop = (menu, e) => { e.stopPropagation(); setOpenDrop(openDrop === menu ? null : menu); };
   const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
   const changeBg = (newBg) => setState(prev => ({ ...prev, bg: newBg }));
@@ -45,7 +43,6 @@ export default function Header() {
 
   const hasNotif = state.notifications && state.notifications.length > 0;
 
-  // RENDER
   return (
     <header className="glass-panel border-b sticky top-0 z-40 px-3 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center shadow-sm">
       
@@ -60,7 +57,6 @@ export default function Header() {
 
       <div className="flex items-center space-x-2 sm:space-x-3 relative">
         
-        {/* 📍 FIX: นำปุ่มแปลภาษากลับมาบน Phone แบบกะทัดรัด (เอา hidden md:block ออก) */}
         <select value={state.lang} onChange={(e) => setState(prev => ({ ...prev, lang: e.target.value }))} className="surface-bg border rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-xs text-sub font-bold focus:outline-none cursor-pointer hover-lift">
           <option value="en" className="bg-[var(--bg-surface)] text-prime">EN</option>
           <option value="th" className="bg-[var(--bg-surface)] text-prime">TH</option>
