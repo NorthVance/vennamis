@@ -10,7 +10,6 @@ export default function Home() {
   const { state, setState } = useContext(AppContext);
   const t = staticDict[state.lang] || staticDict['en'];
 
-  const rawData = state.data[state.view] || [];
   const [viewData, setViewData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +123,7 @@ export default function Home() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
       
+      {/* 📍 LEFT COLUMN */}
       <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
@@ -175,15 +175,16 @@ export default function Home() {
         </div>
       </aside>
 
+      {/* 📍 MIDDLE COLUMN */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
-        {/* 📍 FIX: MOBILE ONLY NAV (Compact & Scrollable) */}
+        {/* MOBILE ONLY NAV */}
         <div className="lg:hidden space-y-3 pt-2">
-          <div className="glass-panel p-1.5 bg-black/5 border border-[var(--border-line)] rounded-xl flex gap-1 overflow-x-auto hide-scrollbar shadow-inner">
+          <div className="glass-panel p-1.5 bg-[var(--bg-base)]/50 border border-[var(--border-line)] rounded-2xl flex gap-1 overflow-x-auto hide-scrollbar shadow-inner">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
               <button 
                 key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                className={`btn-press flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shrink-0 w-auto ${state.view === nav ? 'surface-bg text-prime shadow-sm border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}
+                className={`btn-press flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shrink-0 w-auto ${state.view === nav ? 'surface-bg text-prime shadow-sm border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}
               >
                 {nav === 'gigs' && <i data-lucide="briefcase" className="w-3.5 h-3.5"></i>}
                 {nav === 'community' && <i data-lucide="users" className="w-3.5 h-3.5"></i>}
@@ -212,13 +213,15 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Global Search Bar */}
         <div className="relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
+        {/* HERO */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group">
+          <div className="bento-card rounded-[2rem] p-5 sm:p-10 text-center relative overflow-hidden group">
             <div className="absolute -top-20 -right-20 w-40 sm:w-64 h-40 sm:h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
@@ -231,6 +234,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* QUICK POST */}
         {(state.view === 'community' || state.view === 'traders') && (
           <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm">
             <div className="flex items-start space-x-4">
@@ -261,10 +265,11 @@ export default function Home() {
           </div>
         )}
 
+        {/* FEED SEPARATOR */}
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-xs sm:text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
-          <div className="flex items-center space-x-2">
-            <i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i>
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
+            <i data-lucide="arrow-down-up" className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sub"></i>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-[10px] sm:text-xs font-bold text-prime outline-none cursor-pointer">
               <option value="newest" className="bg-[var(--bg-surface)]">Newest</option>
               {state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Highest Price</option>}
@@ -273,13 +278,14 @@ export default function Home() {
           </div>
         </div>
 
+        {/* FEED RENDER */}
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : filteredData.length === 0 ? (
-          <div className="text-center py-16 sm:py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
-            <i data-lucide="filterX" className="w-6 h-6 sm:w-8 sm:h-8 text-sub mx-auto mb-3 opacity-50"></i>
+          <div className="text-center py-16 sm:py-20 border border-dashed border-[var(--border-line)] rounded-2xl sm:rounded-3xl">
+            <i data-lucide="filterX" className="w-6 h-6 sm:w-8 sm:h-8 text-sub mx-auto mb-2 sm:mb-3 opacity-50"></i>
             <p className="text-xs sm:text-sm font-medium text-sub">No results match filter.</p>
-            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-[10px] sm:text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
+            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-3 sm:mt-4 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg surface-bg border border-[var(--border-line)] text-[10px] sm:text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
           </div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6"}>
@@ -287,28 +293,28 @@ export default function Home() {
               
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-5 sm:p-6 cursor-pointer flex flex-col justify-between h-[220px] sm:h-[240px] group relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[50px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 cursor-pointer flex flex-col justify-between h-[200px] sm:h-[240px] group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[40px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex justify-between items-start mb-3 sm:mb-4">
                         <span className="text-[9px] sm:text-[10px] font-bold uppercase text-sub surface-bg px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-[var(--border-line)] shadow-sm pointer-events-none">{item.loc}</span>
                         <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 sm:p-2 bg-black/5 hover:bg-red-500/10 rounded-lg sm:rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report">
                           <i data-lucide="flag" className="w-3.5 h-3.5 sm:w-4 h-4 pointer-events-none"></i>
                         </button>
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-prime mb-1.5 sm:mb-2 line-clamp-1 break-words pointer-events-none">{item.title}</h3>
+                      <h3 className="text-base sm:text-xl font-bold text-prime mb-1.5 sm:mb-2 line-clamp-1 break-words pointer-events-none">{item.title}</h3>
                       <p className="text-[10px] sm:text-xs text-sub line-clamp-2 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
                     </div>
                     <div className="flex justify-between items-end mt-auto pt-3 sm:pt-4 border-t border-[var(--border-line)]/50">
                       <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 hover:opacity-80 transition cursor-pointer flex items-center space-x-2 sm:space-x-3">
                          {renderAvatar(item.avatar || item.host[0], "w-6 h-6 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs shadow-sm", item.host[0])}
                          <div>
-                           <p className="text-[8px] sm:text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold break-words pointer-events-none">Host</p>
+                           <p className="text-[8px] sm:text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold break-words pointer-events-none">Host Identity</p>
                            <span className="text-xs sm:text-sm font-bold text-prime hover:underline break-words pointer-events-none">{item.host}</span>
                          </div>
                       </div>
                       <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-[10px] sm:text-xs gap-1.5 sm:gap-2 shrink-0">
-                        Apply <i data-lucide="arrow-up-right" className="w-3 h-3 sm:w-3.5 sm:h-3.5 pointer-events-none"></i>
+                        Apply <i data-lucide="arrow-up-right" className="w-3 h-3 sm:w-3.5 h-3.5 pointer-events-none"></i>
                       </button>
                     </div>
                   </div>
@@ -316,8 +322,8 @@ export default function Home() {
               }
 
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-5 sm:p-6 cursor-pointer relative group">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 cursor-pointer relative group">
+                  <div className="flex justify-between items-start mb-3 sm:mb-4">
                     <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center space-x-3 sm:space-x-4 hover:opacity-80 transition cursor-pointer w-fit">
                       {renderAvatar(item.avatar || item.host[0], "w-10 h-10 sm:w-12 sm:h-12 rounded-full text-sm sm:text-base shadow-sm", item.host[0])}
                       <div className="flex flex-col pointer-events-none">
@@ -330,23 +336,23 @@ export default function Home() {
                     </button>
                   </div>
                   
-                  <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 sm:mb-3 leading-tight break-words pointer-events-none">{item.title}</h3>
+                  <h3 className="text-base sm:text-xl font-bold text-prime mb-2 sm:mb-3 leading-tight break-words pointer-events-none">{item.title}</h3>
                   <p className="text-xs sm:text-sm text-sub mb-4 sm:mb-6 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
-
+                  
                   {item.image && (
                     <div className="mb-4 sm:mb-6 rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--border-line)] max-h-64 sm:max-h-80 pointer-events-none">
                       <img src={item.image} alt="Attachment" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.style.display='none'; }} />
                     </div>
                   )}
                   
-                  <div className="flex items-center space-x-4 sm:space-x-6 text-sub text-[10px] sm:text-xs font-bold border-t border-[var(--border-line)] pt-3 sm:pt-4">
+                  <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 sm:pt-4">
                     {state.view === 'community' && (
-                      <>
+                      <div className="flex space-x-4 sm:space-x-6 text-sub text-[10px] sm:text-xs font-bold">
                         <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}>
                           <i data-lucide="heart" className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
                         </button>
                         <span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5"></i> {item.comments || 0}</span>
-                      </>
+                      </div>
                     )}
                     {state.view === 'traders' && (
                       <span className={`flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[9px] sm:text-[10px] pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
@@ -361,8 +367,8 @@ export default function Home() {
                         </button>
                       </div>
                     )}
-                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1.5 rounded-lg hover:bg-white/5 transition ml-auto sm:ml-0">
-                      <i data-lucide="-2" className="w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none"></i>
+                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1 sm:p-1.5 rounded-lg hover:bg-white/5 transition">
+                      <i data-lucide="share-2" className="w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none"></i>
                     </button>
                   </div>
                 </div>
@@ -372,5 +378,50 @@ export default function Home() {
         )}
       </section>
     </div>
+
+    {/* 📍 RIGHT COLUMN: Widgets */}
+    <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
+      <div className="sticky top-[88px] space-y-6">
+        <div className="glass-panel border rounded-3xl p-5 hover-lift">
+          <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
+            <i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now
+          </h3>
+          <div className="space-y-4">
+            <div className="cursor-pointer group">
+              <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">#NFP Week</p>
+              <p className="text-[10px] text-sub mt-0.5">1,245 posts</p>
+            </div>
+            <div className="cursor-pointer group">
+              <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Bitcoin Halving</p>
+              <p className="text-[10px] text-sub mt-0.5">858 posts</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel border rounded-3xl p-5 hover-lift">
+          <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
+            <i data-lucide="users" className="w-4 h-4 mr-2 text-sub"></i> Top Profiles
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">E</div>
+                <div><p className="text-xs font-bold text-prime hover:underline cursor-pointer">Elena R.</p><p className="text-[9px] text-sub">FX Mentor</p></div>
+              </div>
+              <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">D</div>
+                <div><p className="text-xs font-bold text-prime hover:underline cursor-pointer">David K.</p><p className="text-[9px] text-sub">Algo Trader</p></div>
+              </div>
+              <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
   );
 }
