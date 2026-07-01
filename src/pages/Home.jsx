@@ -25,7 +25,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // ━━━ INIT
+  // INIT
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -49,7 +49,7 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // ━━━ EXEC: Filters
+  // EXEC: Filters
   useEffect(() => {
     let result = [...viewData];
     if (searchQuery.trim()) {
@@ -70,7 +70,7 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  // ━━━ ACTIONS
+  // ACTIONS
   const handleApply = (e, item) => {
     e.preventDefault(); e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -111,7 +111,7 @@ export default function Home() {
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields empty.' } }));
-    const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'Signal' : 'Post', likes: 0, comments: 0 };
+    const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
     await DatabaseService.createPost(newPost, state.view);
     setQuickTitle(''); setQuickDesc(''); setQuickImage(null);
     setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Published!' } }));
@@ -119,24 +119,24 @@ export default function Home() {
 
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
     if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
-      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />;
+      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
     }
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 pointer-events-none ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 xl:gap-8 w-full max-w-[1600px] mx-auto pb-20 px-3 sm:px-4">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
       
       {/* 📍 LEFT COLUMN: Nav Sidebar (Desktop Only) */}
-      <aside className="hidden lg:block w-72 shrink-0">
+      <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {['gigs', 'community', 'traders', 'news'].map((nav) => (
                 <button 
                   key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                  className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)] text-white shadow-lg' : 'hover:bg-white/5'}`}
+                  className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/20 shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5 border border-transparent'}`}
                 >
                   {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
                   {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
@@ -150,27 +150,27 @@ export default function Home() {
 
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Discover</p>
-            <div className="space-y-1.5">
-              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white' : 'hover:bg-white/5'}`}>
+            <div className="space-y-1">
+              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                 <i data-lucide="compass" className="w-3.5 h-3.5"></i> All Feed
               </button>
               {state.view === 'gigs' && (
                 <>
-                  <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white' : 'hover:bg-white/5'}`}>
+                  <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                     <i data-lucide="globe" className="w-3.5 h-3.5"></i> Remote Only
                   </button>
-                  <button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white' : 'hover:bg-white/5'}`}>
+                  <button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'high_budget' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                     <i data-lucide="flame" className="w-3.5 h-3.5 text-amber-500"></i> High Budget
                   </button>
                 </>
               )}
               {state.view === 'community' && (
-                <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white' : 'hover:bg-white/5'}`}>
+                <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                   <i data-lucide="trending-up" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i> Top Rated
                 </button>
               )}
               {state.view === 'traders' && (
-                <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'bg-[var(--primary-glow)] text-white' : 'hover:bg-white/5'}`}>
+                <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
                   <i data-lucide="trending-up" className="w-3.5 h-3.5 text-green-500"></i> Bullish Intel
                 </button>
               )}
@@ -188,50 +188,45 @@ export default function Home() {
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
               <button 
                 key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                className={`btn-press flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shrink-0 whitespace-nowrap ${state.view === nav ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'hover:bg-white/5'}`}
+                className={`btn-press flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shrink-0 ${state.view === nav ? 'surface-bg text-prime shadow-sm border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}
               >
                 {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
                 {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
                 {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
                 {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
-                <span className="hidden sm:inline">{nav}</span>
+                <span>{nav}</span>
               </button>
             ))}
           </div>
 
           <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar pb-1">
-            <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
-              All
-            </button>
+            <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>All</button>
             {state.view === 'gigs' && (
               <>
-                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
-                  Remote
-                </button>
-                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition whitespace-nowrap flex items-center gap-1 ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
-                  <i data-lucide="flame" className="w-3 h-3"></i>High
-                </button>
+                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>Remote Only</button>
+                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1.5"></i> High Budget</button>
               </>
             )}
-            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition whitespace-nowrap ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 hover:bg-white/10'}`}>Top</button>}
-            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition whitespace-nowrap flex items-center gap-1 ${activeFilter === 'bullish' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 hover:bg-white/10'}`}><i data-lucide="trending-up" className="w-3 h-3"></i>Bull</button>}
+            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Top Rated</button>}
+            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Bullish</button>}
           </div>
         </div>
 
         {/* Global Search Bar */}
         <div className="relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search skills, posts, or news..." className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)] focus:border-[var(--primary-glow)] rounded-2xl pl-10 pr-4 py-3 text-sm focus:outline-none transition" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* HERO (Gigs Only) */}
+        {/* HERO (Gigs Only - Optimized for Mobile Screen Height) */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group">
+          <div className="bento-card rounded-[2rem] p-5 sm:p-10 text-center relative overflow-hidden group">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
+            {/* 📍 FIX: ย่อขนาดฟอนต์บนมือถือจาก text-4xl เหลือ text-3xl ป้องกัน Layout Shift */}
+            <h1 className="text-3xl md:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
               <span>{t.hero_static}</span><br/>
               <div className="h-[1.2em] mt-1 flex justify-center items-center"><Typewriter /></div>
             </h1>
@@ -241,12 +236,12 @@ export default function Home() {
 
         {/* QUICK POST */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 sm:p-6 mb-8">
-            <div className="flex items-start space-x-3 sm:space-x-4">
+          <div className="bento-card rounded-[2rem] p-5 mb-8">
+            <div className="flex items-start space-x-4">
               {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}
               <div className="flex-1">
-                <input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-sm sm:text-base text-prime font-bold outline-none placeholder-text-sub" />
-                <textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-xs sm:text-sm text-prime outline-none placeholder-text-sub resize-none mt-2" />
+                <input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-lg outline-none placeholder-[var(--text-muted)] mb-2" />
+                <textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)] font-medium whitespace-pre-wrap"></textarea>
                 
                 {quickImage && (
                   <div className="relative mt-3 mb-2 w-fit">
@@ -260,10 +255,10 @@ export default function Home() {
                 <div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)] mt-3">
                   <div className="flex space-x-2 text-sub">
                     <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" />
-                    <button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4"></i></button>
-                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Link"><i data-lucide="link" className="w-4 h-4"></i></button>
+                    <button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4 pointer-events-none"></i></button>
+                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition"><i data-lucide="link" className="w-4 h-4 pointer-events-none"></i></button>
                   </div>
-                  <button onClick={handleQuickPost} className="btn-press px-6 sm:px-8 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm shadow-md relative z-10" style={{ background: 'var(--primary-glow)' }}>Post</button>
+                  <button onClick={handleQuickPost} className="btn-press px-8 py-2.5 rounded-xl text-white font-bold text-sm shadow-md relative z-10" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
               </div>
             </div>
@@ -272,10 +267,10 @@ export default function Home() {
 
         {/* FEED SEPARATOR */}
         <div className="flex justify-between items-center mb-4 px-1">
-          <h3 className="text-xs sm:text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
+          <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
           <div className="flex items-center space-x-2">
             <i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs sm:text-sm font-bold text-prime outline-none cursor-pointer">
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs font-bold text-prime outline-none cursor-pointer">
               <option value="newest" className="bg-[var(--bg-surface)]">Newest</option>
               {state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Highest Price</option>}
               {(state.view === 'community' || state.view === 'gigs') && <option value="popular" className="bg-[var(--bg-surface)]">Popular</option>}
@@ -287,22 +282,23 @@ export default function Home() {
           <Skeleton view={state.view} />
         ) : filteredData.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
-            <i data-lucide="filter" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
+            <i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
             <p className="text-sm font-medium text-sub">No results match filter.</p>
-            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] hover:bg-[var(--primary-glow)]/10 transition">Clear Filters</button>
+            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
           </div>
         ) : (
-          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6" : "flex flex-col space-y-6"}>
+          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" : "flex flex-col space-y-6"}>
             {filteredData.map(item => {
               
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer group flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[50px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
                       <div className="flex justify-between items-start mb-5">
                         <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
-                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-lg">
+                        {/* 📍 FIX: เพิ่ม relative z-10 และ pointer-events-none เพื่อเบรกบั๊กกดปุ่มทะลุการ์ด */}
+                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report">
                           <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
                         </button>
                       </div>
@@ -317,7 +313,7 @@ export default function Home() {
                            <span className="text-sm font-bold text-prime hover:underline break-words">{item.host}</span>
                          </div>
                       </div>
-                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 py-2 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center gap-1 hover:bg-[var(--primary-glow)]/20 transition text-xs sm:text-sm font-bold">
+                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 py-2 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2 shrink-0">
                         Apply <i data-lucide="arrow-up-right" className="w-3.5 h-3.5 pointer-events-none"></i>
                       </button>
                     </div>
@@ -326,8 +322,9 @@ export default function Home() {
               }
 
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer group transition-all duration-300 hover:shadow-lg">
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
                   
+                  {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag เสมอ และแก้บั๊กกดทะลุหลังการ์ด */}
                   <div className="flex justify-between items-start mb-5">
                     <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center space-x-3 hover:opacity-80 transition cursor-pointer w-fit">
                       {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm", item.host[0])}
@@ -336,7 +333,7 @@ export default function Home() {
                         <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
                       </div>
                     </div>
-                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg">
+                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg" title="Report">
                       <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
                     </button>
                   </div>
@@ -354,13 +351,13 @@ export default function Home() {
                     {state.view === 'community' && (
                       <div className="flex space-x-6 text-sub text-xs font-bold">
                         <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}>
-                          <i data-lucide="heart" className={`w-4 h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-pulse' : ''}`}></i> {likedPosts[item.id] ? 'Liked' : 'Like'}
+                          <i data-lucide="heart" className={`w-4 h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
                         </button>
                         <span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
                       </div>
                     )}
                     {state.view === 'traders' && (
-                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[10px] sm:text-xs pointer-events-none font-bold ${item.sentiment === 'bullish' ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[10px] sm:text-xs pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
                         <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 mr-1.5 pointer-events-none"></i> {item.sentiment?.toUpperCase()}
                       </span>
                     )}
@@ -379,7 +376,7 @@ export default function Home() {
       </div>
 
       {/* 📍 RIGHT SIDEBAR WIDGETS (Desktop Only) */}
-      <aside className="hidden xl:block w-80 shrink-0">
+      <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
