@@ -25,7 +25,6 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // INIT
   useEffect(() => {
     let isMounted = true;
     const loadDataAndTranslate = async () => {
@@ -49,7 +48,6 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // EXEC: Filters
   useEffect(() => {
     let result = [...viewData];
     if (searchQuery.trim()) {
@@ -70,7 +68,6 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  // ACTIONS
   const handleApply = (e, item) => {
     e.preventDefault(); e.stopPropagation();
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
@@ -111,7 +108,7 @@ export default function Home() {
   const handleQuickPost = async () => {
     if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
     if (!quickTitle.trim() || !quickDesc.trim()) return setState(prev => ({ ...prev, toast: { type: 'error', message: 'Fields empty.' } }));
-    const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'Signal' : 'Discussion', likes: 0, comments: 0 };
+    const newPost = { id: 'p' + Date.now(), type: 'post', host: state.user.name, avatar: state.user.avatar, title: quickTitle, desc: quickDesc, image: quickImage, tag: state.view === 'traders' ? 'SIGNAL' : 'POST' };
     await DatabaseService.createPost(newPost, state.view);
     setQuickTitle(''); setQuickDesc(''); setQuickImage(null);
     setState(prev => ({ ...prev, refreshTick: prev.refreshTick + 1, toast: { type: 'success', message: 'Published!' } }));
@@ -119,29 +116,29 @@ export default function Home() {
 
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
     if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
-      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
+      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />;
     }
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 pointer-events-none ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
+    <div className="flex flex-col xl:flex-row gap-4 xl:gap-6 max-w-[1600px] mx-auto pb-20 px-3 sm:px-4">
       
-      {/* 📍 LEFT COLUMN: Nav Sidebar (Desktop Only) */}
-      <aside className="hidden lg:block w-64 shrink-0">
-        <div className="sticky top-[88px] space-y-8">
+      {/* 📍 LEFT SIDEBAR (Desktop Only) */}
+      <aside className="hidden xl:block w-56 shrink-0">
+        <div className="sticky top-[88px] space-y-6">
           <div>
-            <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
-            <div className="space-y-1">
+            <p className="text-[9px] font-bold text-sub uppercase tracking-widest pl-3 mb-2">Platform</p>
+            <div className="space-y-0.5">
               {['gigs', 'community', 'traders', 'news'].map((nav) => (
                 <button 
                   key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                  className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/20 shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5 border border-transparent'}`}
+                  className={`btn-press w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}
                 >
-                  {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
-                  {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
-                  {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
-                  {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
+                  {nav === 'gigs' && <i data-lucide="briefcase" className="w-3.5 h-3.5"></i>}
+                  {nav === 'community' && <i data-lucide="users" className="w-3.5 h-3.5"></i>}
+                  {nav === 'traders' && <i data-lucide="trending-up" className="w-3.5 h-3.5"></i>}
+                  {nav === 'news' && <i data-lucide="newspaper" className="w-3.5 h-3.5"></i>}
                   <span>{nav}</span>
                 </button>
               ))}
@@ -149,29 +146,29 @@ export default function Home() {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Discover</p>
-            <div className="space-y-1">
-              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                <i data-lucide="compass" className="w-3.5 h-3.5"></i> All Feed
+            <p className="text-[9px] font-bold text-sub uppercase tracking-widest pl-3 mb-2">Discover</p>
+            <div className="space-y-0.5">
+              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
+                <i data-lucide="compass" className="w-3 h-3"></i> All
               </button>
               {state.view === 'gigs' && (
                 <>
-                  <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                    <i data-lucide="globe" className="w-3.5 h-3.5"></i> Remote Only
+                  <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
+                    <i data-lucide="globe" className="w-3 h-3"></i> Remote
                   </button>
-                  <button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'high_budget' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                    <i data-lucide="flame" className="w-3.5 h-3.5 text-amber-500"></i> High Budget
+                  <button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
+                    <i data-lucide="flame" className="w-3 h-3 text-amber-500"></i> Budget
                   </button>
                 </>
               )}
               {state.view === 'community' && (
-                <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                  <i data-lucide="trending-up" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i> Top Rated
+                <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
+                  <i data-lucide="trending-up" className="w-3 h-3 text-[var(--primary-glow)]"></i> Top
                 </button>
               )}
               {state.view === 'traders' && (
-                <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                  <i data-lucide="trending-up" className="w-3.5 h-3.5 text-green-500"></i> Bullish Intel
+                <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${activeFilter === 'bullish' ? 'bg-[var(--primary-glow)] text-white' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
+                  <i data-lucide="trending-up" className="w-3 h-3 text-green-500"></i> Bull
                 </button>
               )}
             </div>
@@ -180,99 +177,96 @@ export default function Home() {
       </aside>
 
       {/* 📍 MIDDLE COLUMN: Feed Core */}
-      <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
+      <div className="flex-1 min-w-0 space-y-4 md:space-y-6">
         
-        {/* MOBILE ONLY: Fixed Segmented Control & Navigation */}
-        <div className="lg:hidden space-y-3">
-          <div className="glass-panel p-1.5 bg-black/5 border border-[var(--border-line)] rounded-2xl flex gap-1 overflow-x-auto hide-scrollbar shadow-inner">
+        {/* 📱 MOBILE: Tab Navigation */}
+        <div className="xl:hidden space-y-2">
+          <div className="glass-panel p-1 bg-black/5 border border-[var(--border-line)] rounded-xl flex gap-0.5 overflow-x-auto hide-scrollbar">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
               <button 
                 key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                className={`btn-press flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shrink-0 ${state.view === nav ? 'surface-bg text-prime shadow-sm border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}
+                className={`btn-press flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shrink-0 whitespace-nowrap ${state.view === nav ? 'bg-[var(--primary-glow)] text-white shadow-sm' : 'text-sub hover:text-prime'}`}
               >
-                {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
-                {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
-                {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
-                {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
-                <span>{nav}</span>
+                {nav === 'gigs' && <i data-lucide="briefcase" className="w-3 h-3"></i>}
+                {nav === 'community' && <i data-lucide="users" className="w-3 h-3"></i>}
+                {nav === 'traders' && <i data-lucide="trending-up" className="w-3 h-3"></i>}
+                {nav === 'news' && <i data-lucide="newspaper" className="w-3 h-3"></i>}
+                <span className="hidden xs:inline">{nav}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar pb-1">
-            <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>All</button>
+          <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar">
+            <button onClick={() => setActiveFilter('all')} className={`btn-press px-3 py-1.5 rounded-lg text-[9px] font-bold transition whitespace-nowrap shrink-0 ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 text-sub'}`}>All</button>
             {state.view === 'gigs' && (
               <>
-                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>Remote Only</button>
-                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1.5"></i> High Budget</button>
+                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-3 py-1.5 rounded-lg text-[9px] font-bold transition whitespace-nowrap shrink-0 ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 text-sub'}`}>Remote</button>
+                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-3 py-1.5 rounded-lg text-[9px] font-bold transition whitespace-nowrap shrink-0 flex items-center gap-1 ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 text-sub'}`}><i data-lucide="flame" className="w-2.5 h-2.5 text-amber-500"></i>Budget</button>
               </>
             )}
-            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Top Rated</button>}
-            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5"></i> Bullish</button>}
+            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-3 py-1.5 rounded-lg text-[9px] font-bold transition whitespace-nowrap shrink-0 ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 text-sub'}`}>Top</button>}
+            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-3 py-1.5 rounded-lg text-[9px] font-bold transition whitespace-nowrap shrink-0 ${activeFilter === 'bullish' ? 'bg-[var(--primary-glow)] text-white' : 'bg-white/5 text-sub'}`}>Bull</button>}
           </div>
         </div>
 
-        {/* Global Search Bar */}
+        {/* Search Bar */}
         <div className="relative group">
-          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          <i data-lucide="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)] focus:border-[var(--primary-glow)] outline-none px-10 py-2.5 rounded-xl text-xs text-prime placeholder-sub transition" />
         </div>
 
-        {/* HERO (Gigs Only - Optimized for Mobile Screen Height) */}
+        {/* HERO (Gigs Only) */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-5 sm:p-10 text-center relative overflow-hidden group">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
-              <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
+          <div className="bento-card rounded-2xl p-5 sm:p-8 text-center relative overflow-hidden group">
+            <div className="absolute -top-20 -right-20 w-48 h-48 sm:w-64 sm:h-64 bg-[var(--primary-glow)] opacity-10 blur-[60px] rounded-full pointer-events-none"></div>
+            <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full border surface-bg text-[8px] font-bold uppercase tracking-wider text-[var(--primary-glow)] mb-3">
+              <i data-lucide="shield-check" className="w-3 h-3"></i><span>Secure</span>
             </div>
-            {/* 📍 FIX: ย่อขนาดฟอนต์บนมือถือจาก text-4xl เหลือ text-3xl ป้องกัน Layout Shift */}
-            <h1 className="text-3xl md:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter leading-tight text-prime mb-2">
               <span>{t.hero_static}</span><br/>
-              <div className="h-[1.2em] mt-1 flex justify-center items-center"><Typewriter /></div>
+              <div className="h-[1em] mt-0.5 flex justify-center items-center"><Typewriter /></div>
             </h1>
-            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium">{t.hero_sub}</p>
+            <p className="text-[10px] sm:text-xs text-sub max-w-sm mx-auto font-medium">{t.hero_sub}</p>
           </div>
         )}
 
         {/* QUICK POST */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 mb-8">
-            <div className="flex items-start space-x-4">
-              {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}
-              <div className="flex-1">
-                <input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Drop a trade signal...' : 'Start a discussion...'} className="w-full bg-transparent text-prime font-bold text-lg outline-none placeholder-[var(--text-muted)] mb-2" />
-                <textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="What are your thoughts?" className="w-full bg-transparent text-sm text-prime outline-none resize-none placeholder-[var(--text-muted)] font-medium whitespace-pre-wrap"></textarea>
+          <div className="bento-card rounded-2xl p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              {renderAvatar(state.user ? state.user.avatar : 'U', "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 text-xs shadow-sm", state.user?.name[0])}
+              <div className="flex-1 min-w-0">
+                <input type="text" value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} placeholder={state.view === 'traders' ? 'Signal...' : 'Discuss...'} className="w-full bg-transparent text-sm text-prime outline-none placeholder-sub border-b border-[var(--border-line)]/50 pb-2" />
+                <textarea rows="2" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} placeholder="Thoughts?" className="w-full bg-transparent text-xs text-prime outline-none placeholder-sub mt-2 resize-none" />
                 
                 {quickImage && (
-                  <div className="relative mt-3 mb-2 w-fit">
-                    <img src={quickImage} alt="Preview" className="h-32 rounded-xl border border-[var(--border-line)] object-cover shadow-sm" />
-                    <button onClick={() => setQuickImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:scale-110 transition relative z-10">
-                      <i data-lucide="x" className="w-3 h-3 pointer-events-none"></i>
-                    </button>
+                  <div className="relative mt-2 mb-1.5 w-fit">
+                    <img src={quickImage} alt="Preview" className="h-20 sm:h-24 rounded-lg border border-[var(--border-line)] object-cover shadow-sm" />
+                    <button onClick={() => setQuickImage(null)} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:scale-110 transition relative z-10"><i data-lucide="x" className="w-2.5 h-2.5 pointer-events-none"></i></button>
                   </div>
                 )}
                 
-                <div className="flex justify-between items-center pt-3 border-t border-[var(--border-line)] mt-3">
-                  <div className="flex space-x-2 text-sub">
+                <div className="flex justify-between items-center pt-2 border-t border-[var(--border-line)] mt-2">
+                  <div className="flex gap-1 text-sub">
                     <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" />
-                    <button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4 pointer-events-none"></i></button>
-                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition"><i data-lucide="link" className="w-4 h-4 pointer-events-none"></i></button>
+                    <button onClick={() => fileInputRef.current?.click()} className="btn-press p-1.5 hover:text-prime hover:bg-[var(--border-line)] rounded-lg transition" title="Image"><i data-lucide="image" className="w-3.5 h-3.5"></i></button>
+                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-1.5 hover:text-prime hover:bg-[var(--border-line)] rounded-lg transition" title="Link"><i data-lucide="link" className="w-3.5 h-3.5"></i></button>
                   </div>
-                  <button onClick={handleQuickPost} className="btn-press px-8 py-2.5 rounded-xl text-white font-bold text-sm shadow-md relative z-10" style={{ background: 'var(--primary-glow)' }}>Post</button>
+                  <button onClick={handleQuickPost} className="btn-press px-5 sm:px-6 py-2 rounded-lg text-white font-bold text-xs shadow-md relative z-10" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* FEED SEPARATOR */}
-        <div className="flex justify-between items-center mb-4 px-1">
-          <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
-          <div className="flex items-center space-x-2">
-            <i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs font-bold text-prime outline-none cursor-pointer">
+        {/* Feed Header */}
+        <div className="flex justify-between items-center px-1">
+          <h3 className="text-xs font-bold text-sub uppercase tracking-wider">Updates</h3>
+          <div className="flex items-center gap-1.5">
+            <i data-lucide="arrow-down-up" className="w-3 h-3 text-sub"></i>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-[10px] font-bold text-prime outline-none cursor-pointer">
               <option value="newest" className="bg-[var(--bg-surface)]">Newest</option>
-              {state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Highest Price</option>}
+              {state.view === 'gigs' && <option value="price_desc" className="bg-[var(--bg-surface)]">Price</option>}
               {(state.view === 'community' || state.view === 'gigs') && <option value="popular" className="bg-[var(--bg-surface)]">Popular</option>}
             </select>
           </div>
@@ -281,40 +275,37 @@ export default function Home() {
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : filteredData.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
-            <i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
-            <p className="text-sm font-medium text-sub">No results match filter.</p>
-            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
+          <div className="text-center py-16 sm:py-20 border border-dashed border-[var(--border-line)] rounded-2xl">
+            <i data-lucide="filterX" className="w-6 h-6 sm:w-8 sm:h-8 text-sub mx-auto mb-2 opacity-50"></i>
+            <p className="text-xs font-medium text-sub">No results</p>
+            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-3 px-3 py-1.5 rounded-lg surface-bg border border-[var(--border-line)] text-[10px] text-[var(--primary-glow)] hover:bg-[var(--primary-glow)] hover:text-white transition">Reset</button>
           </div>
         ) : (
-          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" : "flex flex-col space-y-6"}>
+          <div className={state.view === 'gigs' ? "grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4" : "flex flex-col gap-4"}>
             {filteredData.map(item => {
               
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[50px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-xl p-4 sm:p-5 cursor-pointer group relative">
+                    <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[40px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
-                      <div className="flex justify-between items-start mb-5">
-                        <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1.5 rounded-full border border-[var(--border-line)] shadow-sm">{item.loc}</span>
-                        {/* 📍 FIX: เพิ่ม relative z-10 และ pointer-events-none เพื่อเบรกบั๊กกดปุ่มทะลุการ์ด */}
-                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report">
-                          <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
-                        </button>
+                      <div className="flex justify-between items-start gap-2 mb-3">
+                        <span className="text-[8px] font-bold uppercase text-sub surface-bg px-2 py-1 rounded-full border border-[var(--border-line)] shadow-sm shrink-0">{item.loc}</span>
+                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1 bg-black/5 hover:bg-red-500/10 rounded-lg"><i data-lucide="flag" className="w-3 h-3 pointer-events-none"></i></button>
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 line-clamp-1 break-words">{item.title}</h3>
-                      <p className="text-xs text-sub line-clamp-2 leading-relaxed font-medium break-words whitespace-pre-wrap">{item.desc}</p>
+                      <h3 className="text-sm sm:text-base font-bold text-prime mb-1.5 line-clamp-2 break-words">{item.title}</h3>
+                      <p className="text-[10px] text-sub line-clamp-2 leading-relaxed font-medium break-words">{item.desc}</p>
                     </div>
-                    <div className="flex justify-between items-end mt-auto pt-4 border-t border-[var(--border-line)]/50">
-                      <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 hover:opacity-80 transition cursor-pointer flex items-center space-x-3">
-                         {renderAvatar(item.avatar || item.host[0], "w-8 h-8 rounded-full text-xs shadow-sm", item.host[0])}
-                         <div>
-                           <p className="text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold break-words">Host Identity</p>
-                           <span className="text-sm font-bold text-prime hover:underline break-words">{item.host}</span>
+                    <div className="flex justify-between items-end mt-auto pt-3 border-t border-[var(--border-line)]/50">
+                      <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 hover:opacity-80 transition cursor-pointer flex items-center gap-2 min-w-0">
+                         {renderAvatar(item.avatar || item.host[0], "w-6 h-6 rounded-full text-[9px] shadow-sm flex-shrink-0", item.host[0])}
+                         <div className="min-w-0">
+                           <p className="text-[8px] text-sub uppercase tracking-wider font-bold">Host</p>
+                           <span className="text-[10px] font-bold text-prime hover:underline truncate">{item.host}</span>
                          </div>
                       </div>
-                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 py-2 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2 shrink-0">
-                        Apply <i data-lucide="arrow-up-right" className="w-3.5 h-3.5 pointer-events-none"></i>
+                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-3 py-1.5 rounded-lg surface-bg border border-[var(--border-line)] flex items-center gap-1 text-[10px] font-bold text-prime hover:text-white hover:border-[var(--primary-glow)] transition shrink-0">
+                        Apply <i data-lucide="arrow-up-right" className="w-2.5 h-2.5 pointer-events-none"></i>
                       </button>
                     </div>
                   </div>
@@ -322,50 +313,47 @@ export default function Home() {
               }
 
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer relative group">
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-xl p-4 sm:p-5 cursor-pointer group">
                   
-                  {/* 📍 FIX: เปลี่ยนไอคอนเป็น Flag เสมอ และแก้บั๊กกดทะลุหลังการ์ด */}
-                  <div className="flex justify-between items-start mb-5">
-                    <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center space-x-3 hover:opacity-80 transition cursor-pointer w-fit">
-                      {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm", item.host[0])}
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-prime hover:underline break-words">{item.host}</span>
-                        <span className="text-[10px] text-sub uppercase tracking-widest">{item.tag || 'Update'}</span>
+                  <div className="flex justify-between items-start gap-2 mb-3">
+                    <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center gap-2 hover:opacity-80 transition cursor-pointer min-w-0">
+                      {renderAvatar(item.avatar || item.host[0], "w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs shadow-sm flex-shrink-0", item.host[0])}
+                      <div className="min-w-0">
+                        <span className="text-xs sm:text-sm font-bold text-prime hover:underline truncate">{item.host}</span>
+                        <span className="text-[9px] text-sub uppercase tracking-wider block">{item.tag || 'Update'}</span>
                       </div>
                     </div>
-                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg" title="Report">
-                      <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
-                    </button>
+                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1 rounded-lg flex-shrink-0"><i data-lucide="flag" className="w-3.5 h-3.5 pointer-events-none"></i></button>
                   </div>
                   
-                  <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 leading-tight break-words">{item.title}</h3>
-                  <p className="text-xs sm:text-sm text-sub mb-5 leading-relaxed font-medium break-words whitespace-pre-wrap">{item.desc}</p>
+                  <h3 className="text-sm sm:text-base font-bold text-prime mb-1.5 leading-tight break-words">{item.title}</h3>
+                  <p className="text-[10px] sm:text-xs text-sub mb-3 leading-relaxed font-medium break-words">{item.desc}</p>
 
                   {item.image && (
-                    <div className="mb-6 rounded-2xl overflow-hidden border border-[var(--border-line)] max-h-80 pointer-events-none">
+                    <div className="mb-3 rounded-lg overflow-hidden border border-[var(--border-line)] max-h-48 sm:max-h-64 pointer-events-none">
                       <img src={item.image} alt="Attachment" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.style.display='none'; }} />
                     </div>
                   )}
                   
-                  <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-4">
+                  <div className="flex justify-between items-center border-t border-[var(--border-line)] pt-3 gap-2">
                     {state.view === 'community' && (
-                      <div className="flex space-x-6 text-sub text-xs font-bold">
-                        <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}>
-                          <i data-lucide="heart" className={`w-4 h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
+                      <div className="flex gap-3 sm:gap-4 text-sub text-[10px] font-bold">
+                        <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition gap-1 ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-prime'}`}>
+                          <i data-lucide="heart" className={`w-3.5 h-3.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500' : ''}`}></i> {likedPosts[item.id] ? item.likes + 1 : item.likes || 0}
                         </button>
-                        <span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-4 h-4 mr-2"></i> {item.comments || 0}</span>
+                        <span className="flex items-center pointer-events-none"><i data-lucide="message-circle" className="w-3.5 h-3.5 mr-1"></i> {item.comments || 0}</span>
                       </div>
                     )}
                     {state.view === 'traders' && (
-                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[10px] sm:text-xs pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
-                        <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 mr-1.5 pointer-events-none"></i> {item.sentiment?.toUpperCase()}
+                      <span className={`flex items-center gap-1 px-2 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[9px] pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-400 border-green-400/50' : 'text-red-400 border-red-400/50'}`}>
+                        <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3 h-3 pointer-events-none"></i> {item.sentiment?.toUpperCase()}
                       </span>
                     )}
                     {state.view === 'news' && (
-                      <span className="font-mono text-[10px] bg-white/5 px-2 py-1 rounded pointer-events-none">SRC: {item.source || 'SYS'}</span>
+                      <span className="font-mono text-[9px] bg-white/5 px-2 py-1 rounded pointer-events-none">SRC: {item.source || 'SYS'}</span>
                     )}
-                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1.5 rounded-lg hover:bg-white/5 transition">
-                      <i data-lucide="share-2" className="w-4 h-4 pointer-events-none"></i>
+                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1 rounded-lg hover:bg-white/5 transition ml-auto flex-shrink-0">
+                      <i data-lucide="share-2" className="w-3.5 h-3.5 pointer-events-none"></i>
                     </button>
                   </div>
                 </div>
@@ -375,63 +363,63 @@ export default function Home() {
         )}
       </div>
 
-      {/* 📍 RIGHT SIDEBAR WIDGETS (Desktop Only) */}
-      <aside className="hidden lg:block w-72 shrink-0">
-        <div className="sticky top-[88px] space-y-6">
+      {/* 📍 RIGHT SIDEBAR (Desktop XL Only) */}
+      <aside className="hidden 2xl:block w-64 shrink-0">
+        <div className="sticky top-[88px] space-y-4">
           
-          <div className="glass-panel border rounded-3xl p-5 hover-lift">
-            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
-              <i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now
+          <div className="glass-panel border rounded-2xl p-4 hover-lift">
+            <h3 className="text-xs font-bold text-prime mb-3 flex items-center border-b border-[var(--border-line)] pb-2">
+              <i data-lucide="trending-up" className="w-3.5 h-3.5 mr-2 text-[var(--primary-glow)]"></i> Trending
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">#NFP Week</p>
-                <p className="text-[10px] text-sub mt-0.5">1,245 posts</p>
+                <p className="text-[10px] font-bold text-prime group-hover:text-[var(--primary-glow)] transition">#NFP Week</p>
+                <p className="text-[9px] text-sub mt-0.5">1,245 posts</p>
               </div>
               <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Bitcoin Halving</p>
-                <p className="text-[10px] text-sub mt-0.5">858 posts</p>
+                <p className="text-[10px] font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Bitcoin Halving</p>
+                <p className="text-[9px] text-sub mt-0.5">858 posts</p>
               </div>
               <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Risk Management Tips</p>
-                <p className="text-[10px] text-sub mt-0.5">432 posts</p>
+                <p className="text-[10px] font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Risk Tips</p>
+                <p className="text-[9px] text-sub mt-0.5">432 posts</p>
               </div>
             </div>
           </div>
 
-          <div className="glass-panel border rounded-3xl p-5 hover-lift">
-            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
-              <i data-lucide="users" className="w-4 h-4 mr-2 text-sub"></i> Top Profiles
+          <div className="glass-panel border rounded-2xl p-4 hover-lift">
+            <h3 className="text-xs font-bold text-prime mb-3 flex items-center border-b border-[var(--border-line)] pb-2">
+              <i data-lucide="users" className="w-3.5 h-3.5 mr-2 text-sub"></i> Top Profiles
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">E</div>
-                  <div>
-                    <p className="text-xs font-bold text-prime hover:underline cursor-pointer">Elena R.</p>
-                    <p className="text-[9px] text-sub">FX Mentor</p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">E</div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-prime hover:underline cursor-pointer truncate">Elena R.</p>
+                    <p className="text-[8px] text-sub truncate">FX Mentor</p>
                   </div>
                 </div>
-                <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
+                <button className="text-[9px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-2 py-0.5 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition shrink-0">+</button>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">D</div>
-                  <div>
-                    <p className="text-xs font-bold text-prime hover:underline cursor-pointer">David K.</p>
-                    <p className="text-[9px] text-sub">Algo Trader</p>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">D</div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-prime hover:underline cursor-pointer truncate">David K.</p>
+                    <p className="text-[8px] text-sub truncate">Algo Trader</p>
                   </div>
                 </div>
-                <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
+                <button className="text-[9px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-2 py-0.5 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition shrink-0">+</button>
               </div>
             </div>
           </div>
 
-          <div className="text-[10px] text-sub px-2 flex flex-wrap gap-x-3 gap-y-1">
+          <div className="text-[8px] text-sub px-1 flex flex-wrap gap-x-2 gap-y-0.5">
             <a href="#" className="hover:underline hover:text-prime">Terms</a>
-            <a href="#" className="hover:underline hover:text-prime">Privacy Space</a>
+            <a href="#" className="hover:underline hover:text-prime">Privacy</a>
             <a href="#" className="hover:underline hover:text-prime">Security</a>
-            <span>© 2026 Vennamis</span>
+            <span>© 2026</span>
           </div>
 
         </div>
