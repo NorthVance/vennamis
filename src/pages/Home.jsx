@@ -1,4 +1,4 @@
-// UX: Expanded Center Layout & Search Icons
+// UX: Expanded Center Layout & Search Bar Icons
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -70,9 +70,7 @@ export default function Home() {
   }, [activeFilter, viewData, debouncedSearch, sortBy]);
 
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
-  
-  // UX: Icon Refresh
-  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage, searchQuery]);
+  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
   // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
@@ -105,11 +103,10 @@ export default function Home() {
   };
 
   return (
-    /* UX: Reduced Gap to expand center column */
+    /* UX: Optimized Gap for Wide Center Column */
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
-      {/* UX: Slightly narrower left sidebar */}
-      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
+      <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -158,20 +155,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Enhanced Search Bar with Icons */}
-        <div className="relative w-full flex items-center group">
-          <div className="absolute left-4 flex items-center justify-center pointer-events-none">
-            <i data-lucide="search" className="w-5 h-5 text-sub group-focus-within:text-[var(--primary-glow)] transition-colors"></i>
-          </div>
-          <input 
-            type="text" 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
-            className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-12 pr-14 py-3.5 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" 
-            placeholder="Search skills, posts, or news..." 
-          />
-          <button className="absolute right-2.5 p-2 rounded-xl bg-white/5 border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover:bg-[var(--primary-glow)]/10 text-sub hover:text-[var(--primary-glow)] transition-all flex items-center justify-center shadow-sm">
-            <i data-lucide="sliders-horizontal" className="w-4 h-4 pointer-events-none"></i>
+        {/* UX: Upgraded Search Bar with Search & Filter Icons */}
+        <div className="relative group flex items-center w-full">
+          <i data-lucide="search" className="absolute left-4 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none z-10"></i>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          <button className="absolute right-2 p-2 bg-white/5 hover:bg-white/10 rounded-xl border border-[var(--border-line)] text-sub hover:text-prime transition z-10 flex items-center justify-center" title="Advanced Filters">
+            <i data-lucide="sliders-horizontal" className="w-4 h-4"></i>
           </button>
         </div>
 
@@ -306,8 +295,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* UX: Slightly narrower right sidebar */}
-      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
+      <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
