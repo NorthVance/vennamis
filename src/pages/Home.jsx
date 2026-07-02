@@ -1,3 +1,4 @@
+// UX: Tight Gap & Expanded Middle Column
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -102,11 +103,9 @@ export default function Home() {
   };
 
   return (
-    /* UX: Tight Gap & Maximum Center Width */
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
-      {/* UX: Slimmer Left Sidebar */}
-      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
+      <aside className="hidden lg:block w-60 xl:w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -133,7 +132,6 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* UX: Expanded Middle Column */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
@@ -292,8 +290,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* UX: Keeping Right Sidebar Proportional */}
-      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
+      <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
