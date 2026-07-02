@@ -25,11 +25,9 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // SEC: Search Debounce Logic (กันเว็บกระตุกเวลาพิมพ์รัวๆ)
+  // SEC: Search Debounce Logic
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    const handler = setTimeout(() => { setDebouncedSearch(searchQuery); }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
@@ -103,9 +101,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
+    /* UX: Wide Spacing for PC (gap-8 lg:gap-12 xl:gap-16) */
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 xl:gap-16 w-full mx-auto pb-20">
       
-      <aside className="hidden lg:block w-64 shrink-0">
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -165,7 +164,7 @@ export default function Home() {
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter leading-tight text-prime mb-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
               <span>{t.hero_static}</span><br/>
               <div className="h-[1.2em] mt-1 flex justify-center items-center"><Typewriter /></div>
             </h1>
@@ -221,19 +220,19 @@ export default function Home() {
             <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
           </div>
         ) : (
-          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6"}>
+          <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8" : "flex flex-col space-y-4 sm:space-y-6 lg:space-y-8"}>
             {filteredData.map(item => {
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[240px] lg:h-[260px] group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[50px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1 rounded-full border border-[var(--border-line)] shadow-sm pointer-events-none">{item.loc}</span>
                         <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report"><i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i></button>
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 line-clamp-1 break-words pointer-events-none">{item.title}</h3>
-                      <p className="text-xs text-sub line-clamp-2 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
+                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-prime mb-2 line-clamp-1 break-words pointer-events-none">{item.title}</h3>
+                      <p className="text-xs sm:text-sm text-sub line-clamp-2 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
                     </div>
                     <div className="flex justify-between items-end mt-auto pt-4 border-t border-[var(--border-line)]/50">
                       <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 hover:opacity-80 transition cursor-pointer flex items-center space-x-3">
@@ -256,11 +255,11 @@ export default function Home() {
                     <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg" title="Report"><i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i></button>
                   </div>
                   
-                  <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 leading-tight break-words pointer-events-none">{item.title}</h3>
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-prime mb-3 leading-tight break-words pointer-events-none">{item.title}</h3>
                   <p className="text-xs sm:text-sm text-sub mb-5 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
                   
                   {item.image && (
-                    <div className="mb-5 rounded-2xl overflow-hidden border border-[var(--border-line)] max-h-80 pointer-events-none">
+                    <div className="mb-5 rounded-2xl overflow-hidden border border-[var(--border-line)] max-h-96 pointer-events-none">
                       <img src={item.image} alt="Attachment" loading="lazy" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.style.display='none'; }} />
                     </div>
                   )}
@@ -284,7 +283,7 @@ export default function Home() {
         )}
       </div>
 
-      <aside className="hidden lg:block w-72 shrink-0">
+      <aside className="hidden lg:block w-72 xl:w-80 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
