@@ -13,15 +13,15 @@ export const AppContext = createContext();
 
 export default function App() {
   
-  // SEC: Strict Cache Validation
+  // SEC: Strict Cache Validation (Default Light Mode)
   const [state, setState] = useState(() => {
-    const fallback = { lang: 'en', transApi: 'google', theme: 'dark', bg: 'cyber', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
+    const fallback = { lang: 'en', transApi: 'google', theme: 'light', bg: 'landscape', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
     try {
       const localMem = localStorage.getItem('vennamis_ui_prefs');
       if (localMem) {
         const p = JSON.parse(localMem);
         if (typeof p !== 'object' || p === null) throw new Error('Invalid Cache');
-        return { ...fallback, lang: p.lang || 'en', transApi: p.transApi || 'google', theme: p.theme || 'dark', bg: p.bg || 'cyber' };
+        return { ...fallback, lang: p.lang || 'en', transApi: p.transApi || 'google', theme: p.theme || 'light', bg: p.bg || 'landscape' };
       }
     } catch (e) {
       console.warn("[SEC] Cache purged.");
