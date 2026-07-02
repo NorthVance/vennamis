@@ -1,4 +1,4 @@
-// UX: Luxury Search Bar (Icons + ⌘K) & Lucide Fix
+// UX: Ultra-wide Layout & Pro Search
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -70,11 +70,7 @@ export default function Home() {
   }, [activeFilter, viewData, debouncedSearch, sortBy]);
 
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
-  
-  // UX: Fix missing icons on re-render
-  useEffect(() => { 
-    if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); 
-  }, [filteredData, state.view, sortBy, quickImage, searchQuery]);
+  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
   // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
@@ -107,9 +103,10 @@ export default function Home() {
   };
 
   return (
+    /* UX: Tight Gap for Wider Middle Column */
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
-      <aside className="hidden lg:block w-60 xl:w-64 shrink-0">
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -158,29 +155,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Luxury Search Bar (Icons + ⌘K Shortcut) */}
+        {/* UX: Pro Search Bar with Left/Right Icons */}
         <div className="relative group flex items-center">
-          <i data-lucide="search" className="absolute left-4 w-5 h-5 text-sub group-hover:text-[var(--primary-glow)] transition-colors pointer-events-none"></i>
-          
-          <input 
-            type="text" 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
-            className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-12 pr-16 py-3.5 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium focus-glow" 
-            placeholder="Search skills, posts, or news..." 
-          />
-          
-          <div className="absolute right-3 flex items-center">
-            {searchQuery ? (
-              <button onClick={() => setSearchQuery('')} className="btn-press text-sub hover:text-prime transition p-1.5 rounded-full hover:bg-white/5 cursor-pointer">
-                <i data-lucide="x-circle" className="w-4 h-4"></i>
-              </button>
-            ) : (
-              <div className="hidden sm:flex items-center justify-center px-2 py-1 rounded-md border border-[var(--border-line)] bg-white/5 text-[10px] font-bold text-sub pointer-events-none shadow-sm">
-                ⌘K
-              </div>
-            )}
-          </div>
+          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none"></i>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-12 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-sub hover:text-prime transition p-1.5 bg-white/5 rounded-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover:bg-[var(--primary-glow)]/10 shadow-sm">
+            <i data-lucide="sliders-horizontal" className="w-4 h-4 pointer-events-none"></i>
+          </button>
         </div>
 
         {state.view === 'gigs' && (
