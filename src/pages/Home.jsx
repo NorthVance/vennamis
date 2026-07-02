@@ -25,13 +25,11 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // SEC: Search Debounce
   useEffect(() => {
     const handler = setTimeout(() => { setDebouncedSearch(searchQuery); }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // SEC: Fetch Pipeline
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
@@ -52,7 +50,6 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // SEC: Filter Core
   useEffect(() => {
     let result = [...viewData];
     if (debouncedSearch.trim()) {
@@ -73,7 +70,6 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  // UX: Action Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
   const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
@@ -104,9 +100,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 xl:gap-12 w-full mx-auto pb-20">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 xl:gap-16 w-full mx-auto pb-20">
       
-      {/* UX: Left Sidebar */}
       <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
@@ -134,10 +129,8 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* UX: Middle Feed Container */}
-      <div className="flex-1 w-full min-w-0 space-y-6 md:space-y-8">
+      <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
-        {/* UX: Mobile Nav */}
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
           <div className="glass-panel p-1 bg-[var(--bg-base)]/80 border border-[var(--border-line)] rounded-full flex items-center shadow-lg max-w-[340px] w-full mx-auto">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
@@ -158,35 +151,28 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Global Search Bar */}
         <div className="relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* UX: Hero Section */}
+        {/* HERO SECTION FIX */}
         {state.view === 'gigs' && (
-          <div className="bento-card w-full rounded-[2rem] p-6 sm:p-10 lg:p-12 text-center relative overflow-hidden group">
+          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group flex flex-col justify-center min-h-[320px] lg:min-h-[360px]">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-5">
+            <div className="inline-flex items-center mx-auto space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            
-            {/* FIX: Prevent Overlap & Jitter with Fixed Min-Height for Typewriter */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter leading-tight text-prime mb-4">
-              <span className="block mb-2">{t.hero_static}</span>
-              <div className="h-[3em] sm:h-[1.5em] flex justify-center items-start w-full">
-                <Typewriter />
-              </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter leading-snug text-prime mb-4">
+              <span>{t.hero_static}</span><br/>
+              <div className="mt-2 text-[var(--primary-glow)] flex justify-center items-center min-h-[60px]"><Typewriter /></div>
             </h1>
-            
-            <p className="text-xs sm:text-sm text-sub max-w-xl mx-auto font-medium mt-2">{t.hero_sub}</p>
+            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium mt-2">{t.hero_sub}</p>
           </div>
         )}
 
-        {/* UX: Quick Post */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm w-full">
+          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm">
             <div className="flex items-start space-x-4">
               {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}
               <div className="flex-1">
@@ -212,7 +198,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* UX: Feed Header */}
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
           <div className="flex items-center space-x-2">
@@ -225,7 +210,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Feed List */}
         {isLoading ? (
           <Skeleton view={state.view} />
         ) : filteredData.length === 0 ? (
@@ -298,7 +282,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* UX: Right Sidebar */}
       <aside className="hidden lg:block w-72 xl:w-80 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
