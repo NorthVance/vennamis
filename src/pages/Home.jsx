@@ -1,4 +1,4 @@
-// UX: Ultra-wide Layout & Pro Search
+// UX: Compact Gap & Search Filter Icons Added
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -70,7 +70,7 @@ export default function Home() {
   }, [activeFilter, viewData, debouncedSearch, sortBy]);
 
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
-  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
+  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage, searchQuery]);
 
   // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
@@ -103,7 +103,7 @@ export default function Home() {
   };
 
   return (
-    /* UX: Tight Gap for Wider Middle Column */
+    /* UX: Reduced gap from xl:gap-16 to lg:gap-8 to make center column wider */
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
       <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
@@ -155,17 +155,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Pro Search Bar with Left/Right Icons */}
-        <div className="relative group flex items-center">
-          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none"></i>
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-12 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-sub hover:text-prime transition p-1.5 bg-white/5 rounded-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)] hover:bg-[var(--primary-glow)]/10 shadow-sm">
+        {/* UX: Search Bar with Icons Fix */}
+        <div className="relative group w-full flex items-center">
+          <i data-lucide="search" className="absolute left-4 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none z-10"></i>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          <button className="absolute right-3 p-2 text-sub hover:text-[var(--primary-glow)] bg-white/5 hover:bg-white/10 border border-[var(--border-line)] rounded-xl transition shadow-sm z-10" title="Advanced Filters">
             <i data-lucide="sliders-horizontal" className="w-4 h-4 pointer-events-none"></i>
           </button>
         </div>
 
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] px-6 py-10 sm:px-10 text-center relative overflow-hidden group min-h-[300px] flex flex-col items-center justify-start pt-8 sm:pt-12">
+          <div className="bento-card rounded-[2rem] px-6 py-10 sm:px-10 text-center relative overflow-hidden group min-h-[300px] flex flex-col items-center justify-start pt-8 sm:pt-12 w-full">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
@@ -185,7 +185,7 @@ export default function Home() {
         )}
 
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm">
+          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm w-full">
             <div className="flex items-start space-x-4">
               {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}
               <div className="flex-1">
@@ -236,7 +236,7 @@ export default function Home() {
             {filteredData.map(item => {
               if (state.view === 'gigs') {
                 return (
-                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[240px] lg:h-[260px] group relative overflow-hidden">
+                  <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer flex flex-col justify-between h-[240px] lg:h-[260px] group relative overflow-hidden w-full">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-glow)] opacity-0 group-hover:opacity-10 blur-[50px] transition-opacity duration-500 rounded-full pointer-events-none"></div>
                     <div>
                       <div className="flex justify-between items-start mb-4">
@@ -258,7 +258,7 @@ export default function Home() {
               }
 
               return (
-                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer relative group">
+                <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 sm:p-8 cursor-pointer relative group w-full">
                   <div className="flex justify-between items-start mb-4">
                     <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center space-x-3 hover:opacity-80 transition cursor-pointer w-fit">
                       {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm", item.host[0])}
