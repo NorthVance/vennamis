@@ -1,3 +1,4 @@
+// UX: Expanded Feed Width & Search Icons Added
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -69,9 +70,7 @@ export default function Home() {
   }, [activeFilter, viewData, debouncedSearch, sortBy]);
 
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
-  
-  // UX: Icon Renderer
-  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage, searchQuery]);
+  useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
   // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
@@ -104,11 +103,10 @@ export default function Home() {
   };
 
   return (
-    /* UX: Compact Gap & Expanded Center */
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 xl:gap-10 w-full mx-auto pb-20">
+    /* UX: Tighter gaps (gap-6 lg:gap-8) to let the middle column expand */
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
-      {/* UX: Slimmer Left Sidebar */}
-      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -135,7 +133,6 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* UX: Expanded Middle Column */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
@@ -158,34 +155,32 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Search Bar with Icons */}
-        <div className="relative group flex items-center w-full">
-          <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none"></i>
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
-          <button className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 bg-white/5 hover:bg-[var(--primary-glow)]/20 rounded-xl transition text-sub hover:text-[var(--primary-glow)]" title="Advanced Filters">
-            <i data-lucide="sliders-horizontal" className="w-4 h-4 pointer-events-none"></i>
+        {/* UX: Enhanced Search Bar with Icons */}
+        <div className="relative flex items-center group">
+          <i data-lucide="search" className="absolute left-4 w-4.5 h-4.5 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none"></i>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-12 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
+          <button className="absolute right-2 p-2 bg-white/5 hover:bg-[var(--primary-glow)]/20 rounded-xl text-sub hover:text-[var(--primary-glow)] transition border border-transparent hover:border-[var(--primary-glow)]/30">
+            <i data-lucide="sliders-horizontal" className="w-4 h-4"></i>
           </button>
         </div>
 
-        {/* UX: Fixed Stable Hero Box */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-8 sm:p-12 text-center relative overflow-hidden group min-h-[360px] flex flex-col items-center justify-center">
+          <div className="bento-card rounded-[2rem] px-6 py-10 sm:px-10 text-center relative overflow-hidden group min-h-[300px] flex flex-col items-center justify-start pt-8 sm:pt-12">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             
-            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
+            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
             
-            <div className="flex flex-col items-center space-y-2 w-full">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-prime leading-tight">
-                {t.hero_static}
-              </h1>
-              <div className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight w-full flex justify-center items-center h-[1.2em]">
-                <Typewriter />
-              </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-prime mb-1">
+              {t.hero_static}
+            </h1>
+            
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight w-full flex justify-center items-center h-[1.5em] mb-4">
+              <Typewriter />
             </div>
             
-            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium mt-6">{t.hero_sub}</p>
+            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium">{t.hero_sub}</p>
           </div>
         )}
 
@@ -300,8 +295,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* UX: Slimmer Right Sidebar */}
-      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
+      <aside className="hidden lg:block w-72 xl:w-80 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
