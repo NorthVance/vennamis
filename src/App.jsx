@@ -13,26 +13,32 @@ export const AppContext = createContext();
 
 export default function App() {
   
+  // SEC: Strict Cache Validation
   const [state, setState] = useState(() => {
+    const fallback = { lang: 'en', transApi: 'google', theme: 'dark', bg: 'cyber', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
     try {
       const localMem = localStorage.getItem('vennamis_ui_prefs');
       if (localMem) {
-        const parsed = JSON.parse(localMem);
-        return {
-          lang: parsed.lang || 'en', transApi: parsed.transApi || 'google', theme: parsed.theme || 'light', bg: parsed.bg || 'cyber',
-          user: null, view: 'gigs', activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null,
-          data: initialData, notifications: [], refreshTick: 0, toast: null
-        };
+        const p = JSON.parse(localMem);
+        if (typeof p !== 'object' || p === null) throw new Error('Invalid Cache');
+        return { ...fallback, lang: p.lang || 'en', transApi: p.transApi || 'google', theme: p.theme || 'dark', bg: p.bg || 'cyber' };
       }
-    } catch (e) { console.error("[Mem Error] Cache corrupted."); }
-    return { lang: 'en', transApi: 'google', theme: 'light', bg: 'cyber', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
+    } catch (e) {
+      console.warn("[SEC] Cache purged.");
+      localStorage.removeItem('vennamis_ui_prefs');
+    }
+    return fallback;
   });
 
+  // UX: Persist Prefs
   useEffect(() => {
     localStorage.setItem('vennamis_ui_prefs', JSON.stringify({ lang: state.lang, transApi: state.transApi, theme: state.theme, bg: state.bg }));
   }, [state.lang, state.transApi, state.theme, state.bg]);
 
-  useEffect(() => { document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; }, [state.theme]);
+  // UX: Inject Theme
+  useEffect(() => { 
+    document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; 
+  }, [state.theme]);
 
   const [slideId, setSlideId] = useState(1);
   useEffect(() => {
@@ -41,9 +47,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, [state.bg]);
 
-  // 📍 FIX: Bulletproof Icon Engine (Runs on every render safely)
   useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
+  // SEC: Auth Sync
   useEffect(() => {
     if (!supabase) return;
     AuthService.getSession().then(({ data: { session } }) => {
@@ -80,7 +86,9 @@ export default function App() {
       )}
 
       <Toast />
-      <div className="relative flex flex-col min-h-screen z-10">
+      
+      {/* UX: iOS Safe Area Wrapper */}
+      <div className="relative flex flex-col min-h-screen z-10 safe-area-bottom">
         <Header />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
           {state.view === 'admin' ? <Admin /> : state.view === 'workspace' ? <Workspace /> : <Home />}
