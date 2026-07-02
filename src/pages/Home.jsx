@@ -1,4 +1,3 @@
-// UX: Hero Layout Aligned Top
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -103,9 +102,11 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 xl:gap-16 w-full mx-auto pb-20">
+    /* UX: Tight Gap & Maximum Center Width */
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
       
-      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
+      {/* UX: Slimmer Left Sidebar */}
+      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -132,6 +133,7 @@ export default function Home() {
         </div>
       </aside>
 
+      {/* UX: Expanded Middle Column */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
@@ -159,7 +161,6 @@ export default function Home() {
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* UX: Fixed Hero Layout - Moved Content Up */}
         {state.view === 'gigs' && (
           <div className="bento-card rounded-[2rem] px-6 py-10 sm:px-10 text-center relative overflow-hidden group min-h-[300px] flex flex-col items-center justify-start pt-8 sm:pt-12">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
@@ -291,7 +292,8 @@ export default function Home() {
         )}
       </div>
 
-      <aside className="hidden lg:block w-72 xl:w-80 shrink-0">
+      {/* UX: Keeping Right Sidebar Proportional */}
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
