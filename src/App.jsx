@@ -87,10 +87,10 @@ export default function App() {
 
       <Toast />
       
-      {/* UX: iOS Safe Area Wrapper */}
+      {/* UX: iOS Safe Area & Unlocked Ultra-wide Container */}
       <div className="relative flex flex-col min-h-screen z-10 safe-area-bottom">
         <Header />
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <main className="flex-1 w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-4 sm:py-8">
           {state.view === 'admin' ? <Admin /> : state.view === 'workspace' ? <Workspace /> : <Home />}
         </main>
       </div>
