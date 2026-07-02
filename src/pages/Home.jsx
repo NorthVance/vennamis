@@ -25,6 +25,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
+  // SEC: Pipeline
   useEffect(() => {
     const handler = setTimeout(() => { setDebouncedSearch(searchQuery); }, 300);
     return () => clearTimeout(handler);
@@ -70,6 +71,7 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
+  // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
   const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
@@ -156,17 +158,23 @@ export default function Home() {
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* HERO SECTION FIX */}
+        {/* UX: Fixed Hero Layout (No Overlap, No Jumping) */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group flex flex-col justify-center min-h-[320px] lg:min-h-[360px]">
+          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group min-h-[320px] flex flex-col items-center justify-center">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
-            <div className="inline-flex items-center mx-auto space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
+            
+            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6 mt-2">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter leading-snug text-prime mb-4">
-              <span>{t.hero_static}</span><br/>
-              <div className="mt-2 text-[var(--primary-glow)] flex justify-center items-center min-h-[60px]"><Typewriter /></div>
+            
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-prime mb-2">
+              {t.hero_static}
             </h1>
+            
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight w-full flex justify-center items-center h-[1.5em] mb-4">
+              <Typewriter />
+            </div>
+            
             <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium mt-2">{t.hero_sub}</p>
           </div>
         )}
