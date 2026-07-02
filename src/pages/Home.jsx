@@ -25,13 +25,12 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // SEC: Search Debounce
+  // SEC: Search Debounce Logic
   useEffect(() => {
     const handler = setTimeout(() => { setDebouncedSearch(searchQuery); }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // SEC: Data Fetch
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
@@ -52,7 +51,6 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // SEC: Filter Logic
   useEffect(() => {
     let result = [...viewData];
     if (debouncedSearch.trim()) {
@@ -73,7 +71,6 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  // UX: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
   const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
@@ -160,18 +157,25 @@ export default function Home() {
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* UX: Apple Design Hero Section */}
+        {/* UX: Redesigned Hero Section (No Overlap, No Layout Shift) */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2.5rem] p-8 sm:p-12 text-center relative overflow-hidden group">
-            <div className="absolute -top-32 -right-32 w-80 h-80 bg-[var(--primary-glow)] opacity-10 blur-[100px] rounded-full pointer-events-none"></div>
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border border-[var(--border-line)] bg-white/5 text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6 shadow-sm">
-              <i data-lucide="shield-check" className="w-4 h-4"></i><span>{t.badge_secure}</span>
+          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group flex flex-col items-center justify-center min-h-[300px]">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
+            
+            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
+              <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] text-prime mb-6 flex flex-col items-center justify-center">
-              <span className="mb-2">{t.hero_static}</span>
-              <span className="min-h-[1.5em] w-full max-w-[90%] flex items-center justify-center break-words leading-tight"><Typewriter /></span>
+            
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter text-prime mb-2">
+              {t.hero_static}
             </h1>
-            <p className="text-sm sm:text-base text-sub max-w-2xl mx-auto font-medium leading-relaxed">{t.hero_sub}</p>
+            
+            {/* SEC: Box locked height to prevent overlap and bounce */}
+            <div className="h-[80px] sm:h-[90px] lg:h-[100px] w-full flex justify-center items-start mb-2 overflow-hidden">
+              <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight"><Typewriter /></span>
+            </div>
+            
+            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium z-10">{t.hero_sub}</p>
           </div>
         )}
 
