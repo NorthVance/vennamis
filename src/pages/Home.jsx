@@ -1,4 +1,3 @@
-// INIT: V.41.3.0 - Mobile Compact UI & Strict CI Patch
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -22,10 +21,18 @@ export default function Home() {
   
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // SEC: Fetch & Translate Pipeline
+  // SEC: Search Debounce Logic (กันเว็บกระตุกเวลาพิมพ์รัวๆ)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
@@ -46,11 +53,10 @@ export default function Home() {
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
-  // SEC: Filter Logic
   useEffect(() => {
     let result = [...viewData];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       result = result.filter(i => (i.title?.toLowerCase().includes(q)) || (i.desc?.toLowerCase().includes(q)) || (i.host?.toLowerCase().includes(q)));
     }
     if (activeFilter !== 'all') {
@@ -62,12 +68,11 @@ export default function Home() {
     if (sortBy === 'price_desc') result.sort((a, b) => (b.price || 0) - (a.price || 0));
     else if (sortBy === 'popular') result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
     setFilteredData(result);
-  }, [activeFilter, viewData, searchQuery, sortBy]);
+  }, [activeFilter, viewData, debouncedSearch, sortBy]);
 
-  useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
+  useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  // SEC: Handlers
   const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
   const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
   const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
@@ -93,14 +98,13 @@ export default function Home() {
   };
 
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
-    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" loading="lazy" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 pointer-events-none ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
       
-      {/* 📍 LEFT COLUMN (PC ONLY) */}
       <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
@@ -128,10 +132,8 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* 📍 MIDDLE COLUMN: Feed Core */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
-        {/* 📍 MOBILE ONLY: COMPACT PILL MENU (FIXED) */}
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
           <div className="glass-panel p-1 bg-[var(--bg-base)]/80 border border-[var(--border-line)] rounded-full flex items-center shadow-lg max-w-[340px] w-full mx-auto">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
@@ -152,20 +154,18 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Global Search Bar */}
         <div className="relative group">
           <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition"></i>
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-4 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
         </div>
 
-        {/* HERO */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-5 sm:p-10 text-center relative overflow-hidden group">
+          <div className="bento-card rounded-[2rem] p-6 sm:p-10 text-center relative overflow-hidden group">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-3xl md:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter leading-tight text-prime mb-3">
               <span>{t.hero_static}</span><br/>
               <div className="h-[1.2em] mt-1 flex justify-center items-center"><Typewriter /></div>
             </h1>
@@ -173,9 +173,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* QUICK POST */}
         {(state.view === 'community' || state.view === 'traders') && (
-          <div className="bento-card rounded-[2rem] p-5 mb-8">
+          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm">
             <div className="flex items-start space-x-4">
               {renderAvatar(state.user ? state.user.avatar : 'U', "w-10 h-10 rounded-full flex-shrink-0 text-sm shadow-sm", state.user?.name[0])}
               <div className="flex-1">
@@ -201,7 +200,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* FEED HEADER & SORT */}
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
           <div className="flex items-center space-x-2">
@@ -220,12 +218,11 @@ export default function Home() {
           <div className="text-center py-20 border border-dashed border-[var(--border-line)] rounded-3xl">
             <i data-lucide="filterX" className="w-8 h-8 text-sub mx-auto mb-3 opacity-50"></i>
             <p className="text-sm font-medium text-sub">No results match filter.</p>
-            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
+            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); setDebouncedSearch(''); }} className="mt-4 px-4 py-2 rounded-lg surface-bg border border-[var(--border-line)] text-xs text-[var(--primary-glow)] font-bold hover-lift relative z-10">Clear Filters</button>
           </div>
         ) : (
           <div className={state.view === 'gigs' ? "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" : "flex flex-col space-y-4 sm:space-y-6"}>
             {filteredData.map(item => {
-              
               if (state.view === 'gigs') {
                 return (
                   <div key={item.id} onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-gig-detail', selectedItem: item }))} className="btn-press bento-card rounded-[2rem] p-6 cursor-pointer flex flex-col justify-between h-[240px] group relative overflow-hidden">
@@ -264,7 +261,7 @@ export default function Home() {
                   
                   {item.image && (
                     <div className="mb-5 rounded-2xl overflow-hidden border border-[var(--border-line)] max-h-80 pointer-events-none">
-                      <img src={item.image} alt="Attachment" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.style.display='none'; }} />
+                      <img src={item.image} alt="Attachment" loading="lazy" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.style.display='none'; }} />
                     </div>
                   )}
                   
@@ -287,7 +284,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* 📍 RIGHT SIDEBAR WIDGETS (Desktop Only) */}
       <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
