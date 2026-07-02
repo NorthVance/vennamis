@@ -1,4 +1,4 @@
-// UX: Hero Spacing & News Button Feature
+// SEC: Fixed Hero Layout & News Contribution
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -162,24 +162,39 @@ export default function Home() {
           </button>
         </div>
 
-        {/* UX: Fixed Hero Layout - Centered, Spaced, No Overlap */}
+        {/* UX: Locked Height Hero (No Layout Shift, No Overlap) */}
         {state.view === 'gigs' && (
-          <div className="bento-card rounded-[2rem] p-6 sm:p-12 text-center relative overflow-hidden group min-h-[360px] lg:min-h-[400px] flex flex-col items-center justify-center">
+          <div className="bento-card rounded-[2rem] px-4 sm:px-10 text-center relative overflow-hidden group h-[360px] sm:h-[380px] flex flex-col items-center justify-center">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--primary-glow)] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
             
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border surface-bg text-[10px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
-              <i data-lucide="shield-check" className="w-4 h-4"></i><span>{t.badge_secure}</span>
+            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-6">
+              <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-prime mb-2 leading-tight">
-              {t.hero_static}
-            </h1>
-            
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight w-full flex justify-center items-center min-h-[1.5em] mb-6 leading-tight">
-              <Typewriter />
+            {/* SEC: Invisible Wrapper to contain text wrapping without shifting the box */}
+            <div className="flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px] w-full mb-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-prime mb-1 leading-tight">
+                {t.hero_static}
+              </h1>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight w-full flex justify-center items-center">
+                <Typewriter />
+              </div>
             </div>
             
-            <p className="text-sm sm:text-base text-sub max-w-xl mx-auto font-medium leading-relaxed">{t.hero_sub}</p>
+            <p className="text-xs sm:text-sm text-sub max-w-lg mx-auto font-medium px-4">{t.hero_sub}</p>
+          </div>
+        )}
+
+        {/* SEC: Add News Button */}
+        {state.view === 'news' && (
+          <div className="bento-card rounded-[2rem] p-5 sm:p-6 shadow-sm flex justify-between items-center bg-white/5 border border-[var(--primary-glow)]/30">
+            <div>
+              <h3 className="text-sm font-bold text-prime flex items-center"><i data-lucide="satellite" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Contribute Intel</h3>
+              <p className="text-xs text-sub mt-1">Found a breaking news article? Share it with the network.</p>
+            </div>
+            <button onClick={() => { if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-add-news' })); }} className="btn-press px-4 py-2.5 rounded-xl text-white font-bold text-xs shadow-md shrink-0 flex items-center" style={{ background: 'var(--primary-glow)' }}>
+              <i data-lucide="plus" className="w-3.5 h-3.5 mr-1.5"></i> Add Source
+            </button>
           </div>
         )}
 
@@ -211,15 +226,7 @@ export default function Home() {
         )}
 
         <div className="flex justify-between items-center mb-4 px-1">
-          <div className="flex items-center gap-3">
-            <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
-            {/* FEAT: Add News Source Button */}
-            {state.view === 'news' && (
-              <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-add-news' }))} className="btn-press bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/30 px-3 py-1 rounded-lg text-[10px] font-bold flex items-center hover:bg-[var(--primary-glow)] hover:text-white transition shadow-sm">
-                <i data-lucide="plus" className="w-3 h-3 mr-1 pointer-events-none"></i> Add Source
-              </button>
-            )}
-          </div>
+          <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
           <div className="flex items-center space-x-2">
             <i data-lucide="arrow-down-up" className="w-3.5 h-3.5 text-sub"></i>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs font-bold text-prime outline-none cursor-pointer">
