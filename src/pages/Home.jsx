@@ -1,3 +1,4 @@
+// UI: Expanded Center Column & Responsive Sidebars
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -25,7 +26,6 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
-  // SEC: Search Debounce Logic (กันเว็บกระตุกเวลาพิมพ์รัวๆ)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -103,9 +103,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[1400px] mx-auto pb-20 px-4">
+    <div className="flex flex-col lg:flex-row gap-6 xl:gap-10 max-w-[1600px] w-full mx-auto pb-20 px-4 sm:px-6">
       
-      <aside className="hidden lg:block w-64 shrink-0">
+      {/* 📍 LEFT SIDEBAR: ปรับให้หดตัวลงนิดหน่อยบนจอปกติ และขยายบนจอใหญ่ */}
+      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -132,6 +133,7 @@ export default function Home() {
         </div>
       </aside>
 
+      {/* 📍 MIDDLE COLUMN: ถ่างพื้นที่ให้กว้างขึ้น ไม่โดนบีบ */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
@@ -165,7 +167,7 @@ export default function Home() {
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border surface-bg text-[9px] font-bold uppercase tracking-widest text-[var(--primary-glow)] mb-4">
               <i data-lucide="shield-check" className="w-3.5 h-3.5"></i><span>{t.badge_secure}</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter leading-tight text-prime mb-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-prime mb-3">
               <span>{t.hero_static}</span><br/>
               <div className="h-[1.2em] mt-1 flex justify-center items-center"><Typewriter /></div>
             </h1>
@@ -284,7 +286,8 @@ export default function Home() {
         )}
       </div>
 
-      <aside className="hidden lg:block w-72 shrink-0">
+      {/* 📍 RIGHT SIDEBAR: ปรับให้หดตัวลงนิดหน่อยบนจอปกติ และขยายบนจอใหญ่ */}
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
