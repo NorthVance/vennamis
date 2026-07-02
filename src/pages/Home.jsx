@@ -1,3 +1,4 @@
+// INIT: V.41.3.0 - Mobile Compact UI & Strict CI Patch
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -24,29 +25,28 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('newest');
   const [likedPosts, setLikedPosts] = useState({});
 
+  // SEC: Fetch & Translate Pipeline
   useEffect(() => {
     let isMounted = true;
-    const loadDataAndTranslate = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       const data = await DatabaseService.getFeedData(state.view);
-      
       if (data.length === 0 || state.lang === 'en') {
         if (isMounted) { setViewData(data); setFilteredData(data); setIsLoading(false); }
         return;
       }
-      
       const translated = await Promise.all(data.map(async (item) => ({
         ...item,
         title: await NetworkTranslator.translateText(item.title, state.lang, state.transApi),
         desc: await NetworkTranslator.translateText(item.desc, state.lang, state.transApi)
       })));
-      
       if (isMounted) { setViewData(translated); setFilteredData(translated); setIsLoading(false); }
     };
-    loadDataAndTranslate();
+    loadData();
     return () => { isMounted = false; };
   }, [state.view, state.lang, state.transApi, state.refreshTick]);
 
+  // SEC: Filter Logic
   useEffect(() => {
     let result = [...viewData];
     if (searchQuery.trim()) {
@@ -67,33 +67,12 @@ export default function Home() {
   useEffect(() => { setActiveFilter('all'); setSearchQuery(''); setSortBy('newest'); }, [state.view]);
   useEffect(() => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); }, [filteredData, state.view, sortBy, quickImage]);
 
-  const handleApply = (e, item) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-    setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item }));
-  };
-
-  const openProfile = (e, hostName, avatarData) => {
-    e.preventDefault(); e.stopPropagation();
-    setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } }));
-  };
-
-  const handleShare = (e) => {
-    e.preventDefault(); e.stopPropagation();
-    navigator.clipboard.writeText(window.location.href);
-    setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } }));
-  };
-
-  const handleLike = (e, id) => {
-    e.preventDefault(); e.stopPropagation();
-    setLikedPosts(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleReport = (e, item) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' }));
-    setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } }));
-  };
+  // SEC: Handlers
+  const handleApply = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-escrow', selectedItem: item })); };
+  const openProfile = (e, hostName, avatarData) => { e.preventDefault(); e.stopPropagation(); setState(prev => ({ ...prev, activeModal: 'modal-profile', targetUser: { name: hostName, avatar: avatarData || hostName[0] } })); };
+  const handleShare = (e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.href); setState(prev => ({ ...prev, toast: { type: 'success', message: 'Link copied!' } })); };
+  const handleLike = (e, id) => { e.preventDefault(); e.stopPropagation(); setLikedPosts(prev => ({ ...prev, [id]: !prev[id] })); };
+  const handleReport = (e, item) => { e.preventDefault(); e.stopPropagation(); if (!state.user) return setState(prev => ({ ...prev, activeModal: 'modal-login' })); setState(prev => ({ ...prev, activeModal: 'modal-report', selectedItem: { ...item, reportType: 'post' } })); };
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -114,9 +93,7 @@ export default function Home() {
   };
 
   const renderAvatar = (avatarData, sizeClasses, fallbackText = 'U') => {
-    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
-      return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
-    }
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" className={`object-cover pointer-events-none ${sizeClasses}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />;
     return <div className={`flex items-center justify-center text-white font-bold bg-gray-800 pointer-events-none ${sizeClasses}`}>{avatarData ? avatarData[0] : fallbackText}</div>;
   };
 
@@ -130,46 +107,22 @@ export default function Home() {
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
             <div className="space-y-1">
               {['gigs', 'community', 'traders', 'news'].map((nav) => (
-                <button 
-                  key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                  className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/20 shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5 border border-transparent'}`}
-                >
-                  {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}
-                  {nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}
-                  {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}
-                  {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
+                <button key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} className={`btn-press w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold capitalize transition-all duration-200 ${state.view === nav ? 'bg-[var(--primary-glow)]/10 text-[var(--primary-glow)] border border-[var(--primary-glow)]/20 shadow-sm' : 'text-sub hover:text-prime hover:bg-white/5 border border-transparent'}`}>
+                  {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}{nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}{nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}{nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
                   <span>{nav}</span>
                 </button>
               ))}
             </div>
           </div>
-
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Discover</p>
             <div className="space-y-1">
-              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                <i data-lucide="compass" className="w-3.5 h-3.5"></i> All Feed
-              </button>
+              <button onClick={() => setActiveFilter('all')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'all' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="compass" className="w-3.5 h-3.5"></i> All Feed</button>
               {state.view === 'gigs' && (
-                <>
-                  <button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                    <i data-lucide="globe" className="w-3.5 h-3.5"></i> Remote Only
-                  </button>
-                  <button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'high_budget' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                    <i data-lucide="flame" className="w-3.5 h-3.5 text-amber-500"></i> High Budget
-                  </button>
-                </>
+                <><button onClick={() => setActiveFilter('remote')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'remote' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="globe" className="w-3.5 h-3.5"></i> Remote Only</button><button onClick={() => setActiveFilter('high_budget')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'high_budget' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="flame" className="w-3.5 h-3.5 text-amber-500"></i> High Budget</button></>
               )}
-              {state.view === 'community' && (
-                <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                  <i data-lucide="trending-up" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i> Top Rated
-                </button>
-              )}
-              {state.view === 'traders' && (
-                <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}>
-                  <i data-lucide="trending-up" className="w-3.5 h-3.5 text-green-500"></i> Bullish Intel
-                </button>
-              )}
+              {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'top_rated' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i> Top Rated</button>}
+              {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === 'bullish' ? 'text-prime bg-white/5' : 'text-sub hover:text-prime hover:bg-white/5'}`}><i data-lucide="trending-up" className="w-3.5 h-3.5 text-green-500"></i> Bullish Intel</button>}
             </div>
           </div>
         </div>
@@ -178,33 +131,24 @@ export default function Home() {
       {/* 📍 MIDDLE COLUMN: Feed Core */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
-        {/* 📍 MOBILE ONLY: Compact Segmented Nav (FIXED) */}
-        <div className="lg:hidden space-y-3">
-          <div className="glass-panel p-1 bg-[var(--bg-base)]/50 border border-[var(--border-line)] rounded-2xl flex items-center justify-between shadow-sm">
+        {/* 📍 MOBILE ONLY: COMPACT PILL MENU (FIXED) */}
+        <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
+          <div className="glass-panel p-1 bg-[var(--bg-base)]/80 border border-[var(--border-line)] rounded-full flex items-center shadow-lg max-w-[340px] w-full mx-auto">
             {['gigs', 'community', 'traders', 'news'].map((nav) => (
-              <button 
-                key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} 
-                className={`btn-press flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 px-1 sm:px-4 rounded-xl text-[9px] sm:text-xs font-bold uppercase tracking-wider transition-all ${state.view === nav ? 'surface-bg text-prime shadow-md border border-[var(--border-line)]' : 'text-sub hover:text-prime hover:bg-white/10'}`}
-              >
-                {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4 sm:w-4 sm:h-4"></i>}
-                {nav === 'community' && <i data-lucide="users" className="w-4 h-4 sm:w-4 sm:h-4"></i>}
-                {nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4 sm:w-4 sm:h-4"></i>}
-                {nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4 sm:w-4 sm:h-4"></i>}
+              <button key={nav} onClick={() => setState(prev => ({ ...prev, view: nav }))} className={`btn-press flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all ${state.view === nav ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'text-sub hover:text-prime'}`}>
+                {nav === 'gigs' && <i data-lucide="briefcase" className="w-4 h-4"></i>}{nav === 'community' && <i data-lucide="users" className="w-4 h-4"></i>}{nav === 'traders' && <i data-lucide="trending-up" className="w-4 h-4"></i>}{nav === 'news' && <i data-lucide="newspaper" className="w-4 h-4"></i>}
                 <span className="truncate">{nav}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar pb-1">
-            <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>All</button>
+          <div className="flex items-center justify-center space-x-2 overflow-x-auto hide-scrollbar pb-1 w-full max-w-[340px]">
+            <button onClick={() => setActiveFilter('all')} className={`btn-press px-4 py-1.5 rounded-full text-[9px] font-bold transition whitespace-nowrap ${activeFilter === 'all' ? 'bg-white/10 text-prime border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}>All</button>
             {state.view === 'gigs' && (
-              <>
-                <button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}>Remote Only</button>
-                <button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1.5 pointer-events-none"></i> High Budget</button>
-              </>
+              <><button onClick={() => setActiveFilter('remote')} className={`btn-press px-4 py-1.5 rounded-full text-[9px] font-bold transition whitespace-nowrap ${activeFilter === 'remote' ? 'bg-white/10 text-prime border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}>Remote</button><button onClick={() => setActiveFilter('high_budget')} className={`btn-press px-4 py-1.5 rounded-full text-[9px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'high_budget' ? 'bg-white/10 text-prime border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}><i data-lucide="flame" className="w-3 h-3 mr-1 pointer-events-none"></i> High Budget</button></>
             )}
-            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-[var(--primary-glow)] text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5 pointer-events-none"></i> Top Rated</button>}
-            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-2 rounded-lg text-[10px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-green-500 text-white shadow-md' : 'surface-bg border border-[var(--border-line)] text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1.5 pointer-events-none"></i> Bullish</button>}
+            {state.view === 'community' && <button onClick={() => setActiveFilter('top_rated')} className={`btn-press px-4 py-1.5 rounded-full text-[9px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'top_rated' ? 'bg-white/10 text-prime border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1 pointer-events-none"></i> Top Rated</button>}
+            {state.view === 'traders' && <button onClick={() => setActiveFilter('bullish')} className={`btn-press px-4 py-1.5 rounded-full text-[9px] font-bold transition whitespace-nowrap flex items-center ${activeFilter === 'bullish' ? 'bg-white/10 text-prime border border-[var(--border-line)]' : 'text-sub hover:text-prime'}`}><i data-lucide="trending-up" className="w-3 h-3 mr-1 pointer-events-none"></i> Bullish</button>}
           </div>
         </div>
 
@@ -241,9 +185,7 @@ export default function Home() {
                 {quickImage && (
                   <div className="relative mt-3 mb-2 w-fit">
                     <img src={quickImage} alt="Preview" className="h-32 rounded-xl border border-[var(--border-line)] object-cover shadow-sm" />
-                    <button onClick={() => setQuickImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:scale-110 transition relative z-10">
-                      <i data-lucide="x" className="w-3 h-3 pointer-events-none"></i>
-                    </button>
+                    <button onClick={() => setQuickImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:scale-110 transition relative z-10"><i data-lucide="x" className="w-3 h-3 pointer-events-none"></i></button>
                   </div>
                 )}
                 
@@ -251,7 +193,6 @@ export default function Home() {
                   <div className="flex space-x-2 text-sub">
                     <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" />
                     <button onClick={() => fileInputRef.current?.click()} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition" title="Attach Image"><i data-lucide="image" className="w-4 h-4 pointer-events-none"></i></button>
-                    <button onClick={() => setState(prev => ({...prev, toast: {type:'info', message:'Link disabled.'}}))} className="btn-press p-2 hover:text-prime hover:bg-[var(--border-line)] rounded-xl transition"><i data-lucide="link" className="w-4 h-4 pointer-events-none"></i></button>
                   </div>
                   <button onClick={handleQuickPost} className="btn-press px-8 py-2.5 rounded-xl text-white font-bold text-sm shadow-md relative z-10" style={{ background: 'var(--primary-glow)' }}>Post</button>
                 </div>
@@ -260,7 +201,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* FEED SEPARATOR */}
+        {/* FEED HEADER & SORT */}
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-sm font-bold text-sub uppercase tracking-widest">Latest Updates</h3>
           <div className="flex items-center space-x-2">
@@ -292,9 +233,7 @@ export default function Home() {
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="text-[10px] font-bold uppercase text-sub surface-bg px-3 py-1 rounded-full border border-[var(--border-line)] shadow-sm pointer-events-none">{item.loc}</span>
-                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report">
-                          <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
-                        </button>
+                        <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-2 bg-black/5 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/30 shrink-0" title="Report"><i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i></button>
                       </div>
                       <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 line-clamp-1 break-words pointer-events-none">{item.title}</h3>
                       <p className="text-xs text-sub line-clamp-2 leading-relaxed font-medium break-words whitespace-pre-wrap pointer-events-none">{item.desc}</p>
@@ -302,14 +241,9 @@ export default function Home() {
                     <div className="flex justify-between items-end mt-auto pt-4 border-t border-[var(--border-line)]/50">
                       <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 hover:opacity-80 transition cursor-pointer flex items-center space-x-3">
                          {renderAvatar(item.avatar || item.host[0], "w-8 h-8 rounded-full text-xs shadow-sm", item.host[0])}
-                         <div>
-                           <p className="text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold break-words pointer-events-none">Host Identity</p>
-                           <span className="text-sm font-bold text-prime hover:underline break-words pointer-events-none">{item.host}</span>
-                         </div>
+                         <div><p className="text-[9px] text-sub uppercase tracking-wider mb-0.5 font-bold break-words pointer-events-none">Host Identity</p><span className="text-sm font-bold text-prime hover:underline break-words pointer-events-none">{item.host}</span></div>
                       </div>
-                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 py-2 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2 shrink-0">
-                        Apply <i data-lucide="arrow-up-right" className="w-3.5 h-3.5 pointer-events-none"></i>
-                      </button>
+                      <button onClick={(e) => handleApply(e, item)} className="relative z-10 btn-press px-4 py-2 rounded-xl surface-bg border border-[var(--border-line)] flex items-center justify-center hover:border-[var(--primary-glow)] hover:text-[var(--primary-glow)] text-prime shadow-sm transition-all duration-300 font-bold text-xs gap-2 shrink-0">Apply <i data-lucide="arrow-up-right" className="w-3.5 h-3.5 pointer-events-none"></i></button>
                     </div>
                   </div>
                 );
@@ -320,16 +254,9 @@ export default function Home() {
                   <div className="flex justify-between items-start mb-4">
                     <div onClick={(e) => openProfile(e, item.host, item.avatar)} className="relative z-10 flex items-center space-x-3 hover:opacity-80 transition cursor-pointer w-fit">
                       {renderAvatar(item.avatar || item.host[0], "w-10 h-10 rounded-full text-sm shadow-sm", item.host[0])}
-                      <div className="flex flex-col pointer-events-none">
-                        <span className="text-sm font-bold text-prime hover:underline break-words">{item.host}</span>
-                        <span className="text-[9px] text-[var(--primary-glow)] flex items-center font-bold mt-0.5">
-                          <i data-lucide="shield-check" className="w-3 h-3 mr-1 pointer-events-none"></i> Verified
-                        </span>
-                      </div>
+                      <div className="flex flex-col pointer-events-none"><span className="text-sm font-bold text-prime hover:underline break-words">{item.host}</span><span className="text-[9px] text-[var(--primary-glow)] flex items-center font-bold mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1 pointer-events-none"></i> Verified</span></div>
                     </div>
-                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg" title="Report">
-                      <i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i>
-                    </button>
+                    <button onClick={(e) => handleReport(e, item)} className="relative z-10 text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition p-1.5 hover:bg-red-500/10 rounded-lg" title="Report"><i data-lucide="flag" className="w-4 h-4 pointer-events-none"></i></button>
                   </div>
                   
                   <h3 className="text-lg sm:text-xl font-bold text-prime mb-2 leading-tight break-words pointer-events-none">{item.title}</h3>
@@ -343,35 +270,15 @@ export default function Home() {
                   
                   <div className="flex items-center space-x-6 text-sub text-xs font-medium border-t border-[var(--border-line)] pt-4">
                     {state.view === 'community' && (
-                      <>
-                        <button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}>
-                          <i data-lucide="heart" className={`w-4 h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> 
-                          {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}
-                        </button>
-                        <span className="flex items-center hover:text-white transition pointer-events-none">
-                          <i data-lucide="message-circle" className="w-4 h-4 mr-1.5"></i> {item.comments || 0}
-                        </span>
-                      </>
+                      <><button onClick={(e) => handleLike(e, item.id)} className={`relative z-10 btn-press flex items-center transition ${likedPosts[item.id] ? 'text-red-500' : 'hover:text-white'}`}><i data-lucide="heart" className={`w-4 h-4 mr-1.5 pointer-events-none transition-all ${likedPosts[item.id] ? 'fill-red-500 animate-heart-burst' : ''}`}></i> {likedPosts[item.id] ? (item.likes || 0) + 1 : (item.likes || 0)}</button><span className="flex items-center hover:text-white transition pointer-events-none"><i data-lucide="message-circle" className="w-4 h-4 mr-1.5"></i> {item.comments || 0}</span></>
                     )}
-                    
                     {state.view === 'traders' && (
-                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[10px] sm:text-xs pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}>
-                        <i data-lucide={item.sentiment === 'bullish' ? 'trending-up' : 'trending-down'} className="w-3.5 h-3.5 mr-1.5 pointer-events-none"></i> {item.sentiment?.toUpperCase()}
-                      </span>
+                      <span className={`flex items-center px-3 py-1 rounded-full surface-bg border border-[var(--border-line)] shadow-sm text-[10px] sm:text-xs pointer-events-none ${item.sentiment === 'bullish' ? 'text-green-500' : 'text-red-500'}`}><i data-lucide="trending-up" className="w-3.5 h-3.5 mr-1.5 pointer-events-none"></i> {item.sentiment?.toUpperCase()}</span>
                     )}
-                    
                     {state.view === 'news' && (
-                      <div className="flex items-center space-x-3">
-                        <span className="font-mono text-[9px] sm:text-[10px] surface-bg border border-[var(--border-line)] px-2 py-1 rounded shadow-sm pointer-events-none">SRC: {item.source || 'SYS'}</span>
-                        <button className="relative z-10 text-[10px] font-bold text-[var(--primary-glow)] hover:underline flex items-center">
-                          Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1 pointer-events-none"></i>
-                        </button>
-                      </div>
+                      <div className="flex items-center space-x-3"><span className="font-mono text-[9px] sm:text-[10px] surface-bg border border-[var(--border-line)] px-2 py-1 rounded shadow-sm pointer-events-none">SRC: {item.source || 'SYS'}</span><button className="relative z-10 text-[10px] font-bold text-[var(--primary-glow)] hover:underline flex items-center">Read Article <i data-lucide="external-link" className="w-3 h-3 ml-1 pointer-events-none"></i></button></div>
                     )}
-                    
-                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1.5 rounded-lg hover:bg-white/5 transition">
-                      <i data-lucide="-2" className="w-4 h-4 pointer-events-none"></i>
-                    </button>
+                    <button onClick={(e) => handleShare(e)} className="relative z-10 btn-press text-sub hover:text-[var(--primary-glow)] p-1.5 rounded-lg hover:bg-white/5 transition"><i data-lucide="-2" className="w-4 h-4 pointer-events-none"></i></button>
                   </div>
                 </div>
               );
@@ -383,62 +290,21 @@ export default function Home() {
       {/* 📍 RIGHT SIDEBAR WIDGETS (Desktop Only) */}
       <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-[88px] space-y-6">
-          
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
-            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
-              <i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now
-            </h3>
+            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
             <div className="space-y-4">
-              <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">#NFP Week</p>
-                <p className="text-[10px] text-sub mt-0.5">1,245 posts</p>
-              </div>
-              <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Bitcoin Halving</p>
-                <p className="text-[10px] text-sub mt-0.5">858 posts</p>
-              </div>
-              <div className="cursor-pointer group">
-                <p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Risk Management Tips</p>
-                <p className="text-[10px] text-sub mt-0.5">432 posts</p>
-              </div>
+              <div className="cursor-pointer group"><p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">#NFP Week</p><p className="text-[10px] text-sub mt-0.5">1,245 posts</p></div>
+              <div className="cursor-pointer group"><p className="text-xs font-bold text-prime group-hover:text-[var(--primary-glow)] transition">Bitcoin Halving</p><p className="text-[10px] text-sub mt-0.5">858 posts</p></div>
             </div>
           </div>
-
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
-            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2">
-              <i data-lucide="users" className="w-4 h-4 mr-2 text-sub"></i> Top Profiles
-            </h3>
+            <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="users" className="w-4 h-4 mr-2 text-sub"></i> Top Profiles</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">E</div>
-                  <div>
-                    <p className="text-xs font-bold text-prime hover:underline cursor-pointer">Elena R.</p>
-                    <p className="text-[9px] text-sub">FX Mentor</p>
-                  </div>
-                </div>
-                <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">D</div>
-                  <div>
-                    <p className="text-xs font-bold text-prime hover:underline cursor-pointer">David K.</p>
-                    <p className="text-[9px] text-sub">Algo Trader</p>
-                  </div>
-                </div>
-                <button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button>
-              </div>
+              <div className="flex items-center justify-between"><div className="flex items-center space-x-2"><div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">E</div><div><p className="text-xs font-bold text-prime hover:underline cursor-pointer">Elena R.</p><p className="text-[9px] text-sub">FX Mentor</p></div></div><button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button></div>
+              <div className="flex items-center justify-between"><div className="flex items-center space-x-2"><div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-bold">D</div><div><p className="text-xs font-bold text-prime hover:underline cursor-pointer">David K.</p><p className="text-[9px] text-sub">Algo Trader</p></div></div><button className="text-[10px] font-bold text-[var(--primary-glow)] bg-[var(--primary-glow)]/10 px-3 py-1 rounded-full hover:bg-[var(--primary-glow)] hover:text-white transition">Follow</button></div>
             </div>
           </div>
-
-          <div className="text-[10px] text-sub px-2 flex flex-wrap gap-x-3 gap-y-1">
-            <a href="#" className="hover:underline hover:text-prime">Terms</a>
-            <a href="#" className="hover:underline hover:text-prime">Privacy Space</a>
-            <a href="#" className="hover:underline hover:text-prime">Security</a>
-            <span>© 2026 Vennamis</span>
-          </div>
-
+          <div className="text-[10px] text-sub px-2 flex flex-wrap gap-x-3 gap-y-1"><a href="#" className="hover:underline hover:text-prime">Terms</a><a href="#" className="hover:underline hover:text-prime">Privacy Space</a><span>© 2026 Vennamis</span></div>
         </div>
       </aside>
 
