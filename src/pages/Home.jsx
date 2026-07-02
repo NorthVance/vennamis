@@ -1,4 +1,4 @@
-// UX: Expanded Center Layout & Search Bar Icons
+// SEC: Layout Width Optimization
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { staticDict } from '../store';
@@ -103,10 +103,11 @@ export default function Home() {
   };
 
   return (
-    /* UX: Optimized Gap for Wide Center Column */
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full mx-auto pb-20">
+    /* UX: Tighter Gap, Maximized Center Area */
+    <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 xl:gap-8 w-full mx-auto pb-20">
       
-      <aside className="hidden lg:block w-64 shrink-0">
+      {/* SEC: Left Sidebar (Slimmer) */}
+      <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
         <div className="sticky top-[88px] space-y-8">
           <div>
             <p className="text-[10px] font-bold text-sub uppercase tracking-widest pl-3 mb-3">Platform</p>
@@ -133,6 +134,7 @@ export default function Home() {
         </div>
       </aside>
 
+      {/* SEC: Center Feed (Maximized Width) */}
       <div className="flex-1 min-w-0 space-y-6 md:space-y-8">
         
         <div className="lg:hidden flex flex-col items-center space-y-4 mb-2">
@@ -155,7 +157,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* UX: Upgraded Search Bar with Search & Filter Icons */}
         <div className="relative group flex items-center w-full">
           <i data-lucide="search" className="absolute left-4 w-4 h-4 text-sub group-hover:text-[var(--primary-glow)] transition pointer-events-none z-10"></i>
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--bg-surface)] backdrop-blur-xl border border-[var(--border-line)] hover:border-[var(--primary-glow)]/50 rounded-2xl pl-11 pr-14 py-3 sm:py-4 text-sm text-prime outline-none focus:border-[var(--primary-glow)] transition-all shadow-sm font-medium" placeholder="Search skills, posts, or news..." />
@@ -295,7 +296,8 @@ export default function Home() {
         )}
       </div>
 
-      <aside className="hidden lg:block w-64 shrink-0">
+      {/* SEC: Right Sidebar (Compact) */}
+      <aside className="hidden lg:block w-56 xl:w-60 shrink-0">
         <div className="sticky top-[88px] space-y-6">
           <div className="glass-panel border rounded-3xl p-5 hover-lift">
             <h3 className="text-sm font-bold text-prime mb-4 flex items-center border-b border-[var(--border-line)] pb-2"><i data-lucide="trending-up" className="w-4 h-4 mr-2 text-[var(--primary-glow)]"></i> Trending Now</h3>
