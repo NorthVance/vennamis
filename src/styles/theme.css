@@ -1,3 +1,4 @@
+/* SEC: V.41.5.0 - Ultimate Wallpaper Engine */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,7 +34,6 @@
 
 @layer utilities {
   .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
-
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
   
   .bento-card {
@@ -95,7 +95,18 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* SEC: Backgrounds */
+  /* SEC: New Luxury Backgrounds */
+  .bg-aurora-mesh {
+    position: fixed; inset: 0; z-index: -2;
+    background: linear-gradient(-45deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2), rgba(139,92,246,0.2), rgba(236,72,153,0.2));
+    background-size: 400% 400%;
+    animation: auroraFlow 15s ease infinite;
+  }
+  body.theme-light .bg-aurora-mesh {
+    background: linear-gradient(-45deg, #a7f3d0, #bfdbfe, #fbcfe8, #ddd6fe);
+    background-size: 400% 400%;
+  }
+
   .cyber-grid-container {
     position: fixed; inset: 0; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -103,29 +114,8 @@
     transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
     animation: cyberPan 40s linear infinite; opacity: 0.4;
   }
-  .bg-galaxy { position: fixed; inset: 0; z-index: -2; background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #030407 100%); }
   
-  /* UX: New Luxury Wallpapers */
-  .bg-aurora-mesh {
-    position: fixed; inset: 0; z-index: -2;
-    background: linear-gradient(45deg, var(--bg-base), rgba(16, 185, 129, 0.15), var(--bg-base), rgba(59, 130, 246, 0.1));
-    background-size: 400% 400%;
-    animation: auroraFlow 15s ease infinite;
-  }
-  .bg-clean-grid {
-    position: fixed; inset: 0; z-index: -2;
-    background-image: radial-gradient(circle at 50% 0%, transparent 20%, var(--bg-base) 80%), linear-gradient(var(--border-line) 1px, transparent 1px), linear-gradient(90deg, var(--border-line) 1px, transparent 1px);
-    background-size: 100% 100%, 40px 40px, 40px 40px;
-    opacity: 0.6;
-  }
-  .bg-deep-void {
-    position: fixed; inset: 0; z-index: -2;
-    background: radial-gradient(circle at 50% -20%, rgba(255,255,255,0.05) 0%, var(--bg-base) 70%);
-  }
-  body.theme-light .bg-deep-void {
-    background: radial-gradient(circle at 50% -20%, rgba(0,0,0,0.03) 0%, var(--bg-base) 70%);
-  }
-
+  .bg-galaxy { position: fixed; inset: 0; z-index: -2; background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #030407 100%); }
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 100%); pointer-events: none; }
 }
 
@@ -136,3 +126,6 @@
 @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes heartBurst { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 @keyframes shimmerRun { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes float1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10%, 10%) scale(1.1); } }
+@keyframes float2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-10%, -10%) scale(1.2); } }
+@keyframes float3 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-15%, 15%) scale(1.15); } }
