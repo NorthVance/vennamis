@@ -32,12 +32,10 @@
 }
 
 @layer utilities {
-  /* UX: iOS Safe Area */
   .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
   
-  /* UX: Apple Luxury Glass & Physics */
   .bento-card {
     background-color: var(--bg-surface);
     backdrop-filter: blur(32px) saturate(180%);
@@ -66,7 +64,6 @@
   .hover-lift { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .hover-lift:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 30px var(--grid-color); }
 
-  /* UX: Haptic Visual Feedback */
   .btn-press { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease; touch-action: manipulation; }
   .btn-press:active { transform: scale(0.94); opacity: 0.8; }
   
@@ -91,7 +88,6 @@
 
   .focus-glow:focus-within { border-color: var(--primary-glow) !important; box-shadow: 0 0 20px var(--grid-color) !important; }
 
-  /* UX: Mobile Invisible Scrollbar */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -99,6 +95,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
+  /* SEC: Backgrounds */
   .cyber-grid-container {
     position: fixed; inset: 0; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -107,11 +104,34 @@
     animation: cyberPan 40s linear infinite; opacity: 0.4;
   }
   .bg-galaxy { position: fixed; inset: 0; z-index: -2; background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #030407 100%); }
+  
+  /* UX: New Luxury Wallpapers */
+  .bg-aurora-mesh {
+    position: fixed; inset: 0; z-index: -2;
+    background: linear-gradient(45deg, var(--bg-base), rgba(16, 185, 129, 0.15), var(--bg-base), rgba(59, 130, 246, 0.1));
+    background-size: 400% 400%;
+    animation: auroraFlow 15s ease infinite;
+  }
+  .bg-clean-grid {
+    position: fixed; inset: 0; z-index: -2;
+    background-image: radial-gradient(circle at 50% 0%, transparent 20%, var(--bg-base) 80%), linear-gradient(var(--border-line) 1px, transparent 1px), linear-gradient(90deg, var(--border-line) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    opacity: 0.6;
+  }
+  .bg-deep-void {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(circle at 50% -20%, rgba(255,255,255,0.05) 0%, var(--bg-base) 70%);
+  }
+  body.theme-light .bg-deep-void {
+    background: radial-gradient(circle at 50% -20%, rgba(0,0,0,0.03) 0%, var(--bg-base) 70%);
+  }
+
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 100%); pointer-events: none; }
 }
 
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+@keyframes auroraFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 @keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes heartBurst { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
