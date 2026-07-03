@@ -1,4 +1,4 @@
-// SEC: App Entry & Isolation
+// SEC: App Entry & Isolated Backgrounds
 import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
@@ -14,7 +14,7 @@ export const AppContext = createContext();
 
 export default function App() {
   
-  // SEC: Strict Cache Validation (Default Light Mode / Aurora Default)
+  // SEC: Strict Cache Validation
   const [state, setState] = useState(() => {
     const fallback = { lang: 'en', transApi: 'google', theme: 'light', bg: 'aurora-mesh', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
     try {
@@ -88,7 +88,7 @@ export default function App() {
       
       <div className="cyber-vignette"></div>
       
-      {/* SEC: Cyber Ambient Dots */}
+      {/* SEC: Gigs Page Ambient Glow Only for Cyber Matrix */}
       {state.bg === 'cyber' && (
         <><div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div><div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div></>
       )}
