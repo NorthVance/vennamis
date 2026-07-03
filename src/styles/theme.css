@@ -33,7 +33,6 @@
 
 @layer utilities {
   .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
-
   .surface-bg { background-color: var(--bg-surface); border-color: var(--border-line); }
   
   .bento-card {
@@ -81,10 +80,6 @@
     background-size: 200% 100%;
     animation: shimmerRun 1.5s infinite linear;
   }
-  body.theme-light .skeleton-shimmer {
-    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
-    background-size: 200% 100%;
-  }
 
   .focus-glow:focus-within { border-color: var(--primary-glow) !important; box-shadow: 0 0 20px var(--grid-color) !important; }
 
@@ -95,7 +90,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
 
-  /* SEC: Background - Cyber Grid */
+  /* SEC: Cyber Matrix BG */
   .cyber-grid-container {
     position: fixed; inset: 0; z-index: -2;
     background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -103,68 +98,60 @@
     transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
     animation: cyberPan 40s linear infinite; opacity: 0.4;
   }
-  
-  /* SEC: Background - Cosmic Galaxy */
   .bg-galaxy { position: fixed; inset: 0; z-index: -2; background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #030407 100%); }
   
-  /* SEC: Background - macOS Aurora Mesh */
+  /* UX: Premium Holographic Mesh (Bright but NOT boring white) */
   .bg-aurora-mesh {
     position: fixed; inset: 0; z-index: -2;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(99, 102, 241, 0.25) 30%, rgba(217, 70, 239, 0.2) 70%, rgba(16, 185, 129, 0.2) 100%);
-    background-size: 300% 300%;
+    background: linear-gradient(135deg, #e0f2fe 0%, #ffe4e6 40%, #ccfbf1 80%, #f3e8ff 100%);
+    background-size: 400% 400%;
     animation: auroraFlow 15s ease infinite;
-    filter: blur(40px);
   }
-  body.theme-light .bg-aurora-mesh {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(99, 102, 241, 0.18) 30%, rgba(217, 70, 239, 0.15) 70%, rgba(16, 185, 129, 0.15) 100%);
-    background-size: 300% 300%;
+  body.theme-dark .bg-aurora-mesh {
+    background: linear-gradient(135deg, #020617 0%, #4c0519 40%, #042f2e 80%, #1e1b4b 100%);
+    background-size: 400% 400%;
   }
 
-  /* SEC: Background - Deep Void (Fluid Cosmic Blobs) */
-  .bg-deep-void {
-    position: fixed; inset: 0; z-index: -2;
-    background: var(--bg-base);
-    overflow: hidden;
-  }
-  .bg-deep-void::before, .bg-deep-void::after {
-    content: '';
-    position: absolute;
-    width: 60vw;
-    height: 60vw;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
-    filter: blur(100px);
-    animation: voidOrbit 25s infinite alternate ease-in-out;
-  }
-  .bg-deep-void::before { top: -10%; left: -10%; }
-  .bg-deep-void::after { bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%); animation-delay: -12s; }
-  
-  body.theme-light .bg-deep-void::before { background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%); }
-  body.theme-light .bg-deep-void::after { background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%); }
-
-  /* SEC: Background - Synthwave 3D Perspective Neon Grid */
+  /* UX: TRUE 3D Neon Grid (Neon Pink & Cyan - High Wow Factor) */
   .bg-3d-matrix {
     position: fixed; inset: 0; z-index: -2;
-    background: linear-gradient(to bottom, #05050c 0%, #0d001a 60%, #020205 100%);
+    background: #020008;
     overflow: hidden;
   }
   body.theme-light .bg-3d-matrix {
-    background: linear-gradient(to bottom, #f1f5f9 0%, #e2e8f0 60%, #cbd5e1 100%);
+    background: #faf5ff;
   }
   .bg-3d-matrix::before {
     content: '';
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(rgba(217, 70, 239, 0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(217, 70, 239, 0.22) 1px, transparent 1px);
+    position: absolute; inset: -150% -50%;
+    background-image: 
+      linear-gradient(rgba(236, 72, 153, 0.18) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(6, 182, 212, 0.18) 2px, transparent 2px);
     background-size: 50px 50px;
-    transform: perspective(400px) rotateX(75deg) translateY(-30px);
-    transform-origin: top;
-    animation: gridScroll 4s linear infinite;
-    mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
+    transform: perspective(500px) rotateX(72deg) translateY(-20px);
+    animation: matrixScroll 10s linear infinite;
   }
   body.theme-light .bg-3d-matrix::before {
-    background-image: linear-gradient(rgba(5, 150, 105, 0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(5, 150, 105, 0.25) 1px, transparent 1px);
+    background-image: 
+      linear-gradient(rgba(219, 39, 119, 0.12) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(8, 145, 178, 0.12) 2px, transparent 2px);
+  }
+
+  /* UX: Deep Space Void with Cosmic Gold Dust */
+  .bg-deep-void {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(circle at 50% -20%, #171725 0%, #030407 100%);
+  }
+  body.theme-light .bg-deep-void {
+    background: radial-gradient(circle at 50% -20%, #ffffff 0%, #e2e8f0 100%);
+  }
+  .bg-deep-void::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    pointer-events: none;
   }
 
   .cyber-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--bg-base) 100%); pointer-events: none; }
@@ -173,8 +160,7 @@
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes cyberPan { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 @keyframes auroraFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes voidOrbit { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(15vw, 15vh, 0) scale(1.25); } }
-@keyframes gridScroll { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+@keyframes matrixScroll { 0% { transform: perspective(500px) rotateX(72deg) translateY(0); } 100% { transform: perspective(500px) rotateX(72deg) translateY(50px); } }
 @keyframes fadeInOverlay { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes heartBurst { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
