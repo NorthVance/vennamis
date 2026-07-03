@@ -1,3 +1,4 @@
+// SEC: Header UI
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../../App';
 import { staticDict } from '../../store';
@@ -125,8 +126,8 @@ export default function Header() {
               <div className="p-2.5 surface-bg border rounded-xl space-y-2">
                 <label className="text-[9px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
                 <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-1.5 text-[10px] text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
-                  <option value="clean-grid" className="bg-[var(--bg-surface)]">Clean Grid (Default)</option>
-                  <option value="aurora-mesh" className="bg-[var(--bg-surface)]">Aurora Mesh</option>
+                  {/* UX: Removed Clean Grid, Set Aurora as Default */}
+                  <option value="aurora-mesh" className="bg-[var(--bg-surface)]">Aurora Mesh (Default)</option>
                   <option value="deep-void" className="bg-[var(--bg-surface)]">Deep Void</option>
                   <option value="cyber" className="bg-[var(--bg-surface)]">Cyber Matrix</option>
                   <option value="galaxy" className="bg-[var(--bg-surface)]">Galaxy Flow</option>
