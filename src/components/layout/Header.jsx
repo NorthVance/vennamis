@@ -1,4 +1,4 @@
-// SEC: Header UI with Strict Linter Bypass
+// SEC: Self-Closing Optimized Header (Strict CI Fix)
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../../App';
 import { staticDict } from '../../store';
@@ -18,8 +18,7 @@ export default function Header() {
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setOpenDrop]);
 
   const toggleDrop = (menu, e) => { e.stopPropagation(); setOpenDrop(openDrop === menu ? null : menu); };
   const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
@@ -67,18 +66,18 @@ export default function Header() {
 
         {state.view === 'gigs' && (
           <button onClick={() => setState(prev => ({ ...prev, activeModal: 'modal-post' }))} className="flex items-center justify-center w-7 h-7 sm:w-auto sm:px-3 sm:py-1.5 rounded-lg text-white font-bold text-[10px] sm:text-xs hover-lift shadow-md shrink-0" style={{ background: 'var(--primary-glow)' }}>
-            <i data-lucide="plus" className="w-3.5 h-3.5 sm:mr-1.5"></i>
+            <i data-lucide="plus" className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">{t.btn_post}</span>
           </button>
         )}
 
         <div className="flex space-x-1 sm:space-x-1.5 border-l border-[var(--border-line)] pl-2 sm:pl-3 ml-1 sm:ml-2 relative">
           <button onClick={(e) => toggleDrop('notif', e)} className="drop-trigger p-1.5 rounded-lg surface-bg border shadow-sm text-sub hover:text-prime transition relative hover-lift">
-            <i data-lucide="bell" className="w-4 h-4"></i>
-            <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-[var(--bg-surface)] ${hasNotif ? '' : 'hidden'}`}></span>
+            <i data-lucide="bell" className="w-4 h-4" />
+            <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-[var(--bg-surface)] ${hasNotif ? '' : 'hidden'}`} />
           </button>
           <button onClick={(e) => toggleDrop('settings', e)} className="drop-trigger p-1.5 rounded-lg surface-bg border shadow-sm text-sub hover:text-prime transition hover-lift">
-            <i data-lucide="settings" className="w-4 h-4"></i>
+            <i data-lucide="settings" className="w-4 h-4" />
           </button>
         </div>
 
@@ -114,7 +113,7 @@ export default function Header() {
         {openDrop === 'settings' && (
           <div className="smart-dropdown absolute top-[120%] right-0 w-[260px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 z-50 active">
             <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[var(--border-line)]">
-              <i data-lucide="sliders" className="w-3.5 h-3.5 text-[var(--primary-glow)]"></i>
+              <i data-lucide="sliders" className="w-3.5 h-3.5 text-[var(--primary-glow)]" />
               <h3 className="text-xs font-bold text-prime">System Config</h3>
             </div>
             <div className="space-y-3">
@@ -154,21 +153,21 @@ export default function Header() {
               <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
               <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:opacity-80 transition hover-lift relative" title="Upload Avatar">
                 {renderAvatar(state.user.avatar, "w-10 h-10 rounded-xl text-sm")}
-                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-gray-600"><i data-lucide="camera" className="w-2.5 h-2.5 text-white"></i></div>
+                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-gray-600"><i data-lucide="camera" className="w-2.5 h-2.5 text-white" /></div>
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-bold text-prime truncate">{state.user.name}</h2>
-                <span className="text-[9px] text-[var(--primary-glow)] flex items-center mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1"></i> Verified</span>
+                <span className="text-[9px] text-[var(--primary-glow)] flex items-center mt-0.5"><i data-lucide="shield-check" className="w-3 h-3 mr-1" /> Verified</span>
               </div>
             </div>
             
             <div className="space-y-2 mb-4">
               <button onClick={() => { setState(prev => ({ ...prev, view: 'workspace' })); setOpenDrop(null); }} className="btn-press w-full surface-bg border border-[var(--border-line)] text-prime hover:border-[var(--primary-glow)] rounded-xl py-2 font-bold text-[10px] transition flex justify-center items-center shadow-sm">
-                <i data-lucide="layout-dashboard" className="w-3.5 h-3.5 mr-1.5 text-[var(--primary-glow)]"></i> My Workspace
+                <i data-lucide="layout-dashboard" className="w-3.5 h-3.5 mr-1.5 text-[var(--primary-glow)]" /> My Workspace
               </button>
               {state.user.name === 'Admin User' && (
                 <button onClick={() => { setState(prev => ({ ...prev, view: 'admin' })); setOpenDrop(null); }} className="btn-press w-full surface-bg border border-[var(--border-line)] text-prime hover:border-red-500 rounded-xl py-2 font-bold text-[10px] transition flex justify-center items-center shadow-sm">
-                  <i data-lucide="shield" className="w-3.5 h-3.5 mr-1.5 text-red-500"></i> Admin Center
+                  <i data-lucide="shield" className="w-3.5 h-3.5 mr-1.5 text-red-500" /> Admin Center
                 </button>
               )}
             </div>
@@ -182,7 +181,7 @@ export default function Header() {
             </div>
             
             <button onClick={logout} className="w-full border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-xl py-2 font-bold text-[10px] transition flex justify-center items-center hover-lift">
-              <i data-lucide="log-out" className="w-3.5 h-3.5 mr-1.5"></i>Sign Out
+              <i data-lucide="log-out" className="w-3.5 h-3.5 mr-1.5" />Sign Out
             </button>
           </div>
         )}
