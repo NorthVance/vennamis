@@ -1,4 +1,4 @@
-// SEC: App Entry & Isolated Backgrounds
+// SEC: App Entry & Strict Layout Compliance
 import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
@@ -42,15 +42,17 @@ export default function App() {
   }, [state.theme]);
 
   const [slideId, setSlideId] = useState(1);
+  
+  // UX: Slide Handler with ESLint Compliant Dependencies
   useEffect(() => {
     if (state.bg !== 'landscape') return;
     const interval = setInterval(() => setSlideId(prev => (prev % 3) + 1), 6000);
     return () => clearInterval(interval);
-  }, [state.bg]);
+  }, [state.bg, setSlideId]);
 
   useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
-  // SEC: Auth Sync
+  // SEC: Auth Sync with ESLint Compliant Dependencies
   useEffect(() => {
     if (!supabase) return;
     AuthService.getSession().then(({ data: { session } }) => {
@@ -67,30 +69,32 @@ export default function App() {
       } else setState(prev => ({ ...prev, user: null }));
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [setState]);
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      {/* SEC: Isolated Background Renderer */}
-      {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
-      {state.bg === 'galaxy' && <div className="bg-galaxy"></div>}
-      {state.bg === '3d-matrix' && <div className="bg-3d-matrix"></div>}
-      {state.bg === 'aurora-mesh' && <div className="bg-aurora-mesh"></div>}
-      {state.bg === 'deep-void' && <div className="bg-deep-void"></div>}
+      {/* SEC: Compliant Self-closing Background Renderers */}
+      {state.bg === 'cyber' && <div className="cyber-grid-container" />}
+      {state.bg === 'galaxy' && <div className="bg-galaxy" />}
+      {state.bg === '3d-matrix' && <div className="bg-3d-matrix" />}
+      {state.bg === 'aurora-mesh' && <div className="bg-aurora-mesh" />}
+      {state.bg === 'deep-void' && <div className="bg-deep-void" />}
       
       {state.bg === 'landscape' && (
         <div className="fixed inset-0 z-[-2]">
-          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 1 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80')" }}></div>
-          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 2 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80')" }}></div>
-          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 3 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=80')" }}></div>
+          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 1 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80')" }} />
+          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 2 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80')" }} />
+          <div className={`absolute inset-0 bg-cover bg-center animate-[kenburns_20s_ease-in-out_infinite_alternate] transition-opacity duration-[2000ms] ${slideId === 3 ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=80')" }} />
         </div>
       )}
+      <div className="cyber-vignette" />
       
-      <div className="cyber-vignette"></div>
-      
-      {/* SEC: Gigs Page Ambient Glow Only for Cyber Matrix */}
+      {/* SEC: Ambient Glow Compliant Renderer */}
       {state.bg === 'cyber' && (
-        <><div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div><div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div></>
+        <>
+          <div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" />
+          <div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }} />
+        </>
       )}
 
       <Toast />
