@@ -1,4 +1,3 @@
-// SEC: App Entry & Cache Override
 import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
@@ -10,33 +9,29 @@ import Toast from './components/common/Toast';
 import { initialData } from './store';
 import { supabase, AuthService } from './services/db';
 
-export const AppContext = createContext();
-
 export default function App() {
   
-  // SEC: Strict Cache Validation (Forced Reset to v2)
+  // SEC: Cache Override v3 (Force Liquid Glass Default)
   const [state, setState] = useState(() => {
-    const fallback = { lang: 'en', transApi: 'google', theme: 'light', bg: 'aurora-mesh', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
+    const fallback = { lang: 'en', transApi: 'google', theme: 'light', bg: 'liquid-glass', view: 'gigs', user: null, activeModal: null, isChatOpen: false, chatHost: null, selectedItem: null, targetUser: null, data: initialData, notifications: [], refreshTick: 0, toast: null };
     try {
-      const localMem = localStorage.getItem('vennamis_prefs_v2');
+      const localMem = localStorage.getItem('vennamis_prefs_v3');
       if (localMem) {
         const p = JSON.parse(localMem);
         if (typeof p !== 'object' || p === null) throw new Error('Invalid Cache');
-        return { ...fallback, lang: p.lang || 'en', transApi: p.transApi || 'google', theme: p.theme || 'light', bg: p.bg || 'aurora-mesh' };
+        return { ...fallback, lang: p.lang || 'en', transApi: p.transApi || 'google', theme: p.theme || 'light', bg: p.bg || 'liquid-glass' };
       }
     } catch (e) {
       console.warn("[SEC] Cache purged.");
-      localStorage.removeItem('vennamis_prefs_v2');
+      localStorage.removeItem('vennamis_prefs_v3');
     }
     return fallback;
   });
 
-  // UX: Persist Prefs
   useEffect(() => {
-    localStorage.setItem('vennamis_prefs_v2', JSON.stringify({ lang: state.lang, transApi: state.transApi, theme: state.theme, bg: state.bg }));
+    localStorage.setItem('vennamis_prefs_v3', JSON.stringify({ lang: state.lang, transApi: state.transApi, theme: state.theme, bg: state.bg }));
   }, [state.lang, state.transApi, state.theme, state.bg]);
 
-  // UX: Inject Theme
   useEffect(() => { 
     document.body.className = `theme-${state.theme} antialiased overflow-x-hidden transition-colors duration-500`; 
   }, [state.theme]);
@@ -50,7 +45,6 @@ export default function App() {
 
   useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
-  // SEC: Auth Sync
   useEffect(() => {
     if (!supabase) return;
     AuthService.getSession().then(({ data: { session } }) => {
@@ -71,12 +65,19 @@ export default function App() {
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      {/* SEC: Background Renderer */}
+      
+      {/* UX: Apple-style Liquid Glass Background (The Wow Factor) */}
+      {state.bg === 'liquid-glass' && (
+        <div className="fixed inset-0 z-[-2] overflow-hidden bg-[var(--bg-base)]">
+          <div className="absolute w-[60vw] h-[60vw] rounded-full bg-[var(--primary-glow)] opacity-30 blur-[100px] top-[-10%] left-[-10%] animate-[float1_15s_infinite_alternate]"></div>
+          <div className="absolute w-[50vw] h-[50vw] rounded-full bg-blue-500 opacity-20 blur-[100px] bottom-[-10%] right-[-10%] animate-[float2_18s_infinite_alternate]"></div>
+          <div className="absolute w-[40vw] h-[40vw] rounded-full bg-purple-500 opacity-20 blur-[100px] top-[30%] left-[30%] animate-[float3_20s_infinite_alternate]"></div>
+        </div>
+      )}
+
       {state.bg === 'cyber' && <div className="cyber-grid-container"></div>}
       {state.bg === 'galaxy' && <div className="bg-galaxy"></div>}
-      {state.bg === '3d-matrix' && <div className="bg-3d-matrix"></div>}
       {state.bg === 'aurora-mesh' && <div className="bg-aurora-mesh"></div>}
-      {state.bg === 'deep-void' && <div className="bg-deep-void"></div>}
       
       {state.bg === 'landscape' && (
         <div className="fixed inset-0 z-[-2]">
@@ -88,10 +89,6 @@ export default function App() {
       
       <div className="cyber-vignette"></div>
       
-      {(state.bg === 'cyber' || state.bg === '3d-matrix') && (
-        <><div className="fixed top-[20%] left-[10%] w-[30vw] h-[30vw] rounded-full bg-[var(--primary-glow)] opacity-10 blur-[120px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none"></div><div className="fixed bottom-[10%] right-[10%] w-[25vw] h-[25vw] rounded-full bg-violet-600 opacity-10 blur-[100px] animate-[pulseGlow_3s_ease-in-out_infinite] z-[-1] pointer-events-none" style={{ animationDelay: '1.5s' }}></div></>
-      )}
-
       <Toast />
       
       <div className="relative flex flex-col min-h-screen z-10 safe-area-bottom">
