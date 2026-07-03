@@ -12,27 +12,17 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.smart-dropdown') && !e.target.closest('.drop-trigger')) {
-        setOpenDrop(null);
-      }
+      if (!e.target.closest('.smart-dropdown') && !e.target.closest('.drop-trigger')) setOpenDrop(null);
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const toggleDrop = (menu, e) => { 
-    e.stopPropagation(); 
-    setOpenDrop(openDrop === menu ? null : menu); 
-  };
-  
+  const toggleDrop = (menu, e) => { e.stopPropagation(); setOpenDrop(openDrop === menu ? null : menu); };
   const changeTheme = (newTheme) => setState(prev => ({ ...prev, theme: newTheme }));
   const changeBg = (newBg) => setState(prev => ({ ...prev, bg: newBg }));
   const changeApi = (api) => setState(prev => ({ ...prev, transApi: api }));
-  
-  const logout = () => { 
-    setState(prev => ({ ...prev, user: null, view: 'gigs' })); 
-    setOpenDrop(null); 
-  };
+  const logout = () => { setState(prev => ({ ...prev, user: null, view: 'gigs' })); setOpenDrop(null); };
 
   const Bio = () => {
     const newBio = prompt("Enter your new bio:", state.user.bio);
@@ -43,15 +33,11 @@ export default function Header() {
     const file = e.target.files[0];
     if (!file) return;
     const publicUrl = await StorageService.uploadFile(file, 'avatars');
-    if (publicUrl) {
-      setState(prev => ({ ...prev, user: { ...prev.user, avatar: publicUrl } }));
-    }
+    if (publicUrl) setState(prev => ({ ...prev, user: { ...prev.user, avatar: publicUrl } }));
   };
 
   const renderAvatar = (avatarData, sizeClasses) => {
-    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) {
-      return <img src={avatarData} alt="Avatar" className={`object-cover ${sizeClasses}`} />;
-    }
+    if (avatarData && (avatarData.startsWith('http') || avatarData.startsWith('blob:'))) return <img src={avatarData} alt="Avatar" className={`object-cover ${sizeClasses}`} />;
     return <div className={`flex items-center justify-center text-white font-bold ${sizeClasses}`} style={{ background: 'var(--primary-glow)' }}>{avatarData ? avatarData[0] : 'U'}</div>;
   };
 
@@ -113,10 +99,7 @@ export default function Header() {
             {hasNotif ? (
               <div className="space-y-2">
                 {state.notifications.map((n, i) => (
-                  <div key={i} className="p-2.5 surface-bg border rounded-xl hover-lift cursor-pointer">
-                    <p className="text-[11px] font-bold text-prime">{n.title}</p>
-                    <p className="text-[9px] text-sub mt-0.5">{n.desc}</p>
-                  </div>
+                  <div key={i} className="p-2.5 surface-bg border rounded-xl hover-lift cursor-pointer"><p className="text-[11px] font-bold text-prime">{n.title}</p><p className="text-[9px] text-sub mt-0.5">{n.desc}</p></div>
                 ))}
               </div>
             ) : (
@@ -142,6 +125,9 @@ export default function Header() {
               <div className="p-2.5 surface-bg border rounded-xl space-y-2">
                 <label className="text-[9px] uppercase text-sub font-bold tracking-widest">Wallpaper</label>
                 <select value={state.bg} onChange={(e) => changeBg(e.target.value)} className="w-full bg-transparent border border-[var(--border-line)] rounded-lg p-1.5 text-[10px] text-prime outline-none focus:border-[var(--primary-glow)] cursor-pointer">
+                  <option value="clean-grid" className="bg-[var(--bg-surface)]">Clean Grid (Default)</option>
+                  <option value="aurora-mesh" className="bg-[var(--bg-surface)]">Aurora Mesh</option>
+                  <option value="deep-void" className="bg-[var(--bg-surface)]">Deep Void</option>
                   <option value="cyber" className="bg-[var(--bg-surface)]">Cyber Matrix</option>
                   <option value="galaxy" className="bg-[var(--bg-surface)]">Galaxy Flow</option>
                   <option value="3d-matrix" className="bg-[var(--bg-surface)]">3D Neon Grid</option>
@@ -160,7 +146,7 @@ export default function Header() {
           </div>
         )}
 
-        {openDrop === 'profile' && state.user && (
+        {state.user && openDrop === 'profile' && (
           <div className="smart-dropdown absolute top-[120%] right-0 w-[260px] sm:w-72 glass-panel border rounded-2xl shadow-2xl p-4 z-50 active">
             <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-[var(--border-line)] group">
               <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
